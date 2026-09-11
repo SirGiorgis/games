@@ -90,7 +90,7 @@ func _ensure_custom_slot() -> void:
 
 func _fallback_roster() -> void:
 	var specs := [
-		["kael_voss", "Male fighter, skinny lean build, curly brown hair, black teal racing jacket, aggressive personality, formula racing speed powers."],
+		["chris_xrisakis", "Male fighter, skinny lean build, curly brown hair, black teal racing jacket, aggressive personality, formula racing speed powers."],
 		["mira_solen", "Female fighter, athletic, crimson hair, red dancer wraps, fierce personality, fire-based powers."],
 		["rook_ironveil", "Male fighter, tall, heavy muscular build, brown hair, gold-trim armor, stoic personality, earth-based powers."],
 		["nyx_hollow", "Female fighter, lean, black hair, violet cloak, cunning personality, shadow-based powers."],

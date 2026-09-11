@@ -23,35 +23,25 @@ func setup(source: Fighter, k: String, color: Color) -> void:
 	cs.shape = c
 	add_child(cs)
 	area_entered.connect(_on_area)
-	var poly := Polygon2D.new()
-	var pts: Array = []
-	var n := 8
-	for i in n:
-		var a := TAU * i / n
-		var r := 14.0 if i % 2 == 0 else 8.0
-		if k == "wave":
-			r = 10.0 if i % 2 == 0 else 22.0
-		if k == "ult":
-			r *= 1.7
-		pts.append(Vector2(cos(a), sin(a)) * r)
-	poly.polygon = PackedVector2Array(pts)
-	poly.color = Color(color, 0.9)
-	add_child(poly)
-	var parts := CPUParticles2D.new()
-	parts.emitting = true
-	parts.amount = 20
-	parts.lifetime = 0.35
-	parts.direction = Vector2(-signf(velocity.x if velocity.x != 0.0 else 1.0), 0)
-	parts.spread = 40
-	parts.initial_velocity_min = 20
-	parts.initial_velocity_max = 80
-	parts.color = color
-	add_child(parts)
+	var img := Pix.image(12, 8)
+	if k == "ult":
+		img = Pix.image(16, 12)
+		Pix.rect(img, 1, 3, 14, 6, color)
+		Pix.rect(img, 4, 1, 8, 10, color.lightened(0.2))
+	else:
+		Pix.rect(img, 1, 2, 10, 4, color)
+		Pix.rect(img, 8, 1, 4, 6, color.lightened(0.25))
+		Pix.put(img, 2, 3, Color.WHITE)
+	Pix.outline(img, Color(0.05, 0.04, 0.06))
+	var spr := Sprite2D.new()
+	spr.texture = Pix.tex(img)
+	spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	spr.scale = Vector2(4, 4)
+	add_child(spr)
 
 
 func _physics_process(delta: float) -> void:
 	position += velocity * delta
-	rotation += delta * 8.0
 	life -= delta
 	if life <= 0.0 or position.x < -40 or position.x > 1320:
 		queue_free()

@@ -31,7 +31,7 @@ Change bindings in `scripts/input/control_map.gd` (keyboard + gamepad hooks).
 
 ## Add a character
 
-1. Copy `data/characters/kael_voss.json` to a new file, e.g. `data/characters/my_fighter.json`.
+1. Copy `data/characters/chris_xrisakis.json` to a new file, e.g. `data/characters/my_fighter.json`.
 2. Change `id`, `name`, stats, colors, `special_id` (`bolt`, `wave`, `dash`, `slam`, `blast`).
 3. Optional: drop a PNG at `data/characters/refs/my_fighter.png` and set `reference_image`.
 4. Restart the game. The roster loads every JSON in that folder.

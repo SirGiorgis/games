@@ -154,8 +154,8 @@ static func _name_from_text(text: String, d: CharacterDef) -> String:
 		if text.find("shadow") != -1:
 			return "Nyx Hollow"
 		return "Asha Wren"
-	if text.find("lightning") != -1 or text.find("thunder") != -1:
-		return "Kael Voss"
+	if text.find("lightning") != -1 or text.find("thunder") != -1 or text.find("racing") != -1:
+		return "Chris Xrisakis"
 	if text.find("earth") != -1 or text.find("armor") != -1:
 		return "Rook Ironveil"
 	return "Vesper Quill"

@@ -5,62 +5,33 @@ signal chosen(id: String)
 
 var _index := 0
 const ITEMS := ["PLAY", "CHARACTER SELECT", "OPTIONS", "CONTROLS", "QUIT"]
-var _labels: Array[Label] = []
+var _labels: Array[PixelLabel] = []
+var _preview: Sprite2D
 
 
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
-	var bg := ColorRect.new()
-	bg.color = Color(0.04, 0.02, 0.06)
-	bg.set_anchors_preset(PRESET_FULL_RECT)
-	add_child(bg)
-	_atmosphere()
-	var title := Label.new()
-	title.text = "ASHEN RITE"
-	title.position = Vector2(0, 90)
-	title.size = Vector2(1280, 90)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(title, 72, Color(0.92, 0.2, 0.28))
-	add_child(title)
-	var sub := Label.new()
-	sub.text = "A RITE WRITTEN IN SPARKS"
-	sub.position = Vector2(0, 170)
-	sub.size = Vector2(1280, 30)
-	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(sub, 18, Color(0.85, 0.72, 0.4))
-	add_child(sub)
+	PixelUI.full_bg(self)
+	var title := PixelUI.label_at(self, "ASHEN RITE", Vector2(0, 70), 8, Color(0.92, 0.18, 0.28), 0, 1280)
+	title.set_centered(1280)
+	PixelUI.label_at(self, "PIXEL RITE  BEST OF 3", Vector2(0, 150), 2, Color(0.85, 0.72, 0.4), 0, 1280).set_centered(1280)
 	for i in ITEMS.size():
-		var l := Label.new()
-		l.position = Vector2(0, 280 + i * 52)
-		l.size = Vector2(1280, 44)
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		UIKit.style_label(l, 32)
+		var l := PixelLabel.new()
+		l.position = Vector2(0, 250 + i * 48)
 		add_child(l)
 		_labels.append(l)
-	var foot := Label.new()
-	foot.text = "Enter / J confirm   W/S move   Esc quit"
-	foot.position = Vector2(0, 660)
-	foot.size = Vector2(1280, 30)
-	foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(foot, 16, Color(0.6, 0.58, 0.56))
-	add_child(foot)
+	PixelUI.label_at(self, "ENTER / J CONFIRM   W/S MOVE   ESC QUIT", Vector2(0, 660), 2, Color(0.55, 0.52, 0.5), 0, 1280).set_centered(1280)
+	_preview = Sprite2D.new()
+	var def := CharacterCatalog.get_def(GameState.p1_character_id)
+	var frames: Dictionary = PixelFighterBake.bake(def)
+	_preview.texture = frames["idle"][0]
+	_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_preview.centered = false
+	_preview.scale = Vector2(5, 5)
+	_preview.position = Vector2(80, 280)
+	add_child(_preview)
 	_refresh()
 	AudioDirector.play_music("menu")
-
-
-func _atmosphere() -> void:
-	var p := CPUParticles2D.new()
-	p.position = Vector2(640, 720)
-	p.emitting = true
-	p.amount = 50
-	p.lifetime = 5
-	p.direction = Vector2(0, -1)
-	p.spread = 30
-	p.gravity = Vector2(0, -20)
-	p.initial_velocity_min = 20
-	p.initial_velocity_max = 80
-	p.color = Color(0.8, 0.2, 0.25, 0.4)
-	add_child(p)
 
 
 func _process(_d: float) -> void:
@@ -81,5 +52,7 @@ func _process(_d: float) -> void:
 
 func _refresh() -> void:
 	for i in _labels.size():
-		_labels[i].text = UIKit.make_button_label(ITEMS[i], i == _index)
-		_labels[i].add_theme_color_override("font_color", Color(1, 0.85, 0.4) if i == _index else Color(0.8, 0.78, 0.76))
+		var sel := i == _index
+		var txt: String = ("> " + ITEMS[i] + " <") if sel else ITEMS[i]
+		_labels[i].set_pix(txt, 3, Color(1, 0.85, 0.35) if sel else Color(0.78, 0.76, 0.74))
+		_labels[i].set_centered(1280)

@@ -6,36 +6,22 @@ signal character_select
 signal main_menu
 
 var _index := 0
-var _labels: Array[Label] = []
+var _labels: Array[PixelLabel] = []
 const ITEMS := ["REMATCH", "CHARACTER SELECT", "MAIN MENU"]
-var _title: Label
-var _sub: Label
+var _title: PixelLabel
+var _sub: PixelLabel
 
 
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
-	var bg := ColorRect.new()
-	bg.color = Color(0.03, 0.01, 0.04, 0.94)
-	bg.set_anchors_preset(PRESET_FULL_RECT)
-	add_child(bg)
-	_title = Label.new()
-	_title.position = Vector2(0, 120)
-	_title.size = Vector2(1280, 90)
-	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(_title, 64, Color(0.95, 0.8, 0.3))
-	add_child(_title)
-	_sub = Label.new()
-	_sub.position = Vector2(0, 210)
-	_sub.size = Vector2(1280, 50)
-	_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(_sub, 22, Color(0.85, 0.8, 0.75))
-	add_child(_sub)
+	PixelUI.full_bg(self)
+	_title = PixelUI.label_at(self, "VICTORY", Vector2(0, 110), 8, Color(0.95, 0.8, 0.3), 0, 1280)
+	_title.set_centered(1280)
+	_sub = PixelUI.label_at(self, "", Vector2(0, 200), 2, Color(0.85, 0.8, 0.75), 0, 1280)
+	_sub.set_centered(1280)
 	for i in ITEMS.size():
-		var l := Label.new()
+		var l := PixelLabel.new()
 		l.position = Vector2(0, 320 + i * 52)
-		l.size = Vector2(1280, 44)
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		UIKit.style_label(l, 30)
 		add_child(l)
 		_labels.append(l)
 	_refresh()
@@ -45,16 +31,16 @@ func present() -> void:
 	_index = 0
 	var p1_win := GameState.p1_rounds >= GameState.rounds_to_win
 	if p1_win:
-		_title.text = "VICTORY"
-		_title.add_theme_color_override("font_color", Color(0.95, 0.82, 0.32))
+		_title.set_pix("VICTORY", 8, Color(0.95, 0.82, 0.32))
 		AudioDirector.play("victory")
 	else:
-		_title.text = "DEFEAT"
-		_title.add_theme_color_override("font_color", Color(0.85, 0.2, 0.25))
+		_title.set_pix("DEFEAT", 8, Color(0.85, 0.2, 0.25))
 		AudioDirector.play("defeat")
+	_title.set_centered(1280)
 	var a := CharacterCatalog.get_def(GameState.p1_character_id).name
 	var b := CharacterCatalog.get_def(GameState.p2_character_id).name
-	_sub.text = "%s  %d  —  %d  %s    [%s]" % [a, GameState.p1_rounds, GameState.p2_rounds, b, ArenaWorld.display_name(GameState.arena_id)]
+	_sub.set_pix("%s  %d - %d  %s" % [a, GameState.p1_rounds, GameState.p2_rounds, b], 2, Color(0.85, 0.8, 0.75))
+	_sub.set_centered(1280)
 	AudioDirector.play_music("menu")
 	_refresh()
 
@@ -83,5 +69,6 @@ func _process(_d: float) -> void:
 
 func _refresh() -> void:
 	for i in _labels.size():
-		_labels[i].text = UIKit.make_button_label(ITEMS[i], i == _index)
-		_labels[i].add_theme_color_override("font_color", Color(1, 0.85, 0.4) if i == _index else Color(0.8, 0.78, 0.76))
+		var sel := i == _index
+		_labels[i].set_pix(("> " + ITEMS[i] + " <") if sel else ITEMS[i], 3, Color(1, 0.85, 0.4) if sel else Color(0.8, 0.78, 0.76))
+		_labels[i].set_centered(1280)

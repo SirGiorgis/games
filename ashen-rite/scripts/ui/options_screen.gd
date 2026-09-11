@@ -4,29 +4,17 @@ extends Control
 signal closed
 
 var _index := 0
-var _lines: Array[Label] = []
+var _lines: Array[PixelLabel] = []
 const KEYS := ["difficulty", "cpu", "arena", "music", "sfx", "shake", "back"]
 
 
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
-	var bg := ColorRect.new()
-	bg.color = Color(0.04, 0.02, 0.06)
-	bg.set_anchors_preset(PRESET_FULL_RECT)
-	add_child(bg)
-	var title := Label.new()
-	title.text = "OPTIONS"
-	title.position = Vector2(0, 80)
-	title.size = Vector2(1280, 60)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(title, 48, Color(0.92, 0.22, 0.28))
-	add_child(title)
+	PixelUI.full_bg(self)
+	PixelUI.label_at(self, "OPTIONS", Vector2(0, 70), 6, Color(0.92, 0.22, 0.28), 0, 1280).set_centered(1280)
 	for i in KEYS.size():
-		var l := Label.new()
-		l.position = Vector2(0, 200 + i * 50)
-		l.size = Vector2(1280, 40)
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		UIKit.style_label(l, 26)
+		var l := PixelLabel.new()
+		l.position = Vector2(0, 180 + i * 46)
 		add_child(l)
 		_lines.append(l)
 	_refresh()
@@ -50,12 +38,6 @@ func _process(_d: float) -> void:
 	elif Input.is_action_just_pressed(ControlMap.MENU.confirm):
 		if KEYS[_index] == "back":
 			closed.emit()
-		elif KEYS[_index] == "cpu":
-			GameState.p2_is_cpu = not GameState.p2_is_cpu
-			_refresh()
-		elif KEYS[_index] == "arena":
-			GameState.random_arena = not GameState.random_arena
-			_refresh()
 		else:
 			_nudge(1)
 	elif Input.is_action_just_pressed(ControlMap.MENU.back):
@@ -99,14 +81,15 @@ func _nudge(dir: int) -> void:
 func _refresh() -> void:
 	var arena := "RANDOM" if GameState.random_arena else ArenaWorld.display_name(GameState.arena_id)
 	var vals := [
-		"AI DIFFICULTY   < %s >" % GameState.difficulty_name(),
-		"PLAYER 2        < %s >" % ("CPU" if GameState.p2_is_cpu else "HUMAN"),
-		"ARENA           < %s >" % arena,
-		"MUSIC           < %d%% >" % int(GameState.music_volume * 100),
-		"SFX             < %d%% >" % int(GameState.sfx_volume * 100),
-		"SCREEN SHAKE    < %.1f >" % GameState.shake_strength,
+		"AI  < %s >" % GameState.difficulty_name(),
+		"P2  < %s >" % ("CPU" if GameState.p2_is_cpu else "HUMAN"),
+		"ARENA  < %s >" % arena,
+		"MUSIC  < %d >" % int(GameState.music_volume * 100),
+		"SFX  < %d >" % int(GameState.sfx_volume * 100),
+		"SHAKE  < %.1f >" % GameState.shake_strength,
 		"BACK",
 	]
 	for i in _lines.size():
-		_lines[i].text = UIKit.make_button_label(vals[i], i == _index)
-		_lines[i].add_theme_color_override("font_color", Color(1, 0.85, 0.4) if i == _index else Color(0.8, 0.78, 0.76))
+		var sel := i == _index
+		_lines[i].set_pix(("> " + vals[i] + " <") if sel else vals[i], 2, Color(1, 0.85, 0.4) if sel else Color(0.8, 0.78, 0.76))
+		_lines[i].set_centered(1280)

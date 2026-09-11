@@ -6,7 +6,7 @@ enum Difficulty { EASY, NORMAL, HARD, EXPERT }
 enum ScreenId { BOOT, MENU, SELECT, OPTIONS, CONTROLS, MATCH, RESULT }
 
 var difficulty: Difficulty = Difficulty.NORMAL
-var p1_character_id: String = "kael_voss"
+var p1_character_id: String = "chris_xrisakis"
 var p2_character_id: String = "nyx_hollow"
 var p2_is_cpu: bool = true
 var arena_id: String = "moonlit_temple"

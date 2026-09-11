@@ -16,7 +16,7 @@ var round_index: int = 1
 var time_left: float = 99.0
 var phase: String = "intro"
 var phase_t: float = 0.0
-var _banner: Label
+var _banner: PixelLabel
 var _paused: bool = false
 
 
@@ -65,14 +65,7 @@ func _ready() -> void:
 	pause_layer.restarted.connect(_restart_match)
 	pause_layer.quit_to_menu.connect(func(): match_over.emit(-2))
 
-	_banner = Label.new()
-	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_banner.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_banner.add_theme_font_size_override("font_size", 72)
-	_banner.add_theme_color_override("font_color", Color(1, 0.92, 0.75))
-	_banner.add_theme_constant_override("outline_size", 8)
-	_banner.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	_banner = PixelLabel.new()
 	var layer := CanvasLayer.new()
 	layer.layer = 20
 	add_child(layer)
@@ -81,6 +74,7 @@ func _ready() -> void:
 	host.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(host)
 	host.add_child(_banner)
+	_set_banner("")
 
 	AudioDirector.play_music("fight")
 	_begin_round()
@@ -94,7 +88,7 @@ func _begin_round() -> void:
 	p2.reset_round(Vector2(920, 500))
 	p1.can_act = false
 	p2.can_act = false
-	_banner.text = "ROUND %d" % round_index
+	_set_banner("ROUND %d" % round_index)
 	AudioDirector.play("round")
 	hud.set_timer(99)
 	hud.set_rounds(GameState.p1_rounds, GameState.p2_rounds)
@@ -110,14 +104,14 @@ func _process(delta: float) -> void:
 		"intro":
 			phase_t += delta
 			if phase_t > 1.1:
-				_banner.text = "FIGHT"
+				_set_banner("FIGHT")
 				AudioDirector.play("fight")
 				phase = "fight_call"
 				phase_t = 0.0
 		"fight_call":
 			phase_t += delta
 			if phase_t > 0.55:
-				_banner.text = ""
+				_set_banner("")
 				p1.can_act = true
 				p2.can_act = true
 				phase = "fight"
@@ -154,7 +148,7 @@ func _on_ko(f: Fighter) -> void:
 		GameState.p2_rounds += 1
 		p2.celebrate(true)
 		p1.celebrate(false)
-	_banner.text = "RITE COMPLETE"
+	_set_banner("RITE COMPLETE")
 	AudioDirector.play("ko")
 	cam.shake(1.4)
 	hud.set_rounds(GameState.p1_rounds, GameState.p2_rounds)
@@ -178,7 +172,7 @@ func _timeout() -> void:
 		GameState.p2_rounds += 1
 		p2.celebrate(true)
 		p1.celebrate(false)
-	_banner.text = "TIME"
+	_set_banner("TIME")
 	hud.set_rounds(GameState.p1_rounds, GameState.p2_rounds)
 
 
@@ -186,7 +180,7 @@ func _finish_round() -> void:
 	if GameState.p1_rounds >= GameState.rounds_to_win or GameState.p2_rounds >= GameState.rounds_to_win:
 		phase = "endwait"
 		phase_t = 0.0
-		_banner.text = "MATCH"
+		_set_banner("MATCH")
 		return
 	round_index += 1
 	_begin_round()
@@ -197,8 +191,8 @@ func _on_hit(f: Fighter, attack: Dictionary, crit: bool) -> void:
 	fx.spark(f.global_position + Vector2(0, -70), p1.def.accent if f == p2 else p2.def.accent, strong)
 	cam.shake(0.35 if strong else 0.12)
 	if crit:
-		_banner.text = "CRITICAL"
-		get_tree().create_timer(0.35).timeout.connect(func(): if phase == "fight": _banner.text = "")
+		_set_banner("CRITICAL")
+		get_tree().create_timer(0.35).timeout.connect(func(): if phase == "fight": _set_banner(""))
 
 
 func _pause() -> void:
@@ -221,3 +215,15 @@ func _restart_match() -> void:
 	_paused = false
 	pause_layer.hide()
 	_begin_round()
+
+
+func _set_banner(text: String) -> void:
+	if _banner == null:
+		return
+	if text.is_empty():
+		_banner.visible = false
+		return
+	_banner.visible = true
+	_banner.set_pix(text, 6, Color(1, 0.9, 0.4))
+	_banner.set_centered(1280)
+	_banner.position = Vector2(0, 280)

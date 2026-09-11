@@ -6,9 +6,9 @@ signal restarted
 signal quit_to_menu
 
 var _index := 0
-const ITEMS := ["RESUME", "RESTART MATCH", "CONTROLS REMINDER", "QUIT TO MENU"]
-var _labels: Array[Label] = []
-var _hint: Label
+const ITEMS := ["RESUME", "RESTART MATCH", "CONTROLS", "QUIT TO MENU"]
+var _labels: Array[PixelLabel] = []
+var _hint: PixelLabel
 var _active := false
 
 
@@ -19,28 +19,14 @@ func _ready() -> void:
 	dim.color = Color(0.02, 0.01, 0.04, 0.72)
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(dim)
-	var title := Label.new()
-	title.text = "PAUSED"
-	title.position = Vector2(0, 160)
-	title.size = Vector2(1280, 70)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(title, 56, Color(0.95, 0.8, 0.35))
-	add_child(title)
+	PixelUI.label_at(self, "PAUSED", Vector2(0, 140), 6, Color(0.95, 0.8, 0.35), 0, 1280).set_centered(1280)
 	for i in ITEMS.size():
-		var l := Label.new()
+		var l := PixelLabel.new()
 		l.position = Vector2(0, 280 + i * 48)
-		l.size = Vector2(1280, 40)
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		UIKit.style_label(l, 28)
 		add_child(l)
 		_labels.append(l)
-	_hint = Label.new()
-	_hint.position = Vector2(80, 540)
-	_hint.size = Vector2(1120, 120)
-	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hint.text = ""
-	UIKit.style_label(_hint, 16, Color(0.75, 0.72, 0.7))
-	add_child(_hint)
+	_hint = PixelUI.label_at(self, "", Vector2(0, 540), 2, Color(0.75, 0.72, 0.7), 40, 1280)
+	_hint.set_centered(1280)
 	_refresh()
 	hide()
 
@@ -48,7 +34,7 @@ func _ready() -> void:
 func show_menu() -> void:
 	_active = true
 	_index = 0
-	_hint.text = ""
+	_hint.set_pix("", 2, Color(0.75, 0.72, 0.7))
 	show()
 	_refresh()
 
@@ -81,7 +67,8 @@ func _pick() -> void:
 			_active = false
 			restarted.emit()
 		2:
-			_hint.text = "A/D move  W jump  S crouch  J/K/L attacks  U block  I grab  O ultimate"
+			_hint.set_pix("A/D MOVE  W JUMP  S CROUCH  J/K/L ATTACKS  U BLOCK  I GRAB  O ULT", 2, Color(0.8, 0.78, 0.7), 40)
+			_hint.set_centered(1280)
 		3:
 			_active = false
 			quit_to_menu.emit()
@@ -89,5 +76,6 @@ func _pick() -> void:
 
 func _refresh() -> void:
 	for i in _labels.size():
-		_labels[i].text = UIKit.make_button_label(ITEMS[i], i == _index)
-		_labels[i].add_theme_color_override("font_color", Color(1, 0.85, 0.4) if i == _index else Color(0.82, 0.8, 0.78))
+		var sel := i == _index
+		_labels[i].set_pix(("> " + ITEMS[i] + " <") if sel else ITEMS[i], 3, Color(1, 0.85, 0.4) if sel else Color(0.8, 0.78, 0.76))
+		_labels[i].set_centered(1280)
