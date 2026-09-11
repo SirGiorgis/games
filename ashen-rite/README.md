@@ -1,12 +1,12 @@
 # Giorgis Fighting
 
-Original arcade 2D fighting game for **Godot 4.4**.
+Original arcade 2D fighting game for **Godot 4.7**.
 
-Open the `ashen-rite` folder in Godot 4.4.x and press **Play**. Nothing else to configure.
+Open the `ashen-rite` folder in Godot 4.7 and press **Play**. Nothing else to configure.
 
 ## Play
 
-1. Install [Godot 4.4](https://godotengine.org/download).
+1. Install [Godot 4.7](https://godotengine.org/download).
 2. Import `ashen-rite/project.godot`.
 3. Press Play. Main scene is already set.
 

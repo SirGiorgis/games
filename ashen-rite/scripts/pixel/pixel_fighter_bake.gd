@@ -6,9 +6,12 @@ extends RefCounted
 const W := 72
 const H := 96
 const SCALE := 4
-const MODEL_W := 128
-const MODEL_H := 128
+const MODEL_W := 160
+const MODEL_H := 160
 const MODEL_SCALE := 3
+const _UPPER := Rect2i(18, 2, 96, 70)
+const _LEG_L := Rect2i(24, 68, 36, 54)
+const _LEG_R := Rect2i(56, 68, 42, 54)
 
 static var _face_cache: Dictionary = {}
 static var _model_cache: Dictionary = {}
@@ -71,56 +74,76 @@ static func _paint_model(img: Image, def: CharacterDef, pose: String, f: int, n:
 		Pix.outline(img, Color(0.07, 0.05, 0.06, 1))
 		return
 	var u: float = float(f) / float(maxi(n - 1, 1))
-	var src: Image = sheet
-	var xoff: int = 0
-	var yoff: int = 0
+	var ph: float = TAU * float(f) / float(n)
+	var pad_x: int = (img.get_width() - 128) / 2
+	var pad_y: int = img.get_height() - 128 - 2
 	match pose:
 		"idle":
-			yoff = int(round(sin(TAU * float(f) / float(n)) * 1.0))
-		"walk":
-			yoff = int(round(abs(sin(TAU * float(f) / float(n))) * 2.0))
-			xoff = int(round(sin(TAU * float(f) / float(n)) * 2.0))
-		"run":
-			yoff = int(round(abs(sin(TAU * float(f) / float(n))) * 3.0))
-			xoff = 4 + int(round(sin(TAU * float(f) / float(n)) * 3.0))
+			_blit_sheet(img, sheet, 0, int(round(sin(ph) * 2.0)))
+		"walk", "run":
+			var amp: float = 22.0 if pose == "run" else 14.0
+			var bob2: int = int(round(abs(sin(ph)) * (4.0 if pose == "run" else 2.0)))
+			var lean: float = 8.0 if pose == "run" else 3.0
+			var ux: int = pad_x + 18 + (6 if pose == "run" else 0)
+			var uy: int = pad_y + 2 + bob2
+			_blit_rot_part(img, sheet, _LEG_L, pad_x + 24, pad_y + 68 + bob2, sin(ph) * amp, 18, 6)
+			_blit_rot_part(img, sheet, _LEG_R, pad_x + 56, pad_y + 68 + bob2, sin(ph + PI) * amp, 20, 6)
+			_blit_rot_part(img, sheet, _UPPER, ux, uy, -lean + sin(ph) * 2.0, 48, 66)
 		"jump":
-			yoff = -10 if u < 0.55 else -4
-			xoff = 2
+			var tuck: float = lerpf(8.0, 36.0, 1.0 - absf(u - 0.45) * 2.0)
+			_blit_rot_part(img, sheet, _LEG_L, pad_x + 22, pad_y + 62, -tuck, 18, 6)
+			_blit_rot_part(img, sheet, _LEG_R, pad_x + 58, pad_y + 62, tuck, 20, 6)
+			_blit_rot_part(img, sheet, _UPPER, pad_x + 16, pad_y - 6, -6.0, 48, 66)
 		"crouch":
-			src = _scale_img(sheet, 1.0, 0.78)
-			yoff = 2
+			_blit_rot_part(img, sheet, _LEG_L, pad_x + 20, pad_y + 78, 28.0, 18, 6)
+			_blit_rot_part(img, sheet, _LEG_R, pad_x + 58, pad_y + 78, -18.0, 20, 6)
+			_blit_part(img, sheet, _UPPER, pad_x + 18, pad_y + 18)
 		"block":
-			xoff = -6
-			yoff = 1
+			_blit_rot_part(img, sheet, _LEG_L, pad_x + 22, pad_y + 70, 8.0, 18, 6)
+			_blit_rot_part(img, sheet, _LEG_R, pad_x + 56, pad_y + 70, -4.0, 20, 6)
+			_blit_rot_part(img, sheet, _UPPER, pad_x + 12, pad_y + 4, 6.0, 48, 66)
 		"light", "clight":
-			xoff = int(round(smoothstep(0.0, 0.55, u) * 8.0))
+			var swing: float = lerpf(-8.0, 18.0, smoothstep(0.0, 0.6, u))
+			_blit_rot_part(img, sheet, _LEG_L, pad_x + 24, pad_y + 68, 6.0, 18, 6)
+			_blit_rot_part(img, sheet, _LEG_R, pad_x + 56, pad_y + 68, -4.0, 20, 6)
+			_blit_rot_part(img, sheet, _UPPER, pad_x + 18 + int(round(swing * 0.35)), pad_y + 2, -swing * 0.25, 48, 66)
 		"jlight":
-			xoff = int(round(u * 6.0))
-			yoff = -8
+			_blit_rot_part(img, sheet, _LEG_L, pad_x + 22, pad_y + 60, -18.0, 18, 6)
+			_blit_rot_part(img, sheet, _LEG_R, pad_x + 58, pad_y + 60, 16.0, 20, 6)
+			_blit_rot_part(img, sheet, _UPPER, pad_x + 16 + int(round(u * 6.0)), pad_y - 4, -8.0, 48, 66)
 		"heavy", "cheavy":
-			xoff = int(round(smoothstep(0.1, 0.65, u) * 12.0))
+			var hs: float = lerpf(-10.0, 22.0, smoothstep(0.1, 0.65, u))
+			_blit_rot_part(img, sheet, _LEG_L, pad_x + 18, pad_y + 68, 12.0, 18, 6)
+			_blit_rot_part(img, sheet, _LEG_R, pad_x + 60, pad_y + 68, -10.0, 20, 6)
+			_blit_rot_part(img, sheet, _UPPER, pad_x + 20 + int(round(hs * 0.4)), pad_y + 4, -hs * 0.3, 48, 66)
 		"jheavy":
-			xoff = int(round(u * 10.0))
-			yoff = -6
+			_blit_rot_part(img, sheet, _LEG_L, pad_x + 20, pad_y + 58, -24.0, 18, 6)
+			_blit_rot_part(img, sheet, _LEG_R, pad_x + 60, pad_y + 58, 22.0, 20, 6)
+			_blit_rot_part(img, sheet, _UPPER, pad_x + 14 + int(round(u * 8.0)), pad_y - 2, -12.0, 48, 66)
 		"special", "ultimate":
-			xoff = 8 + int(round(u * 10.0))
-			yoff = int(round(sin(u * PI) * -4.0))
+			var sp: float = u * 18.0
+			_blit_rot_part(img, sheet, _LEG_L, pad_x + 16, pad_y + 66, 10.0, 18, 6)
+			_blit_rot_part(img, sheet, _LEG_R, pad_x + 62, pad_y + 66, -8.0, 20, 6)
+			_blit_rot_part(img, sheet, _UPPER, pad_x + 24 + int(round(sp)), pad_y + int(round(sin(u * PI) * -6.0)), -10.0, 48, 66)
+			_smear(img, img.get_width() / 2, img.get_height() - 48, def.accent, f)
 		"grab":
-			xoff = int(round(u * 7.0))
+			_blit_rot_part(img, sheet, _LEG_L, pad_x + 26, pad_y + 68, 4.0, 18, 6)
+			_blit_rot_part(img, sheet, _LEG_R, pad_x + 54, pad_y + 68, -2.0, 20, 6)
+			_blit_rot_part(img, sheet, _UPPER, pad_x + 22, pad_y + 4, -6.0, 48, 66)
 		"hit":
-			xoff = 6 + f
-			yoff = 1
+			_blit_rot_part(img, sheet, _LEG_L, pad_x + 28, pad_y + 68, -10.0, 18, 6)
+			_blit_rot_part(img, sheet, _LEG_R, pad_x + 58, pad_y + 68, 8.0, 20, 6)
+			_blit_rot_part(img, sheet, _UPPER, pad_x + 26 + f, pad_y + 4, 10.0, 48, 66)
 		"knockdown", "defeat":
-			src = sheet.duplicate()
-			src.rotate_90(ClockDirection.CLOCKWISE)
-			yoff = 8 + mini(f, 2)
-			xoff = -10
+			var laid := sheet.duplicate()
+			laid.rotate_90(ClockDirection.CLOCKWISE)
+			_blit_sheet(img, laid, -8, 10 + mini(f, 2))
 		"victory":
-			yoff = int(f % 2) * -2
-			xoff = 2
-	_blit_sheet(img, src, xoff, yoff)
-	if pose in ["special", "ultimate"]:
-		_smear(img, MODEL_W / 2 + xoff, MODEL_H - 40, def.accent, f)
+			_blit_rot_part(img, sheet, _LEG_L, pad_x + 26, pad_y + 68, 6.0, 18, 6)
+			_blit_rot_part(img, sheet, _LEG_R, pad_x + 54, pad_y + 68, -4.0, 20, 6)
+			_blit_rot_part(img, sheet, _UPPER, pad_x + 18, pad_y + int(f % 2) * -3, -8.0, 48, 66)
+		_:
+			_blit_sheet(img, sheet, 0, 0)
 
 
 static func _scale_img(src: Image, sx: float, sy: float) -> Image:
@@ -129,6 +152,32 @@ static func _scale_img(src: Image, sx: float, sy: float) -> Image:
 	var out := src.duplicate()
 	out.resize(nw, nh, Image.INTERPOLATE_NEAREST)
 	return out
+
+
+static func _blit_part(dst: Image, sheet: Image, r: Rect2i, dx: int, dy: int) -> void:
+	_blit_rot_part(dst, sheet, r, dx, dy, 0.0, r.size.x / 2, 2)
+
+
+static func _blit_rot_part(dst: Image, sheet: Image, r: Rect2i, dx: int, dy: int, deg: float, px: int, py: int) -> void:
+	var rad: float = deg_to_rad(deg)
+	var cs: float = cos(rad)
+	var sn: float = sin(rad)
+	var rw: int = r.size.x
+	var rh: int = r.size.y
+	# inverse-map a padded dest box so rotated pixels land
+	var pad: int = 8
+	for oy in range(-pad, rh + pad):
+		for ox in range(-pad, rw + pad):
+			var lx: float = float(ox - px)
+			var ly: float = float(oy - py)
+			var sx: int = int(round(float(px) + lx * cs + ly * sn))
+			var sy: int = int(round(float(py) - lx * sn + ly * cs))
+			if sx < 0 or sy < 0 or sx >= rw or sy >= rh:
+				continue
+			var c: Color = sheet.get_pixel(r.position.x + sx, r.position.y + sy)
+			if c.a < 0.4:
+				continue
+			Pix.put(dst, dx + ox, dy + oy, c)
 
 
 static func _blit_sheet(dst: Image, src: Image, xoff: int, yoff: int) -> void:
@@ -162,13 +211,14 @@ static func _model_sheet(def: CharacterDef) -> Image:
 			var c: Color = src.get_pixel(x, y)
 			if _is_model_bg(c):
 				src.set_pixel(x, y, Color(0, 0, 0, 0))
-	var used: Rect2i = src.get_used_rect()
-	if used.size.x < 4 or used.size.y < 4:
-		_model_cache[def.id] = src
-		return src
-	var trimmed: Image = src.get_region(used)
-	_model_cache[def.id] = trimmed
-	return trimmed
+	# Keep 128x128 so part rects stay aligned to the uploaded sprite.
+	if src.get_width() != 128 or src.get_height() != 128:
+		var canvas := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+		canvas.fill(Color(0, 0, 0, 0))
+		canvas.blit_rect(src, Rect2i(0, 0, mini(128, src.get_width()), mini(128, src.get_height())), Vector2i.ZERO)
+		src = canvas
+	_model_cache[def.id] = src
+	return src
 
 
 static func _is_model_bg(c: Color) -> bool:

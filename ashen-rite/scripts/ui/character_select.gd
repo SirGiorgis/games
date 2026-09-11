@@ -12,6 +12,8 @@ var _info: PixelLabel
 var _stats: PixelLabel
 var _cpu_label: PixelLabel
 var _preview: Sprite2D
+var _walk_frames: Array = []
+var _walk_t := 0.0
 var _ids: PackedStringArray = PackedStringArray()
 var _held: Dictionary = {}
 
@@ -55,9 +57,12 @@ func _apply_indices_from_state() -> void:
 			_p2_index = i
 
 
-func _process(_d: float) -> void:
+func _process(delta: float) -> void:
 	if not visible:
 		return
+	_walk_t += delta
+	if _preview and not _walk_frames.is_empty():
+		_preview.texture = _walk_frames[int(_walk_t * 10.0) % _walk_frames.size()]
 	if Input.is_action_just_pressed(ControlMap.MENU.right):
 		_move(1)
 	elif Input.is_action_just_pressed(ControlMap.MENU.left):
@@ -135,6 +140,7 @@ func _refresh() -> void:
 		"CPU " + GameState.difficulty_name() if GameState.p2_is_cpu else "HUMAN"
 	], 2, Color(0.7, 0.85, 0.9), 50)
 	var frames: Dictionary = PixelFighterBake.bake(def)
-	_preview.texture = frames["idle"][0]
-	var sc: float = 3.0 if _preview.texture.get_width() >= 120 else 4.0
+	_walk_frames = frames.get("walk", frames["idle"])
+	_preview.texture = _walk_frames[0]
+	var sc: float = 2.5 if _preview.texture.get_width() >= 120 else 4.0
 	_preview.scale = Vector2(sc, sc)

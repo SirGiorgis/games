@@ -7,7 +7,7 @@ config/name="Giorgis Fighting"
 config/description="Giorgis Fighting — original arcade 2D fighter. Open the project and press Play."
 config/version="1.0.0"
 run/main_scene="res://scenes/bootstrap.tscn"
-config/features=PackedStringArray("4.4", "Forward Plus")
+config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]

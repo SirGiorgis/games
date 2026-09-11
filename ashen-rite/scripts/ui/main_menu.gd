@@ -7,6 +7,8 @@ var _index := 0
 const ITEMS := ["PLAY", "CHARACTER SELECT", "OPTIONS", "CONTROLS", "QUIT"]
 var _labels: Array[PixelLabel] = []
 var _preview: Sprite2D
+var _preview_frames: Array = []
+var _preview_t := 0.0
 
 
 func _ready() -> void:
@@ -27,17 +29,22 @@ func _ready() -> void:
 	_preview.texture = frames["idle"][0]
 	_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_preview.centered = false
-	var sc: float = 3.0 if _preview.texture.get_width() >= 120 else 4.0
+	var sc: float = 2.5 if _preview.texture.get_width() >= 120 else 4.0
 	_preview.scale = Vector2(sc, sc)
-	_preview.position = Vector2(48, 220)
+	_preview.position = Vector2(40, 240)
+	_preview_frames = frames["walk"]
 	add_child(_preview)
 	_refresh()
 	AudioDirector.play_music("menu")
 
 
-func _process(_d: float) -> void:
+func _process(delta: float) -> void:
 	if not visible:
 		return
+	_preview_t += delta
+	if _preview and not _preview_frames.is_empty():
+		var idx: int = int(_preview_t * 10.0) % _preview_frames.size()
+		_preview.texture = _preview_frames[idx]
 	if Input.is_action_just_pressed(ControlMap.MENU.down):
 		_index = (_index + 1) % ITEMS.size()
 		AudioDirector.play("ui")
