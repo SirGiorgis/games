@@ -4,19 +4,18 @@ extends Control
 signal closed
 
 var _index := 0
-var _lines: Array[PixelLabel] = []
+var _entries: Array[Dictionary] = []
 const KEYS := ["difficulty", "cpu", "arena", "music", "sfx", "shake", "back"]
 
 
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 	PixelUI.full_bg(self)
-	PixelUI.label_at(self, "OPTIONS", Vector2(0, 70), 6, Color(0.92, 0.22, 0.28), 0, 1280).set_centered(1280)
+	PixelUI.add_panel(self, Vector2(280, 56), Vector2(720, 580), PixelUI.GOLD)
+	PixelUI.add_title(self, "OPTIONS", 88, Color(0.95, 0.22, 0.28))
 	for i in KEYS.size():
-		var l := PixelLabel.new()
-		l.position = Vector2(0, 180 + i * 46)
-		add_child(l)
-		_lines.append(l)
+		_entries.append(PixelUI.add_menu_row(self, 168.0 + i * 48.0, 560))
+	PixelUI.add_footer(self, "A/D ADJUST  ENTER CONFIRM  ESC BACK")
 	_refresh()
 
 
@@ -89,7 +88,5 @@ func _refresh() -> void:
 		"SHAKE  < %.1f >" % GameState.shake_strength,
 		"BACK",
 	]
-	for i in _lines.size():
-		var sel := i == _index
-		_lines[i].set_pix(("> " + vals[i] + " <") if sel else vals[i], 2, Color(1, 0.85, 0.4) if sel else Color(0.8, 0.78, 0.76))
-		_lines[i].set_centered(1280)
+	for i in _entries.size():
+		PixelUI.set_menu_row(_entries[i], vals[i], i == _index, 2)

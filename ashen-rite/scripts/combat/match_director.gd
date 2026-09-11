@@ -17,6 +17,7 @@ var time_left: float = 99.0
 var phase: String = "intro"
 var phase_t: float = 0.0
 var _banner: PixelLabel
+var _banner_bg: TextureRect
 var _paused: bool = false
 
 
@@ -73,6 +74,12 @@ func _ready() -> void:
 	host.set_anchors_preset(Control.PRESET_FULL_RECT)
 	host.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(host)
+	_banner_bg = TextureRect.new()
+	_banner_bg.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_banner_bg.stretch_mode = TextureRect.STRETCH_SCALE
+	_banner_bg.visible = false
+	_banner_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	host.add_child(_banner_bg)
 	host.add_child(_banner)
 	_set_banner("")
 
@@ -222,8 +229,25 @@ func _set_banner(text: String) -> void:
 		return
 	if text.is_empty():
 		_banner.visible = false
+		if _banner_bg:
+			_banner_bg.visible = false
 		return
 	_banner.visible = true
-	_banner.set_pix(text, 6, Color(1, 0.9, 0.4))
+	var col := Color(1, 0.92, 0.42)
+	if text == "FIGHT":
+		col = Color(1, 0.35, 0.28)
+	elif text == "KO" or text == "RITE COMPLETE":
+		col = Color(0.95, 0.78, 0.28)
+	elif text == "TIME":
+		col = Color(0.75, 0.82, 1.0)
+	elif text == "CRITICAL":
+		col = Color(1, 0.55, 0.2)
+	_banner.set_pix(text, 6, col)
 	_banner.set_centered(1280)
-	_banner.position = Vector2(0, 280)
+	_banner.position = Vector2(0, 292)
+	if _banner_bg:
+		var bw: int = clampi(text.length() * 14 + 40, 100, 180)
+		_banner_bg.texture = PixelUI.round_banner(bw)
+		_banner_bg.size = Vector2(bw * 4, 112)
+		_banner_bg.position = Vector2(640.0 - _banner_bg.size.x * 0.5, 268)
+		_banner_bg.visible = true

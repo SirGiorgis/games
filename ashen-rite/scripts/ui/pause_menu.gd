@@ -7,7 +7,7 @@ signal quit_to_menu
 
 var _index := 0
 const ITEMS := ["RESUME", "RESTART MATCH", "CONTROLS", "QUIT TO MENU"]
-var _labels: Array[PixelLabel] = []
+var _entries: Array[Dictionary] = []
 var _hint: PixelLabel
 var _active := false
 
@@ -16,16 +16,21 @@ func _ready() -> void:
 	layer = 60
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var dim := ColorRect.new()
-	dim.color = Color(0.02, 0.01, 0.04, 0.72)
+	dim.color = PixelUI.modal_dim()
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(dim)
-	PixelUI.label_at(self, "PAUSED", Vector2(0, 140), 6, Color(0.95, 0.8, 0.35), 0, 1280).set_centered(1280)
+
+	var host := Control.new()
+	host.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(host)
+
+	PixelUI.add_panel(host, Vector2(340, 100), Vector2(600, 520), PixelUI.GOLD)
+	PixelUI.add_title(host, "PAUSED", 148, Color(0.95, 0.82, 0.35))
+
 	for i in ITEMS.size():
-		var l := PixelLabel.new()
-		l.position = Vector2(0, 280 + i * 48)
-		add_child(l)
-		_labels.append(l)
-	_hint = PixelUI.label_at(self, "", Vector2(0, 540), 2, Color(0.75, 0.72, 0.7), 40, 1280)
+		_entries.append(PixelUI.add_menu_row(host, 220.0 + i * 52.0, 440))
+
+	_hint = PixelUI.label_at(host, "", Vector2(0, 520), 2, Color(0.72, 0.68, 0.64), 36, 1280)
 	_hint.set_centered(1280)
 	_refresh()
 	hide()
@@ -34,7 +39,7 @@ func _ready() -> void:
 func show_menu() -> void:
 	_active = true
 	_index = 0
-	_hint.set_pix("", 2, Color(0.75, 0.72, 0.7))
+	_hint.set_pix("", 2, Color(0.72, 0.68, 0.64))
 	show()
 	_refresh()
 
@@ -67,7 +72,7 @@ func _pick() -> void:
 			_active = false
 			restarted.emit()
 		2:
-			_hint.set_pix("A/D MOVE  W JUMP  S CROUCH  J/K/L ATTACKS  U BLOCK  I GRAB  O ULT", 2, Color(0.8, 0.78, 0.7), 40)
+			_hint.set_pix("A/D MOVE  W JUMP  S CROUCH  J/K/L ATTACKS  U BLOCK  I GRAB  O ULT", 2, Color(0.82, 0.78, 0.72), 36)
 			_hint.set_centered(1280)
 		3:
 			_active = false
@@ -75,7 +80,5 @@ func _pick() -> void:
 
 
 func _refresh() -> void:
-	for i in _labels.size():
-		var sel := i == _index
-		_labels[i].set_pix(("> " + ITEMS[i] + " <") if sel else ITEMS[i], 3, Color(1, 0.85, 0.4) if sel else Color(0.8, 0.78, 0.76))
-		_labels[i].set_centered(1280)
+	for i in _entries.size():
+		PixelUI.set_menu_row(_entries[i], ITEMS[i], i == _index, 3)

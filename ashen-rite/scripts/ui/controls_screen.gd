@@ -7,9 +7,10 @@ signal closed
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 	PixelUI.full_bg(self)
-	PixelUI.label_at(self, "CONTROLS", Vector2(0, 40), 6, Color(0.92, 0.22, 0.28), 0, 1280).set_centered(1280)
-	PixelUI.label_at(self, ControlMap.help_text(), Vector2(80, 120), 2, Color(0.88, 0.86, 0.82), 48)
-	PixelUI.label_at(self, "BINDINGS IN SCRIPTS/INPUT/CONTROL_MAP.GD   ESC BACK", Vector2(0, 660), 2, Color(0.6, 0.58, 0.55), 0, 1280).set_centered(1280)
+	PixelUI.add_panel(self, Vector2(120, 48), Vector2(1040, 620), PixelUI.GOLD)
+	PixelUI.add_title(self, "CONTROLS", 88, Color(0.95, 0.22, 0.28))
+	PixelUI.label_at(self, ControlMap.help_text(), Vector2(160, 160), 2, Color(0.9, 0.88, 0.84), 44)
+	PixelUI.add_footer(self, "BINDINGS IN SCRIPTS/INPUT/CONTROL_MAP.GD   ESC BACK")
 
 
 func _process(_d: float) -> void:

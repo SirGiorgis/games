@@ -8,45 +8,91 @@ var _p1_index := 0
 var _p2_index := 1
 var _focus := 0
 var _cards: Array[TextureRect] = []
+var _thumbs: Array[TextureRect] = []
+var _names: Array[PixelLabel] = []
 var _info: PixelLabel
 var _stats: PixelLabel
 var _cpu_label: PixelLabel
-var _preview: Sprite2D
-var _walk_frames: Array = []
+var _p1_preview: Sprite2D
+var _p2_preview: Sprite2D
+var _p1_walk: Array = []
+var _p2_walk: Array = []
 var _walk_t := 0.0
 var _ids: PackedStringArray = PackedStringArray()
 var _held: Dictionary = {}
+
+const CARD_W := 48
+const CARD_H := 36
+const CARD_SCALE := 3
+const SLOT_W := 168
+const ROSTER_Y := 72
 
 
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 	PixelUI.full_bg(self)
-	PixelUI.label_at(self, "CHOOSE YOUR RITE", Vector2(0, 16), 4, Color(0.92, 0.22, 0.28), 0, 1280).set_centered(1280)
+	PixelUI.add_title(self, "CHOOSE YOUR RITE", 40, Color(0.95, 0.22, 0.3))
+
 	_ids = CharacterCatalog.ids()
+	var start_x: float = (1280.0 - float(_ids.size()) * SLOT_W) * 0.5 + 12.0
 	for i in _ids.size():
 		var def := CharacterCatalog.get_def(_ids[i])
 		var card := TextureRect.new()
-		card.position = Vector2(30 + i * 210, 70)
+		card.position = Vector2(start_x + i * SLOT_W, ROSTER_Y)
+		card.size = Vector2(CARD_W * CARD_SCALE, CARD_H * CARD_SCALE)
 		card.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		card.scale = Vector2(4, 4)
+		card.stretch_mode = TextureRect.STRETCH_SCALE
 		add_child(card)
 		_cards.append(card)
+
+		var thumb := TextureRect.new()
+		thumb.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		thumb.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+		thumb.position = Vector2(4, 2)
+		thumb.size = Vector2(CARD_W * CARD_SCALE - 8, CARD_H * CARD_SCALE - 10)
+		card.add_child(thumb)
+		_thumbs.append(thumb)
+
 		var nm := PixelLabel.new()
-		nm.position = Vector2(30 + i * 210, 210)
-		nm.set_pix(def.name.to_upper(), 1, def.accent, 14)
+		nm.position = Vector2(start_x + i * SLOT_W, ROSTER_Y + CARD_H * CARD_SCALE + 4)
+		nm.set_pix(def.name.to_upper(), 1, def.accent, 12)
 		add_child(nm)
-	_preview = Sprite2D.new()
-	_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	_preview.centered = false
-	_preview.scale = Vector2(3, 3)
-	_preview.position = Vector2(48, 300)
-	add_child(_preview)
-	_info = PixelUI.label_at(self, "", Vector2(360, 280), 2, Color(0.92, 0.9, 0.86), 42)
-	_stats = PixelUI.label_at(self, "", Vector2(360, 400), 2, Color(0.8, 0.76, 0.68), 42)
-	_cpu_label = PixelUI.label_at(self, "", Vector2(40, 600), 2, Color(0.7, 0.85, 0.9), 50)
-	PixelUI.label_at(self, "A/D SELECT  W/S P1 OR CPU  J CONFIRM  R RANDOM CPU  F FORGE  C TOGGLE CPU  ESC BACK", Vector2(20, 660), 1, Color(0.6, 0.58, 0.55), 70)
+		_names.append(nm)
+
+	var vs := TextureRect.new()
+	vs.texture = PixelUI.vs_emblem()
+	vs.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	vs.position = Vector2(616, 300)
+	vs.scale = Vector2(4, 4)
+	add_child(vs)
+
+	PixelUI.add_panel(self, Vector2(40, 220), Vector2(360, 340), PixelUI.GOLD)
+	PixelUI.label_at(self, "PLAYER 1", Vector2(40, 228), 2, Color(0.95, 0.78, 0.35), 0, 360).set_centered(360)
+	_p1_preview = _make_preview(Vector2(220, 390))
+
+	PixelUI.add_panel(self, Vector2(880, 220), Vector2(360, 340), Color(0.35, 0.75, 1.0))
+	var p2_hdr := PixelUI.label_at(self, "OPPONENT", Vector2(880, 228), 2, Color(0.55, 0.85, 1.0), 0, 360)
+	p2_hdr.set_centered(360)
+	p2_hdr.position.x = 880
+	_p2_preview = _make_preview(Vector2(1060, 390))
+
+	PixelUI.add_panel(self, Vector2(420, 580), Vector2(440, 96), Color(0.45, 0.35, 0.55))
+	_info = PixelUI.label_at(self, "", Vector2(432, 592), 2, Color(0.92, 0.9, 0.86), 38)
+	_stats = PixelUI.label_at(self, "", Vector2(432, 636), 1, Color(0.78, 0.74, 0.68), 38)
+	_cpu_label = PixelUI.label_at(self, "", Vector2(880, 572), 2, Color(0.65, 0.82, 0.95), 36)
+
+	PixelUI.add_footer(self, "A/D SELECT  W/S P1 OR CPU  J CONFIRM  R RANDOM  F FORGE  C CPU  ESC BACK")
 	_apply_indices_from_state()
 	_refresh()
+
+
+func _make_preview(pos: Vector2) -> Sprite2D:
+	var spr := Sprite2D.new()
+	spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	spr.centered = true
+	spr.position = pos
+	add_child(spr)
+	return spr
 
 
 func _apply_indices_from_state() -> void:
@@ -61,8 +107,10 @@ func _process(delta: float) -> void:
 	if not visible:
 		return
 	_walk_t += delta
-	if _preview and not _walk_frames.is_empty():
-		_preview.texture = _walk_frames[int(_walk_t * 10.0) % _walk_frames.size()]
+	if _p1_preview and not _p1_walk.is_empty():
+		_p1_preview.texture = _p1_walk[int(_walk_t * 10.0) % _p1_walk.size()]
+	if _p2_preview and not _p2_walk.is_empty():
+		_p2_preview.texture = _p2_walk[int(_walk_t * 10.0) % _p2_walk.size()]
 	if Input.is_action_just_pressed(ControlMap.MENU.right):
 		_move(1)
 	elif Input.is_action_just_pressed(ControlMap.MENU.left):
@@ -120,27 +168,43 @@ func _commit() -> void:
 
 func _refresh() -> void:
 	for i in _cards.size():
-		var border := Color(0.35, 0.3, 0.25)
-		var fill := Color(0.1, 0.07, 0.12)
-		if i == _p1_index:
-			border = Color(0.95, 0.75, 0.3)
-			fill = Color(0.18, 0.12, 0.08)
-		elif i == _p2_index:
-			border = Color(0.3, 0.75, 1.0)
-			fill = Color(0.08, 0.12, 0.18)
-		_cards[i].texture = PixelUI.panel(48, 32, fill, border)
-	var def := CharacterCatalog.get_def(_ids[_p1_index if _focus == 0 else _p2_index])
+		var def := CharacterCatalog.get_def(_ids[i])
+		var p1 := i == _p1_index
+		var p2 := i == _p2_index
+		_cards[i].texture = PixelUI.char_card(CARD_W, CARD_H, def.accent, p1, p2)
+		var frames: Dictionary = PixelFighterBake.bake(def)
+		var idle: Array = frames.get("idle", [])
+		if not idle.is_empty():
+			_thumbs[i].texture = idle[0]
+		var nm_col: Color = def.accent
+		if p1:
+			nm_col = Color(1, 0.88, 0.4)
+		elif p2:
+			nm_col = Color(0.55, 0.88, 1.0)
+		_names[i].set_pix(def.name.to_upper(), 1, nm_col, 12)
+
+	var p1_def := CharacterCatalog.get_def(_ids[_p1_index])
+	var p2_def := CharacterCatalog.get_def(_ids[_p2_index])
+	var focus_def := p1_def if _focus == 0 else p2_def
 	var who := "PLAYER 1" if _focus == 0 else "CPU / P2"
-	_info.set_pix("%s - %s  %s  %s" % [who, def.name, def.title, def.description], 2, Color(0.92, 0.9, 0.86), 42)
-	_stats.set_pix("HP %d  SPD %d  JMP %d  ATK %.2f  DEF %.2f  SPEC %s  ULT %s" % [
-		int(def.health), int(def.speed), int(def.jump), def.attack, def.defense, def.special_name, def.ultimate_name
-	], 2, Color(0.8, 0.76, 0.68), 42)
-	_cpu_label.set_pix("OPPONENT %s  %s" % [
-		CharacterCatalog.get_def(_ids[_p2_index]).name,
-		"CPU " + GameState.difficulty_name() if GameState.p2_is_cpu else "HUMAN"
-	], 2, Color(0.7, 0.85, 0.9), 50)
-	var frames: Dictionary = PixelFighterBake.bake(def)
-	_walk_frames = frames.get("walk", frames["idle"])
-	_preview.texture = _walk_frames[0]
-	var sc: float = 2.5 if _preview.texture.get_width() >= 120 else 4.0
-	_preview.scale = Vector2(sc, sc)
+	_info.set_pix("%s — %s  %s" % [who, focus_def.name, focus_def.title], 2, Color(0.92, 0.9, 0.86), 38)
+	_stats.set_pix("HP %d  SPD %d  JMP %d  ATK %.2f  DEF %.2f" % [
+		int(focus_def.health), int(focus_def.speed), int(focus_def.jump), focus_def.attack, focus_def.defense
+	], 1, Color(0.78, 0.74, 0.68), 38)
+	_cpu_label.set_pix("%s  ·  %s  ·  %s / %s" % [
+		p2_def.name,
+		"CPU " + GameState.difficulty_name() if GameState.p2_is_cpu else "HUMAN",
+		focus_def.special_name,
+		focus_def.ultimate_name
+	], 2, Color(0.65, 0.82, 0.95), 36)
+
+	var p1_frames: Dictionary = PixelFighterBake.bake(p1_def)
+	var p2_frames: Dictionary = PixelFighterBake.bake(p2_def)
+	_p1_walk = p1_frames.get("walk", p1_frames["idle"])
+	_p2_walk = p2_frames.get("walk", p2_frames["idle"])
+	_p1_preview.texture = _p1_walk[0]
+	_p2_preview.texture = _p2_walk[0]
+	var sc1: float = 2.6 if _p1_preview.texture.get_width() >= 120 else 3.5
+	var sc2: float = 2.6 if _p2_preview.texture.get_width() >= 120 else 3.5
+	_p1_preview.scale = Vector2(sc1, sc1)
+	_p2_preview.scale = Vector2(-sc2, sc2)

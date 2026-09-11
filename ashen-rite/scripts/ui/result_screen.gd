@@ -6,7 +6,7 @@ signal character_select
 signal main_menu
 
 var _index := 0
-var _labels: Array[PixelLabel] = []
+var _entries: Array[Dictionary] = []
 const ITEMS := ["REMATCH", "CHARACTER SELECT", "MAIN MENU"]
 var _title: PixelLabel
 var _sub: PixelLabel
@@ -15,15 +15,13 @@ var _sub: PixelLabel
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 	PixelUI.full_bg(self)
-	_title = PixelUI.label_at(self, "VICTORY", Vector2(0, 110), 8, Color(0.95, 0.8, 0.3), 0, 1280)
-	_title.set_centered(1280)
+	PixelUI.add_panel(self, Vector2(220, 72), Vector2(840, 560), PixelUI.GOLD)
+	_title = PixelUI.add_title(self, "VICTORY", 120, Color(0.95, 0.82, 0.32))
 	_sub = PixelUI.label_at(self, "", Vector2(0, 200), 2, Color(0.85, 0.8, 0.75), 0, 1280)
 	_sub.set_centered(1280)
 	for i in ITEMS.size():
-		var l := PixelLabel.new()
-		l.position = Vector2(0, 320 + i * 52)
-		add_child(l)
-		_labels.append(l)
+		_entries.append(PixelUI.add_menu_row(self, 300.0 + i * 52.0, 480))
+	PixelUI.add_footer(self, "W/S MOVE  ENTER CONFIRM")
 	_refresh()
 
 
@@ -31,15 +29,15 @@ func present() -> void:
 	_index = 0
 	var p1_win := GameState.p1_rounds >= GameState.rounds_to_win
 	if p1_win:
-		_title.set_pix("VICTORY", 8, Color(0.95, 0.82, 0.32))
+		_title.set_pix("VICTORY", 6, Color(0.95, 0.82, 0.32))
 		AudioDirector.play("victory")
 	else:
-		_title.set_pix("DEFEAT", 8, Color(0.85, 0.2, 0.25))
+		_title.set_pix("DEFEAT", 6, Color(0.88, 0.22, 0.28))
 		AudioDirector.play("defeat")
 	_title.set_centered(1280)
 	var a := CharacterCatalog.get_def(GameState.p1_character_id).name
 	var b := CharacterCatalog.get_def(GameState.p2_character_id).name
-	_sub.set_pix("%s  %d - %d  %s" % [a, GameState.p1_rounds, GameState.p2_rounds, b], 2, Color(0.85, 0.8, 0.75))
+	_sub.set_pix("%s   %d  —  %d   %s" % [a, GameState.p1_rounds, GameState.p2_rounds, b], 2, Color(0.85, 0.8, 0.75))
 	_sub.set_centered(1280)
 	AudioDirector.play_music("menu")
 	_refresh()
@@ -68,7 +66,5 @@ func _process(_d: float) -> void:
 
 
 func _refresh() -> void:
-	for i in _labels.size():
-		var sel := i == _index
-		_labels[i].set_pix(("> " + ITEMS[i] + " <") if sel else ITEMS[i], 3, Color(1, 0.85, 0.4) if sel else Color(0.8, 0.78, 0.76))
-		_labels[i].set_centered(1280)
+	for i in _entries.size():
+		PixelUI.set_menu_row(_entries[i], ITEMS[i], i == _index, 3)
