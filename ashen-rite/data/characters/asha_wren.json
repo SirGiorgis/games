@@ -2,6 +2,7 @@
   "id": "asha_wren",
   "name": "Asha Wren",
   "title": "Glacier Vow",
+  "roster_order": 5,
   "description": "A composed ice duelist. She waits, then ends rounds with frozen counter-fire.",
   "source_description": "Female fighter, compact, ivory hair, teal robes, patient personality, ice-based powers.",
   "personality": "stoic",

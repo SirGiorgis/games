@@ -2,6 +2,7 @@
   "id": "rook_ironveil",
   "name": "Rook Ironveil",
   "title": "Iron Vow",
+  "roster_order": 3,
   "description": "A living fortification. Slow steps, brutal armor, and a ground slam that cracks the rite circle.",
   "source_description": "Male fighter, tall, heavy muscular build, brown hair, gold-trim armor, stoic personality, earth-based powers.",
   "personality": "stoic",

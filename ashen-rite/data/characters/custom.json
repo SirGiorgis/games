@@ -2,6 +2,7 @@
   "id": "custom",
   "name": "Custom Rite",
   "title": "Player-Forged",
+  "roster_order": 90,
   "description": "Generated from your written description and optional reference photo.",
   "source_description": "Male fighter, tall, athletic build, black hair, black jacket, aggressive personality, lightning-based powers.",
   "personality": "aggressive",

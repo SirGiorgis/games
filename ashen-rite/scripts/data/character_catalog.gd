@@ -20,7 +20,7 @@ func reload() -> void:
 				_load_json("res://data/characters/%s" % fname)
 			fname = dir.get_next()
 		dir.list_dir_end()
-	roster.sort_custom(func(a, b): return a.name < b.name)
+	roster.sort_custom(func(a, b): return a.roster_order < b.roster_order or (a.roster_order == b.roster_order and a.name < b.name))
 	if roster.is_empty():
 		_fallback_roster()
 	_ensure_custom_slot()
@@ -57,8 +57,15 @@ func _load_json(path: String) -> void:
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return
 	var def := CharacterDef.new().from_dict(parsed)
+	var outfit := def.outfit
+	var trim := def.trim
+	var accent := def.accent
 	if not def.reference_image.is_empty():
 		CharacterForge.apply_photo(def, def.reference_image)
+	if def.keep_outfit:
+		def.outfit = outfit
+		def.trim = trim
+		def.accent = accent
 	if def.source_description.is_empty() == false and def.id == "custom":
 		def = CharacterForge.forge(def.source_description, def.reference_image, def.id)
 	_register(def)
@@ -83,7 +90,7 @@ func _ensure_custom_slot() -> void:
 
 func _fallback_roster() -> void:
 	var specs := [
-		["kael_voss", "Male fighter, tall, athletic build, black hair, black jacket, aggressive personality, lightning-based powers."],
+		["kael_voss", "Male fighter, skinny lean build, curly brown hair, black teal racing jacket, aggressive personality, formula racing speed powers."],
 		["mira_solen", "Female fighter, athletic, crimson hair, red dancer wraps, fierce personality, fire-based powers."],
 		["rook_ironveil", "Male fighter, tall, heavy muscular build, brown hair, gold-trim armor, stoic personality, earth-based powers."],
 		["nyx_hollow", "Female fighter, lean, black hair, violet cloak, cunning personality, shadow-based powers."],

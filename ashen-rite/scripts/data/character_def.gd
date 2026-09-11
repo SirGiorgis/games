@@ -30,6 +30,9 @@ var ultimate_name: String = "Rite Unbound"
 var ultimate_desc: String = "A screen-shaking finishing assault."
 var reference_image: String = ""
 var source_description: String = ""
+var style: String = ""
+var keep_outfit: bool = false
+var roster_order: int = 50
 
 
 func from_dict(d: Dictionary) -> CharacterDef:
@@ -62,6 +65,9 @@ func from_dict(d: Dictionary) -> CharacterDef:
 	ultimate_desc = str(d.get("ultimate_desc", ultimate_desc))
 	reference_image = str(d.get("reference_image", reference_image))
 	source_description = str(d.get("source_description", source_description))
+	style = str(d.get("style", style))
+	keep_outfit = bool(d.get("keep_outfit", keep_outfit))
+	roster_order = int(d.get("roster_order", roster_order))
 	return self
 
 
@@ -102,6 +108,9 @@ func to_dict() -> Dictionary:
 		"ultimate_desc": ultimate_desc,
 		"reference_image": reference_image,
 		"source_description": source_description,
+		"style": style,
+		"keep_outfit": keep_outfit,
+		"roster_order": roster_order,
 	}
 
 
