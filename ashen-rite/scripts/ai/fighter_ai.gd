@@ -75,8 +75,14 @@ func _process(delta: float) -> void:
 	var dist := me.distance_to_opponent()
 	var opp := me.opponent
 	var opp_attacking := opp.state in [Fighter.State.LIGHT, Fighter.State.HEAVY, Fighter.State.SPECIAL, Fighter.State.ULTIMATE, Fighter.State.GRAB]
-	if opp_attacking and dist < 140.0 and _rng.randf() < _block_bias:
+	if opp_attacking and dist < 150.0 and _rng.randf() < _block_bias:
+		_retreat()
 		_intent.block = true
+		if _rng.randf() < 0.45:
+			_intent.down = true
+		return
+	if opp.state == Fighter.State.JUMP and dist < 130.0 and me.on_ground:
+		_intent.heavy = true
 		return
 	if opp.state == Fighter.State.BLOCK and dist < 70.0 and _rng.randf() < 0.55:
 		_intent.grab = true
@@ -91,6 +97,8 @@ func _process(delta: float) -> void:
 	var prefer_close := _aggro > 0.6
 	if dist > 170.0:
 		_advance()
+		if dist > 240.0:
+			_intent.run = true
 		if dist > 280.0 and me.on_ground and _rng.randf() < 0.12:
 			_intent.up = true
 		return
@@ -100,6 +108,9 @@ func _process(delta: float) -> void:
 	if dist < 90.0:
 		if opp.state == Fighter.State.HIT and me.combo_hits > 0:
 			_combo()
+		elif _rng.randf() < 0.22:
+			_intent.down = true
+			_intent.heavy = true
 		elif _rng.randf() < 0.55:
 			_intent.light = true
 		elif _rng.randf() < 0.5:
@@ -149,5 +160,6 @@ func _clear() -> void:
 	_intent = {
 		"left": false, "right": false, "up": false, "down": false,
 		"light": false, "heavy": false, "special": false, "block": false,
-		"grab": false, "ultimate": false,
+		"grab": false, "ultimate": false, "run": false, "qcf": false, "qcf2": false,
+		"fwd": false, "back": false, "backdash": false,
 	}

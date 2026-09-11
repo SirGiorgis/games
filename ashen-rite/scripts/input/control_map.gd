@@ -145,26 +145,33 @@ func _has_event(action: String, ev: InputEvent) -> bool:
 
 
 func help_text() -> String:
-	return """PLAYER 1
-  A / D     Move
-  W         Jump
-  S         Crouch
-  J         Light attack
-  K         Heavy attack
-  L         Special (needs meter)
-  U         Block
-  I         Grab (beats block)
-  O         Ultimate (full meter)
+	return """PLAYER 1  (MUGEN STYLE)
+  A / D     Walk  (hold back = guard, you can still walk back)
+  DD        Run
+  AA        Backdash (invuln)
+  W         Jump  (WA back / WD forward)
+  S         Crouch  (S+J crouch light, S+K sweep)
+  J         Light  (air J = jump-in overhead)
+  K         Heavy
+  S,S+D+J   Special  (quarter circle + button, costs meter)
+  L         Special
+  U         Stand guard
+  I         Throw  (beats guard)
+  O         Super  (or 236236 + button)
   Esc / P   Pause
 
-PLAYER 2 (optional local versus)
+  Guard: standing blocks mid/high, crouch blocks mid/low.
+  Sweeps must be crouch-blocked. Jump attacks must be stand-blocked.
+  Lights cancel into heavies into specials. Jump-cancel on hit.
+
+PLAYER 2
   Arrows    Move / jump / crouch
   Numpad 1 / Z   Light
   Numpad 2 / X   Heavy
   Numpad 3 / C   Special
   Numpad 4 / V   Block
   Numpad 5 / B   Grab
-  Numpad 6 / N   Ultimate
+  Numpad 6 / N   Super
 
 MENUS
   W/S or Arrows   Navigate

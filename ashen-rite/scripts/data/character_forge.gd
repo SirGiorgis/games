@@ -137,6 +137,14 @@ static func forge(description: String, photo_path: String = "", id_override: Str
 
 	if not photo_path.is_empty():
 		apply_photo(d, photo_path)
+
+	if _has_any(text, ["striped", "kit", "football", "jersey", "collar"]):
+		d.style = "kit"
+		d.outfit = Color(0.77, 0.12, 0.23)
+		d.trim = Color(0.96, 0.96, 0.97)
+		d.accent = Color(0.11, 0.31, 0.64)
+	elif _has_any(text, ["racing", "jacket", "paddock"]):
+		d.style = "racing"
 	return d
 
 

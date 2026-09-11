@@ -5,78 +5,86 @@ extends RefCounted
 static func make_attack(kind: String, def: CharacterDef) -> Dictionary:
 	match kind:
 		"light":
-			return {
-				"kind": "light", "damage": 42.0 * def.attack, "knockback": 140.0,
-				"launch": -80.0, "hitstun": 0.22, "hitstop": 0.04, "meter": 8.0,
-				"startup": 0.08, "active": 0.07, "duration": 0.28,
-				"size": Vector2(46, 28), "reach": 44.0, "y": -72.0,
-				"knockdown": false, "projectile": "",
-			}
+			return _atk("light", 42.0, 110.0, -30.0, 0.30, 0.045, 0.05, 0.06, 0.28, Vector2(42, 24), 48.0, -78.0, false, def, "mid", 55.0)
+		"clight":
+			return _atk("clight", 38.0, 90.0, -16.0, 0.28, 0.04, 0.05, 0.07, 0.30, Vector2(44, 20), 50.0, -36.0, false, def, "mid", 40.0)
+		"jlight":
+			return _atk("jlight", 40.0, 80.0, 50.0, 0.26, 0.04, 0.04, 0.10, 0.32, Vector2(40, 28), 42.0, -70.0, false, def, "high", 0.0)
 		"heavy":
-			return {
-				"kind": "heavy", "damage": 92.0 * def.attack, "knockback": 340.0,
-				"launch": -220.0, "hitstun": 0.42, "hitstop": 0.09, "meter": 14.0,
-				"startup": 0.16, "active": 0.1, "duration": 0.48,
-				"size": Vector2(58, 36), "reach": 52.0, "y": -70.0,
-				"knockdown": false, "projectile": "",
-			}
+			return _atk("heavy", 92.0, 240.0, -180.0, 0.42, 0.09, 0.10, 0.10, 0.48, Vector2(54, 32), 56.0, -76.0, false, def, "mid", 90.0)
+		"cheavy":
+			return _atk("cheavy", 84.0, 200.0, -20.0, 0.46, 0.08, 0.09, 0.12, 0.54, Vector2(60, 22), 58.0, -28.0, true, def, "low", 70.0)
+		"jheavy":
+			return _atk("jheavy", 88.0, 200.0, 90.0, 0.36, 0.08, 0.07, 0.12, 0.42, Vector2(50, 34), 50.0, -64.0, false, def, "high", 0.0)
 		"special":
 			return _special(def)
 		"ultimate":
 			return _ultimate(def)
 		"grab":
-			return {
-				"kind": "grab", "damage": 80.0 * def.attack, "knockback": 260.0,
-				"launch": -160.0, "hitstun": 0.5, "hitstop": 0.08, "meter": 10.0,
-				"startup": 0.1, "active": 0.08, "duration": 0.4,
-				"size": Vector2(40, 40), "reach": 32.0, "y": -60.0,
-				"knockdown": true, "projectile": "",
-			}
+			return _atk("grab", 90.0, 240.0, -140.0, 0.55, 0.07, 0.08, 0.08, 0.42, Vector2(36, 36), 30.0, -58.0, true, def, "throw", 0.0)
 	return make_attack("light", def)
 
 
-static func _special(def: CharacterDef) -> Dictionary:
-	var base := {
-		"kind": "special", "damage": 110.0 * def.attack, "knockback": 280.0,
-		"launch": -280.0, "hitstun": 0.46, "hitstop": 0.1, "meter": 6.0,
-		"startup": 0.18, "active": 0.12, "duration": 0.52,
-		"size": Vector2(70, 40), "reach": 70.0, "y": -74.0,
-		"knockdown": false, "projectile": "", "proj_speed": 560.0,
+static func _atk(kind: String, dmg: float, kb: float, launch: float, stun: float, stop: float, start: float, active: float, dur: float, size: Vector2, reach: float, y: float, kd: bool, def: CharacterDef, guard: String = "mid", step: float = 0.0) -> Dictionary:
+	return {
+		"kind": kind,
+		"damage": dmg * def.attack,
+		"knockback": kb,
+		"launch": launch,
+		"hitstun": stun,
+		"blockstun": stun * 0.62,
+		"hitstop": stop,
+		"meter": 7.0 if kind.begins_with("l") or kind.begins_with("c") or kind.begins_with("j") else 12.0,
+		"startup": start,
+		"active": active,
+		"duration": dur,
+		"size": size,
+		"reach": reach,
+		"y": y,
+		"knockdown": kd,
+		"projectile": "",
+		"juggle": launch < -80.0 or kind.begins_with("j"),
+		"guard": guard,
+		"step": step,
 	}
+
+
+static func _special(def: CharacterDef) -> Dictionary:
+	var base := _atk("special", 105.0, 240.0, -240.0, 0.44, 0.09, 0.11, 0.12, 0.50, Vector2(70, 36), 72.0, -74.0, false, def)
+	base.meter = 4.0
 	match def.special_id:
 		"bolt":
 			base.projectile = "bolt"
-			base.damage = 96.0 * def.attack
+			base.damage = 90.0 * def.attack
 		"wave":
 			base.projectile = "wave"
-			base.damage = 70.0 * def.attack
-			base.active = 0.18
+			base.damage = 72.0 * def.attack
+			base.active = 0.16
 		"dash":
-			base.reach = 110.0
-			base.knockback = 200.0
-			base.startup = 0.1
+			base.reach = 120.0
+			base.startup = 0.08
+			base.knockback = 180.0
+			base.juggle = true
 		"slam":
-			base.y = -30.0
-			base.size = Vector2(120, 40)
-			base.reach = 20.0
+			base.y = -28.0
+			base.size = Vector2(120, 36)
+			base.reach = 24.0
 			base.knockdown = true
-			base.launch = -80.0
+			base.launch = -60.0
 		"blast":
 			base.projectile = "blast"
-			base.hitstun = 0.58
+			base.hitstun = 0.55
 	return base
 
 
 static func _ultimate(def: CharacterDef) -> Dictionary:
-	return {
-		"kind": "ultimate", "damage": 210.0 * def.attack, "knockback": 480.0,
-		"launch": -420.0, "hitstun": 0.8, "hitstop": 0.16, "meter": 0.0,
-		"startup": 0.22, "active": 0.2, "duration": 0.7,
-		"size": Vector2(160, 90), "reach": 80.0, "y": -70.0,
-		"knockdown": true, "projectile": "ult", "proj_speed": 420.0,
-		"element": def.ultimate_id,
-	}
+	var u := _atk("ultimate", 220.0, 420.0, -380.0, 0.75, 0.14, 0.18, 0.18, 0.72, Vector2(150, 88), 84.0, -70.0, true, def)
+	u.meter = 0.0
+	u.projectile = "ult"
+	u.proj_speed = 400.0
+	u.element = def.ultimate_id
+	return u
 
 
 static func combo_scale(hits: int) -> float:
-	return clampf(1.0 - hits * 0.12, 0.35, 1.0)
+	return clampf(1.0 - hits * 0.10, 0.32, 1.0)

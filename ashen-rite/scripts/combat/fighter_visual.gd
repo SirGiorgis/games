@@ -2,9 +2,9 @@ class_name FighterVisual
 extends Node2D
 ## Pixel-art fighter. Same API as the old puppet visual.
 
-const SCALE := 4
-const FW := 64
-const FH := 80
+const SCALE := PixelFighterBake.SCALE
+const FW := PixelFighterBake.W
+const FH := PixelFighterBake.H
 
 var def: CharacterDef
 var facing: int = 1
@@ -56,7 +56,7 @@ func _process(delta: float) -> void:
 	_sprite.texture = _current_tex()
 	_sprite.flip_h = facing < 0
 	_sprite.modulate = Color.WHITE.lerp(Color(1.6, 1.6, 1.6), flash)
-	if pose in ["walk", "special", "ultimate"] and trail_timer <= 0.0:
+	if pose in ["walk", "run", "special", "ultimate"] and trail_timer <= 0.0:
 		trail_timer = 0.07
 		_ghost()
 	trail_timer = max(0.0, trail_timer - delta)
@@ -67,10 +67,10 @@ func _current_tex() -> Texture2D:
 	if not _frames.has(key):
 		key = "idle"
 	var arr: Array = _frames[key]
-	if pose in ["light", "heavy", "special", "ultimate", "grab", "jump"]:
+	if pose in ["light", "clight", "jlight", "heavy", "cheavy", "jheavy", "special", "ultimate", "grab", "jump"]:
 		var idx := clampi(int(attack_u * arr.size()), 0, arr.size() - 1)
 		return arr[idx]
-	var spd: float = 10.0 if pose == "walk" else (7.0 if pose == "victory" else 5.5)
+	var spd: float = 14.0 if pose == "run" else (10.0 if pose == "walk" else (7.0 if pose == "victory" else 5.5))
 	var idx2: int = int(_time * spd) % arr.size()
 	return arr[idx2]
 
