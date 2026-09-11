@@ -27,8 +27,9 @@ func _ready() -> void:
 	_preview.texture = frames["idle"][0]
 	_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_preview.centered = false
-	_preview.scale = Vector2(4, 4)
-	_preview.position = Vector2(70, 260)
+	var sc: float = 3.0 if _preview.texture.get_width() >= 120 else 4.0
+	_preview.scale = Vector2(sc, sc)
+	_preview.position = Vector2(48, 220)
 	add_child(_preview)
 	_refresh()
 	AudioDirector.play_music("menu")

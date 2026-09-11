@@ -36,7 +36,7 @@ func _ready() -> void:
 	_preview = Sprite2D.new()
 	_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_preview.centered = false
-	_preview.scale = Vector2(4, 4)
+	_preview.scale = Vector2(3, 3)
 	_preview.position = Vector2(48, 300)
 	add_child(_preview)
 	_info = PixelUI.label_at(self, "", Vector2(360, 280), 2, Color(0.92, 0.9, 0.86), 42)
@@ -136,3 +136,5 @@ func _refresh() -> void:
 	], 2, Color(0.7, 0.85, 0.9), 50)
 	var frames: Dictionary = PixelFighterBake.bake(def)
 	_preview.texture = frames["idle"][0]
+	var sc: float = 3.0 if _preview.texture.get_width() >= 120 else 4.0
+	_preview.scale = Vector2(sc, sc)

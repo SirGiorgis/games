@@ -6,8 +6,12 @@ extends RefCounted
 const W := 72
 const H := 96
 const SCALE := 4
+const MODEL_W := 128
+const MODEL_H := 128
+const MODEL_SCALE := 3
 
 static var _face_cache: Dictionary = {}
+static var _model_cache: Dictionary = {}
 
 
 static func bake(def: CharacterDef) -> Dictionary:
@@ -42,6 +46,10 @@ static func _seq(def: CharacterDef, pose: String, n: int) -> Array:
 
 
 static func _frame(def: CharacterDef, pose: String, f: int, n: int) -> ImageTexture:
+	if _is_model(def):
+		var canvas := Pix.image(MODEL_W, MODEL_H)
+		_paint_model(canvas, def, pose, f, n)
+		return Pix.tex(canvas)
 	var img := Pix.image(W, H)
 	_paint(img, def, pose, f, n)
 	Pix.outline(img, Color(0.07, 0.05, 0.06, 1))
@@ -49,7 +57,128 @@ static func _frame(def: CharacterDef, pose: String, f: int, n: int) -> ImageText
 
 
 static func _is_kit(def: CharacterDef) -> bool:
-	return def.style == "kit" or def.id == "chris_xrisakis"
+	return def.style == "kit"
+
+
+static func _is_model(def: CharacterDef) -> bool:
+	return def.style == "model" or def.id == "chris_xrisakis"
+
+
+static func _paint_model(img: Image, def: CharacterDef, pose: String, f: int, n: int) -> void:
+	var sheet: Image = _model_sheet(def)
+	if sheet == null:
+		_paint(img, def, pose, f, n)
+		Pix.outline(img, Color(0.07, 0.05, 0.06, 1))
+		return
+	var u: float = float(f) / float(maxi(n - 1, 1))
+	var src: Image = sheet
+	var xoff: int = 0
+	var yoff: int = 0
+	match pose:
+		"idle":
+			yoff = int(round(sin(TAU * float(f) / float(n)) * 1.0))
+		"walk":
+			yoff = int(round(abs(sin(TAU * float(f) / float(n))) * 2.0))
+			xoff = int(round(sin(TAU * float(f) / float(n)) * 2.0))
+		"run":
+			yoff = int(round(abs(sin(TAU * float(f) / float(n))) * 3.0))
+			xoff = 4 + int(round(sin(TAU * float(f) / float(n)) * 3.0))
+		"jump":
+			yoff = -10 if u < 0.55 else -4
+			xoff = 2
+		"crouch":
+			src = _scale_img(sheet, 1.0, 0.78)
+			yoff = 2
+		"block":
+			xoff = -6
+			yoff = 1
+		"light", "clight":
+			xoff = int(round(smoothstep(0.0, 0.55, u) * 8.0))
+		"jlight":
+			xoff = int(round(u * 6.0))
+			yoff = -8
+		"heavy", "cheavy":
+			xoff = int(round(smoothstep(0.1, 0.65, u) * 12.0))
+		"jheavy":
+			xoff = int(round(u * 10.0))
+			yoff = -6
+		"special", "ultimate":
+			xoff = 8 + int(round(u * 10.0))
+			yoff = int(round(sin(u * PI) * -4.0))
+		"grab":
+			xoff = int(round(u * 7.0))
+		"hit":
+			xoff = 6 + f
+			yoff = 1
+		"knockdown", "defeat":
+			src = sheet.duplicate()
+			src.rotate_90(ClockDirection.CLOCKWISE)
+			yoff = 8 + mini(f, 2)
+			xoff = -10
+		"victory":
+			yoff = int(f % 2) * -2
+			xoff = 2
+	_blit_sheet(img, src, xoff, yoff)
+	if pose in ["special", "ultimate"]:
+		_smear(img, MODEL_W / 2 + xoff, MODEL_H - 40, def.accent, f)
+
+
+static func _scale_img(src: Image, sx: float, sy: float) -> Image:
+	var nw: int = maxi(1, int(round(float(src.get_width()) * sx)))
+	var nh: int = maxi(1, int(round(float(src.get_height()) * sy)))
+	var out := src.duplicate()
+	out.resize(nw, nh, Image.INTERPOLATE_NEAREST)
+	return out
+
+
+static func _blit_sheet(dst: Image, src: Image, xoff: int, yoff: int) -> void:
+	var dw: int = dst.get_width()
+	var dh: int = dst.get_height()
+	var sw: int = src.get_width()
+	var sh: int = src.get_height()
+	var ox: int = (dw - sw) / 2 + xoff
+	var oy: int = dh - sh - 2 + yoff
+	for y in sh:
+		for x in sw:
+			var c: Color = src.get_pixel(x, y)
+			if c.a < 0.4:
+				continue
+			Pix.put(dst, ox + x, oy + y, c)
+
+
+static func _model_sheet(def: CharacterDef) -> Image:
+	if _model_cache.has(def.id):
+		return _model_cache[def.id]
+	var path: String = def.reference_image
+	if path.is_empty():
+		path = "res://data/characters/refs/chris_model.png"
+	var src: Image = CharacterForge._load_image(path)
+	if src == null:
+		_model_cache[def.id] = null
+		return null
+	src.convert(Image.FORMAT_RGBA8)
+	for y in src.get_height():
+		for x in src.get_width():
+			var c: Color = src.get_pixel(x, y)
+			if _is_model_bg(c):
+				src.set_pixel(x, y, Color(0, 0, 0, 0))
+	var used: Rect2i = src.get_used_rect()
+	if used.size.x < 4 or used.size.y < 4:
+		_model_cache[def.id] = src
+		return src
+	var trimmed: Image = src.get_region(used)
+	_model_cache[def.id] = trimmed
+	return trimmed
+
+
+static func _is_model_bg(c: Color) -> bool:
+	if c.a < 0.08:
+		return true
+	var lum: float = c.get_luminance()
+	# flat gray studio backdrop on the uploaded sprite
+	if c.s < 0.08 and lum > 0.36 and lum < 0.68:
+		return true
+	return false
 
 
 static func _paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) -> void:

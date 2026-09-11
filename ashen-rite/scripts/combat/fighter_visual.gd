@@ -25,8 +25,11 @@ func build(d: CharacterDef) -> void:
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_sprite.centered = false
 	_sprite.texture = _tex("idle", 0)
-	_sprite.position = Vector2(-FW * SCALE / 2, -FH * SCALE)
-	_sprite.scale = Vector2(SCALE, SCALE)
+	var tw: int = _sprite.texture.get_width()
+	var th: int = _sprite.texture.get_height()
+	var sc: int = PixelFighterBake.MODEL_SCALE if tw >= 120 else PixelFighterBake.SCALE
+	_sprite.position = Vector2(-tw * sc / 2, -th * sc)
+	_sprite.scale = Vector2(sc, sc)
 	add_child(_sprite)
 	var sh := Sprite2D.new()
 	var simg := Pix.image(20, 6, Color(0, 0, 0, 0))
@@ -35,7 +38,7 @@ func build(d: CharacterDef) -> void:
 	sh.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	sh.centered = true
 	sh.position = Vector2(0, 4)
-	sh.scale = Vector2(SCALE, SCALE)
+	sh.scale = Vector2(sc, sc)
 	sh.z_index = -2
 	add_child(sh)
 
