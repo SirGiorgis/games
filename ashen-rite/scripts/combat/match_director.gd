@@ -1,0 +1,223 @@
+class_name MatchDirector
+extends Node2D
+
+signal request_pause
+signal match_over(winner: int)
+
+var arena: ArenaWorld
+var cam: FightCamera
+var fx: FX
+var p1: Fighter
+var p2: Fighter
+var hud: FightHUD
+var pause_layer: PauseMenu
+
+var round_index: int = 1
+var time_left: float = 99.0
+var phase: String = "intro"
+var phase_t: float = 0.0
+var _banner: Label
+var _paused: bool = false
+
+
+func _ready() -> void:
+	arena = ArenaWorld.new()
+	add_child(arena)
+	var aid := GameState.arena_id
+	if GameState.random_arena:
+		var ids := ArenaWorld.all_ids()
+		aid = ids[randi() % ids.size()]
+		GameState.arena_id = aid
+	arena.build(aid)
+
+	fx = FX.new()
+	add_child(fx)
+
+	p1 = Fighter.new()
+	p2 = Fighter.new()
+	var c1 := CharacterCatalog.get_def(GameState.p1_character_id)
+	var c2 := CharacterCatalog.get_def(GameState.p2_character_id)
+	p1.setup(0, c1, false, Vector2(360, 500))
+	p2.setup(1, c2, GameState.p2_is_cpu, Vector2(920, 500))
+	p1.opponent = p2
+	p2.opponent = p1
+	add_child(p1)
+	add_child(p2)
+	p1.defeated.connect(_on_ko)
+	p2.defeated.connect(_on_ko)
+	p1.hit_landed.connect(_on_hit)
+	p2.hit_landed.connect(_on_hit)
+
+	cam = FightCamera.new()
+	add_child(cam)
+	cam.bind(p1, p2)
+
+	hud = FightHUD.new()
+	add_child(hud)
+	hud.bind(p1, p2, ArenaWorld.display_name(aid))
+	p1.combo_changed.connect(func(n): hud.set_combo(0, n))
+	p2.combo_changed.connect(func(n): hud.set_combo(1, n))
+
+	pause_layer = PauseMenu.new()
+	add_child(pause_layer)
+	pause_layer.hide()
+	pause_layer.resumed.connect(_resume)
+	pause_layer.restarted.connect(_restart_match)
+	pause_layer.quit_to_menu.connect(func(): match_over.emit(-2))
+
+	_banner = Label.new()
+	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_banner.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_banner.add_theme_font_size_override("font_size", 72)
+	_banner.add_theme_color_override("font_color", Color(1, 0.92, 0.75))
+	_banner.add_theme_constant_override("outline_size", 8)
+	_banner.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	var layer := CanvasLayer.new()
+	layer.layer = 20
+	add_child(layer)
+	var host := Control.new()
+	host.set_anchors_preset(Control.PRESET_FULL_RECT)
+	host.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(host)
+	host.add_child(_banner)
+
+	AudioDirector.play_music("fight")
+	_begin_round()
+
+
+func _begin_round() -> void:
+	phase = "intro"
+	phase_t = 0.0
+	time_left = 99.0
+	p1.reset_round(Vector2(360, 500))
+	p2.reset_round(Vector2(920, 500))
+	p1.can_act = false
+	p2.can_act = false
+	_banner.text = "ROUND %d" % round_index
+	AudioDirector.play("round")
+	hud.set_timer(99)
+	hud.set_rounds(GameState.p1_rounds, GameState.p2_rounds)
+
+
+func _process(delta: float) -> void:
+	if _paused:
+		return
+	if Input.is_action_just_pressed(ControlMap.P1.pause):
+		_pause()
+		return
+	match phase:
+		"intro":
+			phase_t += delta
+			if phase_t > 1.1:
+				_banner.text = "FIGHT"
+				AudioDirector.play("fight")
+				phase = "fight_call"
+				phase_t = 0.0
+		"fight_call":
+			phase_t += delta
+			if phase_t > 0.55:
+				_banner.text = ""
+				p1.can_act = true
+				p2.can_act = true
+				phase = "fight"
+		"fight":
+			time_left = max(0.0, time_left - delta)
+			hud.set_timer(int(ceil(time_left)))
+			if time_left <= 0.0:
+				_timeout()
+		"ko":
+			phase_t += delta
+			if phase_t > 1.8:
+				_finish_round()
+		"endwait":
+			phase_t += delta
+			if phase_t > 1.4:
+				match_over.emit(GameState.last_winner)
+
+
+func _on_ko(f: Fighter) -> void:
+	if phase != "fight":
+		return
+	phase = "ko"
+	phase_t = 0.0
+	p1.lock_out()
+	p2.lock_out()
+	var winner := 1 if f == p1 else 0
+	GameState.last_winner = winner
+	GameState.last_was_timeout = false
+	if winner == 0:
+		GameState.p1_rounds += 1
+		p1.celebrate(true)
+		p2.celebrate(false)
+	else:
+		GameState.p2_rounds += 1
+		p2.celebrate(true)
+		p1.celebrate(false)
+	_banner.text = "RITE COMPLETE"
+	AudioDirector.play("ko")
+	cam.shake(1.4)
+	hud.set_rounds(GameState.p1_rounds, GameState.p2_rounds)
+
+
+func _timeout() -> void:
+	phase = "ko"
+	phase_t = 0.0
+	p1.lock_out()
+	p2.lock_out()
+	GameState.last_was_timeout = true
+	var winner := 0 if p1.health >= p2.health else 1
+	if abs(p1.health - p2.health) < 1.0:
+		winner = 0 if p1.health > p2.health else 1
+	GameState.last_winner = winner
+	if winner == 0:
+		GameState.p1_rounds += 1
+		p1.celebrate(true)
+		p2.celebrate(false)
+	else:
+		GameState.p2_rounds += 1
+		p2.celebrate(true)
+		p1.celebrate(false)
+	_banner.text = "TIME"
+	hud.set_rounds(GameState.p1_rounds, GameState.p2_rounds)
+
+
+func _finish_round() -> void:
+	if GameState.p1_rounds >= GameState.rounds_to_win or GameState.p2_rounds >= GameState.rounds_to_win:
+		phase = "endwait"
+		phase_t = 0.0
+		_banner.text = "MATCH"
+		return
+	round_index += 1
+	_begin_round()
+
+
+func _on_hit(f: Fighter, attack: Dictionary, crit: bool) -> void:
+	var strong: bool = attack.get("kind", "") in ["heavy", "special", "ultimate"] or crit
+	fx.spark(f.global_position + Vector2(0, -70), p1.def.accent if f == p2 else p2.def.accent, strong)
+	cam.shake(0.35 if strong else 0.12)
+	if crit:
+		_banner.text = "CRITICAL"
+		get_tree().create_timer(0.35).timeout.connect(func(): if phase == "fight": _banner.text = "")
+
+
+func _pause() -> void:
+	if phase != "fight":
+		return
+	_paused = true
+	pause_layer.show_menu()
+	get_tree().paused = false
+	pause_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+
+
+func _resume() -> void:
+	_paused = false
+	pause_layer.hide()
+
+
+func _restart_match() -> void:
+	GameState.reset_match_score()
+	round_index = 1
+	_paused = false
+	pause_layer.hide()
+	_begin_round()
