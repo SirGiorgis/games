@@ -42,6 +42,27 @@ static func disc(img: Image, cx: int, cy: int, r: int, c: Color) -> void:
 				put(img, cx + xx, cy + yy, c)
 
 
+static func capsule(img: Image, x0: int, y0: int, x1: int, y1: int, r: int, c: Color) -> void:
+	var dx: float = float(x1 - x0)
+	var dy: float = float(y1 - y0)
+	var dist: float = sqrt(dx * dx + dy * dy)
+	var steps: int = maxi(1, int(dist))
+	for i in steps + 1:
+		var t: float = float(i) / float(steps)
+		var px: int = int(round(lerpf(float(x0), float(x1), t)))
+		var py: int = int(round(lerpf(float(y0), float(y1), t)))
+		disc(img, px, py, r, c)
+
+
+static func oval(img: Image, cx: int, cy: int, rx: int, ry: int, c: Color) -> void:
+	for yy in range(-ry, ry + 1):
+		for xx in range(-rx, rx + 1):
+			var nx: float = float(xx) / float(maxi(rx, 1))
+			var ny: float = float(yy) / float(maxi(ry, 1))
+			if nx * nx + ny * ny <= 1.0:
+				put(img, cx + xx, cy + yy, c)
+
+
 static func outline(img: Image, oc: Color) -> void:
 	var w := img.get_width()
 	var h := img.get_height()

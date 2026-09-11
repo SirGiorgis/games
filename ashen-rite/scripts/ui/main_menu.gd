@@ -12,9 +12,9 @@ var _preview: Sprite2D
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 	PixelUI.full_bg(self)
-	var title := PixelUI.label_at(self, "ASHEN RITE", Vector2(0, 70), 8, Color(0.92, 0.18, 0.28), 0, 1280)
+	var title := PixelUI.label_at(self, "GIORGIS FIGHTING", Vector2(0, 48), 6, Color(0.92, 0.18, 0.28), 0, 1280)
 	title.set_centered(1280)
-	PixelUI.label_at(self, "PIXEL RITE  BEST OF 3", Vector2(0, 150), 2, Color(0.85, 0.72, 0.4), 0, 1280).set_centered(1280)
+	PixelUI.label_at(self, "CHRIS XRISAKIS   BEST OF 3", Vector2(0, 128), 2, Color(0.85, 0.72, 0.4), 0, 1280).set_centered(1280)
 	for i in ITEMS.size():
 		var l := PixelLabel.new()
 		l.position = Vector2(0, 250 + i * 48)
@@ -27,8 +27,8 @@ func _ready() -> void:
 	_preview.texture = frames["idle"][0]
 	_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_preview.centered = false
-	_preview.scale = Vector2(5, 5)
-	_preview.position = Vector2(80, 280)
+	_preview.scale = Vector2(4, 4)
+	_preview.position = Vector2(70, 260)
 	add_child(_preview)
 	_refresh()
 	AudioDirector.play_music("menu")

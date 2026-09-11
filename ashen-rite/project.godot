@@ -3,8 +3,8 @@ config_version=5
 
 [application]
 
-config/name="Ashen Rite"
-config/description="Original arcade 2D fighting game. Open the project and press Play."
+config/name="Giorgis Fighting"
+config/description="Giorgis Fighting — original arcade 2D fighter. Open the project and press Play."
 config/version="1.0.0"
 run/main_scene="res://scenes/bootstrap.tscn"
 config/features=PackedStringArray("4.4", "Forward Plus")

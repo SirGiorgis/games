@@ -417,6 +417,7 @@ func _sync_visual() -> void:
 			visual.set_pose_name("walk")
 		State.JUMP:
 			visual.set_pose_name("jump")
+			visual.attack_u = clampf((velocity.y + 650.0) / 1300.0, 0.0, 1.0)
 		State.CROUCH:
 			visual.set_pose_name("crouch")
 		State.LIGHT:

@@ -1,6 +1,6 @@
 # Games
 
-## Ashen Rite (Godot 4.4)
+## Giorgis Fighting (Godot 4.4)
 
 Original 2D arcade fighter. Open `ashen-rite/project.godot` in Godot 4.4 and press Play.
 

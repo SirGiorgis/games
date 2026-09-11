@@ -36,8 +36,8 @@ func _ready() -> void:
 	_preview = Sprite2D.new()
 	_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_preview.centered = false
-	_preview.scale = Vector2(5, 5)
-	_preview.position = Vector2(70, 320)
+	_preview.scale = Vector2(4, 4)
+	_preview.position = Vector2(48, 300)
 	add_child(_preview)
 	_info = PixelUI.label_at(self, "", Vector2(360, 280), 2, Color(0.92, 0.9, 0.86), 42)
 	_stats = PixelUI.label_at(self, "", Vector2(360, 400), 2, Color(0.8, 0.76, 0.68), 42)

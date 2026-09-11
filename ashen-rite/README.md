@@ -1,4 +1,4 @@
-# Ashen Rite
+# Giorgis Fighting
 
 Original arcade 2D fighting game for **Godot 4.4**.
 
@@ -9,6 +9,8 @@ Open the `ashen-rite` folder in Godot 4.4.x and press **Play**. Nothing else to 
 1. Install [Godot 4.4](https://godotengine.org/download).
 2. Import `ashen-rite/project.godot`.
 3. Press Play. Main scene is already set.
+
+Lead fighter: **Chris Xrisakis**.
 
 ## Controls (Player 1)
 
@@ -22,7 +24,7 @@ Open the `ashen-rite` folder in Godot 4.4.x and press **Play**. Nothing else to 
 | L | Special (50 meter) |
 | U | Block |
 | I | Grab (beats block) |
-| O | Ultimate (100 meter) |
+| O | Ultimate (full meter) |
 | Esc / P | Pause |
 
 Player 2 (optional human): arrows + Z/X/C/V/B/N or numpad 1–6.

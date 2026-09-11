@@ -3,8 +3,8 @@ extends Node2D
 ## Pixel-art fighter. Same API as the old puppet visual.
 
 const SCALE := 4
-const FW := 48
-const FH := 64
+const FW := 64
+const FH := 80
 
 var def: CharacterDef
 var facing: int = 1
@@ -67,10 +67,11 @@ func _current_tex() -> Texture2D:
 	if not _frames.has(key):
 		key = "idle"
 	var arr: Array = _frames[key]
-	if pose in ["light", "heavy", "special", "ultimate", "grab"]:
+	if pose in ["light", "heavy", "special", "ultimate", "grab", "jump"]:
 		var idx := clampi(int(attack_u * arr.size()), 0, arr.size() - 1)
 		return arr[idx]
-	var idx2 := int(_time * (8.0 if pose == "walk" else 6.0)) % arr.size()
+	var spd: float = 10.0 if pose == "walk" else (7.0 if pose == "victory" else 5.5)
+	var idx2: int = int(_time * spd) % arr.size()
 	return arr[idx2]
 
 
