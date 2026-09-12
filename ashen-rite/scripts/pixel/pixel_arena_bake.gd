@@ -17,6 +17,22 @@ static func texture(id: String) -> ImageTexture:
 			_keep(img)
 		"moonlit_temple":
 			_temple(img)
+		"tidal_dock":
+			_dock(img)
+		"snow_ridge":
+			_snow(img)
+		"desert_gate":
+			_desert(img)
+		"clocktower":
+			_clock(img)
+		"bamboo_yard":
+			_bamboo(img)
+		"storm_bridge":
+			_storm(img)
+		"sunset_pier":
+			_pier(img)
+		"void_garden":
+			_void(img)
 		_:
 			_meadow(img)
 	if id != "grass_field":
@@ -45,6 +61,32 @@ static func _floor(img: Image, id: String) -> void:
 	elif id == "crimson_keep":
 		a = Color(0.16, 0.1, 0.1)
 		line = Color(0.55, 0.22, 0.18)
+	elif id == "snow_ridge":
+		a = Color(0.82, 0.88, 0.92)
+		b = Color(0.74, 0.80, 0.86)
+		line = Color(0.55, 0.70, 0.82)
+	elif id == "tidal_dock":
+		a = Color(0.28, 0.18, 0.12)
+		line = Color(0.70, 0.50, 0.22)
+	elif id == "desert_gate":
+		a = Color(0.72, 0.52, 0.28)
+		b = Color(0.62, 0.42, 0.20)
+		line = Color(0.90, 0.70, 0.32)
+	elif id == "bamboo_yard":
+		a = Color(0.28, 0.42, 0.18)
+		line = Color(0.55, 0.72, 0.28)
+	elif id == "storm_bridge":
+		a = Color(0.22, 0.24, 0.28)
+		line = Color(0.70, 0.78, 0.88)
+	elif id == "sunset_pier":
+		a = Color(0.42, 0.24, 0.16)
+		line = Color(0.95, 0.55, 0.22)
+	elif id == "clocktower":
+		a = Color(0.16, 0.14, 0.18)
+		line = Color(0.82, 0.72, 0.40)
+	elif id == "void_garden":
+		a = Color(0.10, 0.06, 0.16)
+		line = Color(0.62, 0.32, 0.85)
 	Pix.rect(img, 0, y, W, H - y, a)
 	for x in range(0, W, 8):
 		Pix.rect(img, x, y + 2, 7, 4, b)
@@ -269,3 +311,95 @@ static func _keep(img: Image) -> void:
 		Pix.rect(img, x + 16, 36, 6, 8, Color(0.16, 0.1, 0.12))
 	Pix.rect(img, 14, 46, 292, 7, Color(0.32, 0.14, 0.14))
 	Pix.rect(img, 18, 44, 284, 3, Color(0.45, 0.2, 0.16))
+
+
+static func _dock(img: Image) -> void:
+	for y in 148:
+		Pix.hline(img, 0, y, W, Color(0.22, 0.42, 0.62).lerp(Color(0.55, 0.78, 0.88), float(y) / 148.0))
+	Pix.disc(img, 280, 22, 10, Color(0.98, 0.92, 0.55))
+	for x in W:
+		var wy: int = 92 + int(sin(float(x) * 0.08) * 4.0)
+		Pix.put(img, x, wy, Color(0.18, 0.38, 0.48))
+	Pix.rect(img, 0, 100, W, 48, Color(0.12, 0.28, 0.38))
+	for i in 6:
+		Pix.rect(img, 18 + i * 50, 86, 28, 8, Color(0.42, 0.28, 0.16))
+		Pix.rect(img, 22 + i * 50, 70, 6, 16, Color(0.55, 0.4, 0.22))
+	Pix.rect(img, 0, 118, W, 8, Color(0.28, 0.18, 0.12))
+
+
+static func _snow(img: Image) -> void:
+	for y in 148:
+		Pix.hline(img, 0, y, W, Color(0.62, 0.78, 0.90).lerp(Color(0.90, 0.94, 0.98), float(y) / 148.0))
+	_stars(img, 20, Color(1, 1, 1, 0.7))
+	_peak(img, 80, 120, 48, Color(0.55, 0.62, 0.70), Color(0.96, 0.98, 1.0))
+	_peak(img, 180, 124, 56, Color(0.48, 0.56, 0.66), Color(0.94, 0.96, 1.0))
+	_peak(img, 260, 118, 40, Color(0.52, 0.60, 0.68), Color(0.95, 0.97, 1.0))
+	Pix.rect(img, 0, 124, W, 24, Color(0.86, 0.90, 0.94))
+
+
+static func _desert(img: Image) -> void:
+	for y in 148:
+		Pix.hline(img, 0, y, W, Color(0.90, 0.62, 0.28).lerp(Color(0.96, 0.84, 0.50), float(y) / 148.0))
+	Pix.disc(img, 250, 20, 14, Color(1.0, 0.92, 0.45))
+	for x in W:
+		var dy: int = 88 + int(sin(float(x) * 0.03) * 10.0)
+		Pix.rect(img, x, dy, 1, 148 - dy, Color(0.82, 0.58, 0.28))
+	Pix.rect(img, 40, 70, 18, 50, Color(0.62, 0.42, 0.22))
+	Pix.rect(img, 250, 78, 22, 42, Color(0.58, 0.38, 0.18))
+
+
+static func _clock(img: Image) -> void:
+	for y in 148:
+		Pix.hline(img, 0, y, W, Color(0.10, 0.10, 0.16).lerp(Color(0.22, 0.18, 0.14), float(y) / 148.0))
+	Pix.rect(img, 124, 18, 72, 120, Color(0.28, 0.22, 0.18))
+	Pix.disc(img, 160, 48, 22, Color(0.82, 0.72, 0.40))
+	Pix.disc(img, 160, 48, 18, Color(0.12, 0.10, 0.10))
+	Pix.rect(img, 158, 32, 4, 16, Color(0.95, 0.85, 0.4))
+	Pix.rect(img, 160, 46, 14, 3, Color(0.95, 0.85, 0.4))
+	for i in 5:
+		Pix.rect(img, 30 + i * 56, 90, 24, 50, Color(0.18, 0.16, 0.2))
+
+
+static func _bamboo(img: Image) -> void:
+	for y in 148:
+		Pix.hline(img, 0, y, W, Color(0.55, 0.78, 0.62).lerp(Color(0.78, 0.88, 0.70), float(y) / 148.0))
+	for i in 18:
+		var x := 6 + i * 18
+		Pix.rect(img, x, 20, 4, 128, Color(0.28, 0.52, 0.22))
+		for k in 8:
+			Pix.hline(img, x - 1, 28 + k * 14, 6, Color(0.18, 0.36, 0.16))
+	Pix.rect(img, 0, 130, W, 18, Color(0.32, 0.48, 0.22))
+
+
+static func _storm(img: Image) -> void:
+	for y in 148:
+		Pix.hline(img, 0, y, W, Color(0.16, 0.20, 0.28).lerp(Color(0.28, 0.32, 0.40), float(y) / 148.0))
+	_stars(img, 12, Color(0.85, 0.9, 1.0, 0.5))
+	Pix.rect(img, 0, 92, W, 10, Color(0.40, 0.40, 0.44))
+	for i in 8:
+		Pix.rect(img, 20 + i * 38, 86, 6, 16, Color(0.32, 0.32, 0.36))
+	Pix.rect(img, 0, 102, W, 46, Color(0.18, 0.28, 0.38))
+	for i in 5:
+		Pix.put(img, 40 + i * 50, 40, Color(0.9, 0.95, 1.0, 0.8))
+		Pix.put(img, 42 + i * 50, 44, Color(0.7, 0.85, 1.0, 0.6))
+
+
+static func _pier(img: Image) -> void:
+	for y in 148:
+		Pix.hline(img, 0, y, W, Color(0.92, 0.48, 0.28).lerp(Color(0.98, 0.78, 0.42), float(y) / 148.0))
+	Pix.disc(img, 40, 28, 16, Color(0.98, 0.55, 0.22))
+	Pix.rect(img, 0, 108, W, 40, Color(0.18, 0.32, 0.48))
+	for i in 12:
+		Pix.rect(img, 12 + i * 26, 100, 18, 6, Color(0.55, 0.32, 0.16))
+		Pix.rect(img, 16 + i * 26, 106, 4, 16, Color(0.40, 0.22, 0.12))
+
+
+static func _void(img: Image) -> void:
+	for y in 148:
+		Pix.hline(img, 0, y, W, Color(0.06, 0.04, 0.12).lerp(Color(0.16, 0.08, 0.22), float(y) / 148.0))
+	_stars(img, 90, Color(0.72, 0.55, 1.0, 0.8))
+	Pix.disc(img, 160, 70, 28, Color(0.12, 0.06, 0.18))
+	Pix.disc(img, 160, 70, 16, Color(0.28, 0.10, 0.40))
+	Pix.disc(img, 160, 70, 6, Color(0.9, 0.8, 1.0, 0.7))
+	for i in 10:
+		Pix.put(img, 40 + i * 26, 120, Color(0.55, 0.28, 0.8, 0.6))

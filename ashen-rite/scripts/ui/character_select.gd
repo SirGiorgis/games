@@ -23,10 +23,12 @@ var _ids: PackedStringArray = PackedStringArray()
 var _held: Dictionary = {}
 var _frame_cache: Dictionary = {}
 
-const CARD_W := 48
-const CARD_H := 36
-const CARD_SCALE := 3
-const SLOT_W := 168
+const CARD_W := 40
+const CARD_H := 30
+const CARD_SCALE := 2
+const COLS := 8
+const SLOT_W := 152
+const SLOT_H := 86
 const ROSTER_Y := 72
 
 
@@ -36,11 +38,14 @@ func _ready() -> void:
 	PixelUI.add_title(self, "CHOOSE YOUR RITE", 40, Color(0.95, 0.22, 0.3))
 
 	_ids = CharacterCatalog.ids()
-	var start_x: float = (1280.0 - float(_ids.size()) * SLOT_W) * 0.5 + 12.0
+	var cols: int = mini(COLS, maxi(_ids.size(), 1))
+	var start_x: float = (1280.0 - float(cols) * SLOT_W) * 0.5 + 8.0
 	for i in _ids.size():
 		var def := CharacterCatalog.get_def(_ids[i])
+		var col: int = i % cols
+		var row: int = int(i / cols)
 		var card := TextureRect.new()
-		card.position = Vector2(start_x + i * SLOT_W, ROSTER_Y)
+		card.position = Vector2(start_x + col * SLOT_W, ROSTER_Y + row * SLOT_H)
 		card.size = Vector2(CARD_W * CARD_SCALE, CARD_H * CARD_SCALE)
 		card.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		card.stretch_mode = TextureRect.STRETCH_SCALE
@@ -50,26 +55,26 @@ func _ready() -> void:
 		var thumb := TextureRect.new()
 		thumb.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		thumb.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
-		thumb.position = Vector2(4, 2)
-		thumb.size = Vector2(CARD_W * CARD_SCALE - 8, CARD_H * CARD_SCALE - 10)
+		thumb.position = Vector2(2, 1)
+		thumb.size = Vector2(CARD_W * CARD_SCALE - 4, CARD_H * CARD_SCALE - 6)
 		card.add_child(thumb)
 		_thumbs.append(thumb)
 
 		var nm := PixelLabel.new()
-		nm.position = Vector2(start_x + i * SLOT_W, ROSTER_Y + CARD_H * CARD_SCALE + 4)
-		nm.set_pix(def.name.to_upper(), 1, def.accent, 12)
+		nm.position = Vector2(start_x + col * SLOT_W, ROSTER_Y + row * SLOT_H + CARD_H * CARD_SCALE + 2)
+		nm.set_pix(def.name.to_upper(), 1, def.accent, 10)
 		add_child(nm)
 		_names.append(nm)
 
 	var vs := TextureRect.new()
 	vs.texture = PixelUI.vs_emblem()
 	vs.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	vs.position = Vector2(616, 300)
-	vs.scale = Vector2(4, 4)
+	vs.position = Vector2(616, 268)
+	vs.scale = Vector2(3, 3)
 	add_child(vs)
 
-	PixelUI.add_panel(self, Vector2(40, 220), Vector2(360, 340), PixelUI.GOLD)
-	PixelUI.label_at(self, "PLAYER 1", Vector2(40, 228), 2, Color(0.95, 0.78, 0.35), 0, 360).set_centered(360)
+	PixelUI.add_panel(self, Vector2(40, 248), Vector2(360, 300), PixelUI.GOLD)
+	PixelUI.label_at(self, "PLAYER 1", Vector2(40, 256), 2, Color(0.95, 0.78, 0.35), 0, 360).set_centered(360)
 	var g1 := TextureRect.new()
 	g1.texture = PixelUI.stage_strip()
 	g1.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -78,8 +83,8 @@ func _ready() -> void:
 	add_child(g1)
 	_p1_preview = _make_preview(Vector2(220, 430))
 
-	PixelUI.add_panel(self, Vector2(880, 220), Vector2(360, 340), Color(0.35, 0.75, 1.0))
-	var p2_hdr := PixelUI.label_at(self, "OPPONENT", Vector2(880, 228), 2, Color(0.55, 0.85, 1.0), 0, 360)
+	PixelUI.add_panel(self, Vector2(880, 248), Vector2(360, 300), Color(0.35, 0.75, 1.0))
+	var p2_hdr := PixelUI.label_at(self, "OPPONENT", Vector2(880, 256), 2, Color(0.55, 0.85, 1.0), 0, 360)
 	p2_hdr.set_centered(360)
 	p2_hdr.position.x = 880
 	var g2 := TextureRect.new()
@@ -90,19 +95,24 @@ func _ready() -> void:
 	add_child(g2)
 	_p2_preview = _make_preview(Vector2(1060, 430))
 
-	PixelUI.add_panel(self, Vector2(420, 580), Vector2(440, 96), Color(0.45, 0.35, 0.55))
-	_info = PixelUI.label_at(self, "", Vector2(432, 592), 2, Color(0.92, 0.9, 0.86), 38)
-	_stats = PixelUI.label_at(self, "", Vector2(432, 636), 1, Color(0.78, 0.74, 0.68), 38)
-	_cpu_label = PixelUI.label_at(self, "", Vector2(880, 572), 2, Color(0.65, 0.82, 0.95), 36)
-	_arena_lbl = PixelUI.label_at(self, "", Vector2(420, 548), 2, Color(0.88, 0.78, 0.42), 36)
+	PixelUI.add_panel(self, Vector2(420, 548), Vector2(440, 96), Color(0.45, 0.35, 0.55))
+	_info = PixelUI.label_at(self, "", Vector2(432, 560), 2, Color(0.92, 0.9, 0.86), 38)
+	_stats = PixelUI.label_at(self, "", Vector2(432, 604), 1, Color(0.78, 0.74, 0.68), 38)
+	_cpu_label = PixelUI.label_at(self, "", Vector2(880, 552), 2, Color(0.65, 0.82, 0.95), 36)
+	_arena_lbl = PixelUI.label_at(self, "", Vector2(420, 520), 2, Color(0.88, 0.78, 0.42), 36)
 
 	PixelUI.add_footer(self, "A/D SELECT  J THEN STAGE  R RANDOM  C CPU  T ARENA  F FORGE  ESC BACK")
 	if GameState.arcade:
 		PixelUI.label_at(self, "ARCADE LADDER", Vector2(0, 12), 2, Color(1, 0.82, 0.32), 0, 1280).set_centered(1280)
+	elif GameState.survival:
+		PixelUI.label_at(self, "SURVIVAL", Vector2(0, 12), 2, Color(1, 0.82, 0.32), 0, 1280).set_centered(1280)
+	elif GameState.time_attack:
+		PixelUI.label_at(self, "TIME ATTACK", Vector2(0, 12), 2, Color(1, 0.82, 0.32), 0, 1280).set_centered(1280)
 	_apply_indices_from_state()
 	for id in _ids:
 		_cached_frames(id)
 	_refresh()
+	_play_theme()
 
 
 func _make_preview(pos: Vector2) -> Sprite2D:
@@ -145,6 +155,7 @@ func _process(delta: float) -> void:
 		_focus = 1 - _focus
 		AudioDirector.play("ui")
 		_refresh()
+		_play_theme()
 	elif Input.is_action_just_pressed(ControlMap.MENU.confirm):
 		_commit()
 		AudioDirector.play("ui_confirm")
@@ -167,6 +178,7 @@ func _process(delta: float) -> void:
 		AudioDirector.play("special")
 		_commit()
 		_refresh()
+		_play_theme()
 	if _edge(KEY_C):
 		GameState.p2_is_cpu = not GameState.p2_is_cpu
 		_refresh()
@@ -191,6 +203,7 @@ func _move(dir: int) -> void:
 		_p2_index = posmod(_p2_index + dir, _ids.size())
 	_commit()
 	_refresh()
+	_play_theme()
 
 
 func _cycle_arena() -> void:
@@ -277,3 +290,10 @@ func _pips(v: float, lo: float, hi: float) -> String:
 	for i in 8:
 		s += "I" if i < n else "."
 	return s
+
+
+func _play_theme() -> void:
+	if _ids.is_empty():
+		return
+	var idx: int = _p1_index if _focus == 0 else _p2_index
+	AudioDirector.play_music("theme:" + _ids[idx])

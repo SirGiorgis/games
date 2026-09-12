@@ -37,6 +37,9 @@ var arcade_score: int = 0
 var match_max_combo: int = 0
 var match_damage: float = 0.0
 var match_hits: int = 0
+var survival: bool = false
+var survival_wave: int = 0
+var time_attack: bool = false
 
 var custom_description: String = "Male fighter, tall, athletic build, black hair, black jacket, aggressive personality, lightning-based powers."
 var custom_photo_path: String = "res://data/characters/refs/custom.png"
@@ -58,6 +61,8 @@ func reset_match_score() -> void:
 
 func begin_arcade(p1_id: String) -> void:
 	arcade = true
+	survival = false
+	time_attack = false
 	arcade_index = 0
 	arcade_score = 0
 	p1_character_id = p1_id
@@ -86,8 +91,54 @@ func next_arcade_bout() -> bool:
 	return true
 
 
+func begin_survival(p1_id: String) -> void:
+	survival = true
+	arcade = false
+	time_attack = false
+	survival_wave = 1
+	arcade_score = 0
+	p1_character_id = p1_id
+	p2_is_cpu = true
+	training = false
+	attract = false
+	rounds_to_win = 1
+	_pick_survival_foe()
+
+
+func next_survival_wave() -> void:
+	survival_wave += 1
+	_pick_survival_foe()
+	reset_match_score()
+
+
+func _pick_survival_foe() -> void:
+	var ids := CharacterCatalog.ids()
+	var pool: Array[String] = []
+	for id in ids:
+		if id != p1_character_id and id != "custom":
+			pool.append(id)
+	if pool.is_empty():
+		p2_character_id = "hoodrich_stacks"
+		return
+	p2_character_id = pool[(survival_wave - 1) % pool.size()]
+
+
+func begin_time_attack(p1_id: String) -> void:
+	time_attack = true
+	arcade = false
+	survival = false
+	arcade_score = 0
+	p1_character_id = p1_id
+	p2_is_cpu = true
+	training = false
+	attract = false
+	rounds_to_win = 1
+
+
 func end_arcade() -> void:
 	arcade = false
+	survival = false
+	time_attack = false
 	rounds_to_win = 2
 
 
@@ -98,6 +149,8 @@ func note_hit(combo: int, dmg: float) -> void:
 		match_max_combo = combo
 	if arcade:
 		arcade_score += int(round(dmg)) + combo * 10
+	if survival:
+		arcade_score += int(round(dmg)) + combo * 12
 
 
 func difficulty_name() -> String:

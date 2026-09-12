@@ -390,18 +390,19 @@ static func round_banner(w: int = 140) -> ImageTexture:
 	return Pix.tex(img)
 
 
-static func add_menu_row(parent: Control, y: float, w_px: int = 520) -> Dictionary:
+static func add_menu_row(parent: Control, y: float, w_px: int = 520, x_px: float = -1.0) -> Dictionary:
 	var art_w: int = int(w_px / 4)
+	var px: float = x_px if x_px >= 0.0 else (640.0 - w_px * 0.5)
 	var row := TextureRect.new()
 	row.texture = menu_row(art_w, false)
 	row.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	row.position = Vector2(640 - w_px * 0.5, y)
+	row.position = Vector2(px, y)
 	row.size = Vector2(w_px, 40)
 	row.stretch_mode = TextureRect.STRETCH_SCALE
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(row)
 	var lbl := PixelLabel.new()
-	lbl.position = Vector2(640 - w_px * 0.5 + 16, y + 8)
+	lbl.position = Vector2(px + 16, y + 8)
 	parent.add_child(lbl)
 	return {"row": row, "label": lbl, "w": w_px}
 

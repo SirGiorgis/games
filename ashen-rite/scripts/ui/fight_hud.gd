@@ -178,6 +178,10 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 		sub = "DEMO"
 	if GameState.arcade:
 		sub = "ARCADE  %d / %d" % [GameState.arcade_index + 1, maxi(GameState.arcade_queue.size(), 1)]
+	elif GameState.survival:
+		sub = "SURVIVAL  WAVE %d" % GameState.survival_wave
+	elif GameState.time_attack:
+		sub = "TIME ATTACK"
 	_mode = PixelUI.label_at(root, sub, Vector2(0, 148), 1, Color(0.22, 0.26, 0.18, 0.85), 0, 1280)
 	_mode.set_centered(1280)
 	_combo = PixelUI.label_at(root, "", Vector2(0, 168), 4, Color(1, 0.86, 0.28), 0, 1280)
@@ -188,7 +192,7 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	_rank.set_centered(1280)
 	_rank.visible = false
 	_train = PixelUI.label_at(root, "", Vector2(16, 520), 1, Color(0.88, 0.9, 0.78), 42)
-	_train.visible = GameState.training
+	_train.visible = GameState.training or GameState.survival or GameState.time_attack
 
 	_show1 = 1.0
 	_show2 = 1.0
@@ -386,25 +390,38 @@ func _paint_guard() -> void:
 
 
 func _paint_training() -> void:
-	if _train == null or not GameState.training or _p1 == null:
-		if _train:
-			_train.visible = false
+	if _train == null or _p1 == null:
 		return
-	_train.visible = true
-	var adv: int = int(round(_p1.last_advantage * 60.0))
-	var sign_s: String = "+" if adv >= 0 else ""
-	var hist := ""
-	for i in _p1.input_log.size():
-		if i > 0:
-			hist += " "
-		hist += _p1.input_log[i]
-	_train.set_pix("R RESET   F DUMMY %s   ADV %s%dF   %s\n%s" % [
-		GameState.dummy_mode.to_upper(),
-		sign_s,
-		adv,
-		_p1.last_move.to_upper(),
-		hist
-	], 1, Color(0.88, 0.92, 0.78), 48)
+	if GameState.training:
+		_train.visible = true
+		var adv: int = int(round(_p1.last_advantage * 60.0))
+		var sign_s: String = "+" if adv >= 0 else ""
+		var hist := ""
+		for i in _p1.input_log.size():
+			if i > 0:
+				hist += " "
+			hist += _p1.input_log[i]
+		_train.set_pix("R RESET   F DUMMY %s   ADV %s%dF   %s\n%s" % [
+			GameState.dummy_mode.to_upper(),
+			sign_s,
+			adv,
+			_p1.last_move.to_upper(),
+			hist
+		], 1, Color(0.88, 0.92, 0.78), 48)
+		return
+	if GameState.survival:
+		_train.visible = true
+		_train.set_pix("WAVE %d   SCORE %d   MAX %d HIT" % [
+			GameState.survival_wave, GameState.arcade_score, GameState.match_max_combo
+		], 1, Color(0.88, 0.92, 0.78), 48)
+		return
+	if GameState.time_attack:
+		_train.visible = true
+		_train.set_pix("DMG %d   MAX %d HIT   HITS %d" % [
+			int(GameState.match_damage), GameState.match_max_combo, GameState.match_hits
+		], 1, Color(0.88, 0.92, 0.78), 48)
+		return
+	_train.visible = false
 
 
 func set_timer(v: int) -> void:

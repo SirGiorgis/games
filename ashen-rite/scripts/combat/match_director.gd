@@ -124,8 +124,12 @@ func _begin_round() -> void:
 	_restore_time()
 	phase = "intro"
 	phase_t = 0.0
-	time_left = 99.0
-	_last_tick = 99
+	if GameState.time_attack:
+		time_left = 60.0
+		_last_tick = 60
+	else:
+		time_left = 99.0
+		_last_tick = 99
 	_ko_pending = false
 	p1.reset_round(Vector2(360, 500))
 	p2.reset_round(Vector2(920, 500))
@@ -138,6 +142,10 @@ func _begin_round() -> void:
 		_set_banner("TRAINING")
 	elif GameState.attract:
 		_set_banner("DEMO")
+	elif GameState.survival:
+		_set_banner("WAVE %d" % GameState.survival_wave)
+	elif GameState.time_attack:
+		_set_banner("TIME ATTACK")
 	elif GameState.arcade:
 		_set_banner("BOUT %d" % (GameState.arcade_index + 1))
 	elif final_r:
@@ -145,7 +153,7 @@ func _begin_round() -> void:
 	else:
 		_set_banner("ROUND %d" % round_index)
 	AudioDirector.play("round")
-	hud.set_timer(99)
+	hud.set_timer(int(ceil(time_left)))
 	hud.set_rounds(GameState.p1_rounds, GameState.p2_rounds)
 
 
@@ -191,8 +199,6 @@ func _process(delta: float) -> void:
 				phase = "fight"
 		"fight":
 			if GameState.training:
-				time_left = 99.0
-				hud.set_timer(99)
 				if p1 and not p1.is_cpu:
 					p1.training_tick(delta)
 				if _tap(KEY_R):
@@ -440,20 +446,23 @@ func _pause() -> void:
 	_paused = true
 	_pause_lock = 0.22
 	_restore_time()
+	AudioDirector.play_music("pause")
 	pause_layer.show_menu()
 	get_tree().paused = true
 
 
-func _resume() -> void:
+func _resume(restore_music: bool = true) -> void:
 	_paused = false
 	_pause_lock = 0.22
 	pause_layer.hide_menu()
 	get_tree().paused = false
 	_restore_time()
+	if restore_music:
+		AudioDirector.play_music("fight")
 
 
 func _quit_match() -> void:
-	_resume()
+	_resume(false)
 	_restore_time()
 	match_over.emit(-2)
 

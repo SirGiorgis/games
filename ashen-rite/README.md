@@ -4,6 +4,8 @@ Original arcade 2D fighting game for **Godot 4.7**. Visual north star: compact c
 
 Open the `ashen-rite` folder in Godot 4.7 and press **Play**. Nothing else to configure.
 
+The extra download size is a soundtrack the game actually uses: one unique song per menu, mode, stage, and fighter. Gallery Radio plays the same catalog. There is no dummy padding.
+
 ## Play
 
 1. Install [Godot 4.7](https://godotengine.org/download).
@@ -11,6 +13,21 @@ Open the `ashen-rite` folder in Godot 4.7 and press **Play**. Nothing else to co
 3. Press Play. Main scene is already set.
 
 Lead fighter: **Chris Xrisakis**. Default opponent: **Giorgis**. Default arena: **Green Hill Field**.
+
+First Godot open may scan the music folder. Tracks load from disk at runtime, one song at a time.
+
+## Modes
+
+| Menu | What it is |
+| --- | --- |
+| PLAY | Quick versus, Chris vs Giorgis on the current stage |
+| ARCADE | First-to-1 ladder through the roster. Last bout plays the final theme |
+| SURVIVAL | Endless first-to-1 waves. CPU gets meaner each wave |
+| TIME ATTACK | 60 seconds. Score is damage, hits, and max combo |
+| TRAINING | Infinite timer, dummy cycle, advantage display |
+| GALLERY | Radio of every mode, stage, and fighter theme. A/D pick a song, Enter plays it |
+
+Wait on the title splash for the attract demo.
 
 ## Controls (Player 1)
 
@@ -35,6 +52,12 @@ Player 2 (optional human): arrows + Z/X/C/V/B/N or numpad 1–6.
 
 Change bindings in `scripts/input/control_map.gd` (keyboard + gamepad hooks).
 
+## Roster
+
+Chris, Giorgis, Mira, Rook, Nyx, Asha, plus Vela Spark, Borin Flint, Kira Bloom, Dax Coil, Juniper Vale, Sol Renn, Ori Pax, Maeve Thorn, and a Custom Rite slot.
+
+Nyx and Maeve teleport / air dash. Dax dashes like Chris. Juniper freeze-nova like Asha. Everyone has their own theme in the gallery.
+
 ## Add a character
 
 1. Copy `data/characters/chris_xrisakis.json` to a new file, e.g. `data/characters/my_fighter.json`.
@@ -46,14 +69,13 @@ Or write a description (see `data/descriptions/example.txt`), put a photo at `da
 
 ## Combat notes
 
-- Versus is best of 3. **Arcade** is a first-to-1 ladder through the roster.
+- Versus is best of 3. **Arcade** / **Survival** / **Time Attack** are first-to-1.
 - Special meter (pink METER) fills from hitting and getting hit. Full meter = **EX special**. Super (bottom) fills more slowly.
 - Combos: Light → Light → Heavy → Special → Super. HUD shows hits, damage, scaling, and a rank.
 - Jump-cancel lights/heavies on hit. Super-cancel specials on hit.
-- Each fighter's special and super actually play differently (teleport, quake, freeze, multi-fireballs). Nyx can air dash.
+- Each fighter's special and super actually play differently (teleport, quake, freeze, multi-fireballs).
 - **Rage** below 22% HP: extra damage and a red glow. **Guard** fills when you block; a full bar is a guard break.
 - Training: infinite timer, meter refill, R reset, F dummy cycle (CPU / block / stand / crouch / jump / mash), on-screen advantage.
-- Attract demo starts if you wait on the title splash.
 - Throw tech (press Throw as they grab). Air tech near the end of air hitstun.
 - Just Guard (block at the last moment). Pushblock (Special during blockstun, 25 meter).
 - Getup attack is a reversal. Super and dash attacks have armor. Clash if both hitboxes meet.
@@ -61,7 +83,19 @@ Or write a description (see `data/descriptions/example.txt`), put a photo at `da
 
 ## Arenas
 
-Green Hill Field (default), Moonlit Temple, Neon Rift Street, The Under-Rite, Crimson Keep. Character select → stage select, or set one in Options / T on the roster.
+Green Hill Field (default), Moonlit Temple, Neon Rift Street, The Under-Rite, Crimson Keep, Tidal Dock, Snow Ridge, Desert Gate, Clocktower, Bamboo Yard, Storm Bridge, Sunset Pier, Void Garden.
+
+Character select → stage select (A/D, Enter), or T on the roster / Options.
+
+Each stage has its own song. Character select plays that fighter's theme.
+
+## Soundtrack
+
+39 unique songs in `assets/audio/music/` (one per menu, mode, stage, and fighter). Rebuild with:
+
+`python3 tools/bake_soundtrack.py`
+
+Gallery Radio plays every track. Fights pick survival / time attack / arcade / final / stage themes from the same catalog.
 
 ## Download
 

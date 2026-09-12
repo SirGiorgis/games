@@ -85,6 +85,13 @@ static func _special(def: CharacterDef) -> Dictionary:
 			base.active = 0.10
 			base.duration = 0.58
 			base.damage = 64.0 * def.attack
+			if def.id == "kira_bloom":
+				base.hits = 3
+				base.hit_gap = 0.08
+				base.damage = 48.0 * def.attack
+			elif def.id == "sol_renn":
+				base.proj_speed = 520.0
+				base.damage = 70.0 * def.attack
 		"dash":
 			base.reach = 118.0
 			base.startup = 0.07
@@ -92,7 +99,7 @@ static func _special(def: CharacterDef) -> Dictionary:
 			base.juggle = true
 			base.dash_spd = 640.0
 			base.invuln = 0.08
-			if def.id == "nyx_hollow":
+			if def.id == "nyx_hollow" or def.id == "maeve_thorn":
 				base.teleport = true
 				base.invuln = 0.16
 				base.dash_spd = 0.0
@@ -102,7 +109,7 @@ static func _special(def: CharacterDef) -> Dictionary:
 				base.dash_spd = 540.0
 				base.invuln = 0.13
 				base.damage = 100.0 * def.attack
-			elif def.id == "chris_xrisakis":
+			elif def.id == "chris_xrisakis" or def.id == "dax_coil":
 				base.dash_spd = 720.0
 				base.step = 160.0
 		"slam":
@@ -138,7 +145,7 @@ static func _ultimate(def: CharacterDef) -> Dictionary:
 			u.active = 0.14
 			u.duration = 0.78
 			u.damage = 150.0 * def.attack
-			if def.id == "asha_wren":
+			if def.id == "asha_wren" or def.id == "juniper_vale":
 				u.freeze = true
 				u.hitstun = 0.9
 		"void":

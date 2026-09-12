@@ -506,7 +506,7 @@ func _think(cmd: Dictionary, delta: float) -> void:
 	if not on_ground:
 		if state != State.JUMP:
 			state = State.JUMP
-		if def.id == "nyx_hollow" and not _air_dash_used and (cmd.backdash or (cmd.fwd and cmd.special)):
+		if (def.id == "nyx_hollow" or def.id == "maeve_thorn") and not _air_dash_used and (cmd.backdash or (cmd.fwd and cmd.special)):
 			_air_dash_used = true
 			invuln = max(invuln, 0.10)
 			velocity.x = float(facing) * (620.0 if cmd.fwd else -520.0)

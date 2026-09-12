@@ -1,0 +1,279 @@
+{
+  "map": {
+    "timeattack": "timeattack.wav",
+    "menu": "menu.wav",
+    "survival": "survival.wav",
+    "arcade": "arcade.wav",
+    "results": "results.wav",
+    "defeat": "defeat.wav",
+    "gallery": "gallery.wav",
+    "tutorial": "tutorial.wav",
+    "attract": "attract.wav",
+    "pause": "pause.wav",
+    "final": "final.wav",
+    "credits": "credits.wav",
+    "stage:grass_field": "stage_grass_field.wav",
+    "stage:moonlit_temple": "stage_moonlit_temple.wav",
+    "stage:neon_street": "stage_neon_street.wav",
+    "stage:the_pit": "stage_the_pit.wav",
+    "stage:crimson_keep": "stage_crimson_keep.wav",
+    "stage:snow_ridge": "stage_snow_ridge.wav",
+    "stage:tidal_dock": "stage_tidal_dock.wav",
+    "stage:desert_gate": "stage_desert_gate.wav",
+    "stage:clocktower": "stage_clocktower.wav",
+    "stage:bamboo_yard": "stage_bamboo_yard.wav",
+    "stage:sunset_pier": "stage_sunset_pier.wav",
+    "stage:storm_bridge": "stage_storm_bridge.wav",
+    "stage:void_garden": "stage_void_garden.wav",
+    "theme:hoodrich_stacks": "theme_hoodrich_stacks.wav",
+    "theme:chris_xrisakis": "theme_chris_xrisakis.wav",
+    "theme:mira_solen": "theme_mira_solen.wav",
+    "theme:rook_ironveil": "theme_rook_ironveil.wav",
+    "theme:nyx_hollow": "theme_nyx_hollow.wav",
+    "theme:asha_wren": "theme_asha_wren.wav",
+    "theme:vela_spark": "theme_vela_spark.wav",
+    "theme:borin_flint": "theme_borin_flint.wav",
+    "theme:kira_bloom": "theme_kira_bloom.wav",
+    "theme:dax_coil": "theme_dax_coil.wav",
+    "theme:juniper_vale": "theme_juniper_vale.wav",
+    "theme:sol_renn": "theme_sol_renn.wav",
+    "theme:ori_pax": "theme_ori_pax.wav",
+    "theme:maeve_thorn": "theme_maeve_thorn.wav"
+  },
+  "tracks": [
+    {
+      "id": "arcade",
+      "file": "arcade.wav",
+      "title": "LADDER DRUMS",
+      "seconds": 72
+    },
+    {
+      "id": "attract",
+      "file": "attract.wav",
+      "title": "ATTRACT DEMO",
+      "seconds": 72
+    },
+    {
+      "id": "credits",
+      "file": "credits.wav",
+      "title": "AFTER THE RITE",
+      "seconds": 72
+    },
+    {
+      "id": "defeat",
+      "file": "defeat.wav",
+      "title": "LIGHTS DOWN",
+      "seconds": 72
+    },
+    {
+      "id": "final",
+      "file": "final.wav",
+      "title": "FINAL ROUND",
+      "seconds": 72
+    },
+    {
+      "id": "gallery",
+      "file": "gallery.wav",
+      "title": "VINYL ROOM",
+      "seconds": 72
+    },
+    {
+      "id": "menu",
+      "file": "menu.wav",
+      "title": "CABINET LIGHTS",
+      "seconds": 72
+    },
+    {
+      "id": "pause",
+      "file": "pause.wav",
+      "title": "HOLD MUSIC",
+      "seconds": 72
+    },
+    {
+      "id": "results",
+      "file": "results.wav",
+      "title": "HOUSE CALL CREST",
+      "seconds": 72
+    },
+    {
+      "id": "stage:bamboo_yard",
+      "file": "stage_bamboo_yard.wav",
+      "title": "BAMBOO YARD",
+      "seconds": 72
+    },
+    {
+      "id": "stage:clocktower",
+      "file": "stage_clocktower.wav",
+      "title": "CLOCKTOWER",
+      "seconds": 72
+    },
+    {
+      "id": "stage:crimson_keep",
+      "file": "stage_crimson_keep.wav",
+      "title": "CRIMSON KEEP",
+      "seconds": 72
+    },
+    {
+      "id": "stage:desert_gate",
+      "file": "stage_desert_gate.wav",
+      "title": "DESERT GATE",
+      "seconds": 72
+    },
+    {
+      "id": "stage:grass_field",
+      "file": "stage_grass_field.wav",
+      "title": "GREEN HILL FIELD",
+      "seconds": 72
+    },
+    {
+      "id": "stage:moonlit_temple",
+      "file": "stage_moonlit_temple.wav",
+      "title": "MOONLIT TEMPLE",
+      "seconds": 72
+    },
+    {
+      "id": "stage:neon_street",
+      "file": "stage_neon_street.wav",
+      "title": "NEON RIFT STREET",
+      "seconds": 72
+    },
+    {
+      "id": "stage:snow_ridge",
+      "file": "stage_snow_ridge.wav",
+      "title": "SNOW RIDGE",
+      "seconds": 72
+    },
+    {
+      "id": "stage:storm_bridge",
+      "file": "stage_storm_bridge.wav",
+      "title": "STORM BRIDGE",
+      "seconds": 72
+    },
+    {
+      "id": "stage:sunset_pier",
+      "file": "stage_sunset_pier.wav",
+      "title": "SUNSET PIER",
+      "seconds": 72
+    },
+    {
+      "id": "stage:the_pit",
+      "file": "stage_the_pit.wav",
+      "title": "THE UNDER-RITE",
+      "seconds": 72
+    },
+    {
+      "id": "stage:tidal_dock",
+      "file": "stage_tidal_dock.wav",
+      "title": "TIDAL DOCK",
+      "seconds": 72
+    },
+    {
+      "id": "stage:void_garden",
+      "file": "stage_void_garden.wav",
+      "title": "VOID GARDEN",
+      "seconds": 72
+    },
+    {
+      "id": "survival",
+      "file": "survival.wav",
+      "title": "WAVE MACHINE",
+      "seconds": 72
+    },
+    {
+      "id": "theme:asha_wren",
+      "file": "theme_asha_wren.wav",
+      "title": "GLACIER VOW",
+      "seconds": 72
+    },
+    {
+      "id": "theme:borin_flint",
+      "file": "theme_borin_flint.wav",
+      "title": "STONE NOTE",
+      "seconds": 72
+    },
+    {
+      "id": "theme:chris_xrisakis",
+      "file": "theme_chris_xrisakis.wav",
+      "title": "THREAD THE LANE",
+      "seconds": 72
+    },
+    {
+      "id": "theme:dax_coil",
+      "file": "theme_dax_coil.wav",
+      "title": "COIL SNAP",
+      "seconds": 72
+    },
+    {
+      "id": "theme:hoodrich_stacks",
+      "file": "theme_hoodrich_stacks.wav",
+      "title": "SAY THE NAME",
+      "seconds": 72
+    },
+    {
+      "id": "theme:juniper_vale",
+      "file": "theme_juniper_vale.wav",
+      "title": "COLD ROOM",
+      "seconds": 72
+    },
+    {
+      "id": "theme:kira_bloom",
+      "file": "theme_kira_bloom.wav",
+      "title": "PETAL CUT",
+      "seconds": 72
+    },
+    {
+      "id": "theme:maeve_thorn",
+      "file": "theme_maeve_thorn.wav",
+      "title": "THORN STEP",
+      "seconds": 72
+    },
+    {
+      "id": "theme:mira_solen",
+      "file": "theme_mira_solen.wav",
+      "title": "CINDER ARC",
+      "seconds": 72
+    },
+    {
+      "id": "theme:nyx_hollow",
+      "file": "theme_nyx_hollow.wav",
+      "title": "ALREADY BEHIND YOU",
+      "seconds": 72
+    },
+    {
+      "id": "theme:ori_pax",
+      "file": "theme_ori_pax.wav",
+      "title": "QUIET SPARK",
+      "seconds": 72
+    },
+    {
+      "id": "theme:rook_ironveil",
+      "file": "theme_rook_ironveil.wav",
+      "title": "IRON VOW",
+      "seconds": 72
+    },
+    {
+      "id": "theme:sol_renn",
+      "file": "theme_sol_renn.wav",
+      "title": "NOON FIRE",
+      "seconds": 72
+    },
+    {
+      "id": "theme:vela_spark",
+      "file": "theme_vela_spark.wav",
+      "title": "LIVE WIRE",
+      "seconds": 72
+    },
+    {
+      "id": "timeattack",
+      "file": "timeattack.wav",
+      "title": "CLOCK FUSE",
+      "seconds": 72
+    },
+    {
+      "id": "tutorial",
+      "file": "tutorial.wav",
+      "title": "FIRST STEPS",
+      "seconds": 72
+    }
+  ]
+}

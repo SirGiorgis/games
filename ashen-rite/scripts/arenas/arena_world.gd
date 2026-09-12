@@ -61,6 +61,12 @@ func _dust(id: String) -> void:
 		col = Color(0.9, 0.3, 0.15, 0.5)
 	elif id == "grass_field":
 		col = Color(0.7, 0.82, 0.4, 0.28)
+	elif id == "snow_ridge":
+		col = Color(0.9, 0.94, 1.0, 0.4)
+	elif id == "desert_gate":
+		col = Color(0.9, 0.72, 0.32, 0.4)
+	elif id == "void_garden":
+		col = Color(0.62, 0.32, 0.85, 0.4)
 	var parts := CPUParticles2D.new()
 	parts.position = Vector2(640, 240)
 	parts.emitting = true
@@ -108,6 +114,29 @@ func _weather(id: String) -> void:
 		parts.direction = Vector2(0, -1)
 	elif id == "crimson_keep":
 		col = Color(0.58, 0.14, 0.14, 0.48)
+	elif id == "snow_ridge":
+		col = Color(0.95, 0.97, 1.0, 0.82)
+		parts.gravity = Vector2(10, 48)
+		parts.amount = 70
+	elif id == "storm_bridge":
+		col = Color(0.55, 0.65, 0.82, 0.72)
+		parts.gravity = Vector2(48, 110)
+		parts.amount = 90
+		parts.initial_velocity_max = 36
+	elif id == "void_garden":
+		col = Color(0.72, 0.42, 1.0, 0.55)
+		parts.gravity = Vector2(0, -14)
+	elif id == "tidal_dock":
+		col = Color(0.62, 0.82, 0.92, 0.48)
+	elif id == "desert_gate":
+		col = Color(0.92, 0.76, 0.42, 0.42)
+		parts.gravity = Vector2(22, 8)
+	elif id == "bamboo_yard":
+		col = Color(0.55, 0.78, 0.32, 0.4)
+	elif id == "sunset_pier":
+		col = Color(0.98, 0.55, 0.28, 0.4)
+	elif id == "clocktower":
+		col = Color(0.85, 0.75, 0.40, 0.45)
 	parts.color = col
 	parts.texture = Pix.tex(Pix.image(2, 2, col))
 	parts.z_index = -1
@@ -169,7 +198,11 @@ func _process(delta: float) -> void:
 
 
 static func all_ids() -> PackedStringArray:
-	return PackedStringArray(["grass_field", "moonlit_temple", "neon_street", "the_pit", "crimson_keep"])
+	return PackedStringArray([
+		"grass_field", "moonlit_temple", "neon_street", "the_pit", "crimson_keep",
+		"tidal_dock", "snow_ridge", "desert_gate", "clocktower", "bamboo_yard",
+		"storm_bridge", "sunset_pier", "void_garden",
+	])
 
 
 static func display_name(id: String) -> String:
@@ -182,5 +215,21 @@ static func display_name(id: String) -> String:
 			return "CRIMSON KEEP"
 		"moonlit_temple":
 			return "MOONLIT TEMPLE"
+		"tidal_dock":
+			return "TIDAL DOCK"
+		"snow_ridge":
+			return "SNOW RIDGE"
+		"desert_gate":
+			return "DESERT GATE"
+		"clocktower":
+			return "CLOCKTOWER"
+		"bamboo_yard":
+			return "BAMBOO YARD"
+		"storm_bridge":
+			return "STORM BRIDGE"
+		"sunset_pier":
+			return "SUNSET PIER"
+		"void_garden":
+			return "VOID GARDEN"
 		_:
 			return "GREEN HILL FIELD"

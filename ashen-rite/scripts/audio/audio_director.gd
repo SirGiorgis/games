@@ -1,5 +1,7 @@
 extends Node
-## Runtime-synthesized SFX and music. No imported audio files required.
+## File soundtrack when present, synthesized SFX always.
+
+const MUSIC_DIR := "res://assets/audio/music/"
 
 var music_player: AudioStreamPlayer
 var sfx_players: Array[AudioStreamPlayer] = []
@@ -7,6 +9,10 @@ var _cursor := 0
 var _library: Dictionary = {}
 var _music_menu: AudioStreamWAV
 var _music_fight: AudioStreamWAV
+var _catalog: Dictionary = {}
+var _track_cache: Dictionary = {}
+var _current_key: String = ""
+var tracks: Array = []
 
 
 func _ready() -> void:
@@ -18,18 +24,124 @@ func _ready() -> void:
 		p.bus = "Master"
 		add_child(p)
 		sfx_players.append(p)
+	_load_catalog()
 	_build_library()
 	GameState.apply_audio_buses()
 	play_music("menu")
 
 
-func play_music(kind: String) -> void:
-	var stream: AudioStreamWAV = _music_fight if kind == "fight" else _music_menu
-	if music_player.stream == stream and music_player.playing:
+func _load_catalog() -> void:
+	var path := MUSIC_DIR + "catalog.json"
+	if not FileAccess.file_exists(path):
 		return
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return
+	var parsed = JSON.parse_string(f.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return
+	_catalog = parsed.get("map", {})
+	tracks = parsed.get("tracks", [])
+
+
+func resolve_music_key(kind: String) -> String:
+	if kind == "fight":
+		if GameState.survival:
+			return "survival"
+		if GameState.time_attack:
+			return "timeattack"
+		if GameState.arcade:
+			if GameState.arcade_queue.size() > 0 and GameState.arcade_index >= GameState.arcade_queue.size() - 1:
+				return "final"
+			return "arcade"
+		if GameState.attract:
+			return "attract"
+		return "stage:" + GameState.arena_id
+	if kind.begins_with("theme:"):
+		return kind
+	if kind.begins_with("stage:"):
+		return kind
+	return kind
+
+
+func play_music(kind: String) -> void:
+	var key: String = resolve_music_key(kind)
+	if key == _current_key and music_player.playing:
+		return
+	var stream: AudioStream = _stream_for(key)
+	if stream == null:
+		stream = _music_fight if kind == "fight" else _music_menu
+	if music_player.stream == stream and music_player.playing:
+		_current_key = key
+		return
+	_current_key = key
 	music_player.stream = stream
 	music_player.volume_db = linear_to_db(clamp(GameState.music_volume, 0.001, 1.0))
 	music_player.play()
+
+
+func _stream_for(key: String) -> AudioStream:
+	if _track_cache.has(key):
+		return _track_cache[key]
+	var fname: String = str(_catalog.get(key, ""))
+	if fname.is_empty() and _catalog.has("menu"):
+		if key.begins_with("stage:"):
+			fname = str(_catalog.get("stage:grass_field", ""))
+		elif key.begins_with("theme:"):
+			fname = str(_catalog.get("theme:chris_xrisakis", ""))
+	if fname.is_empty():
+		return null
+	var stream := _load_wav(MUSIC_DIR + fname)
+	if stream:
+		_track_cache[key] = stream
+	return stream
+
+
+func _load_wav(path: String) -> AudioStreamWAV:
+	if not FileAccess.file_exists(path):
+		return null
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return null
+	var hdr := f.get_buffer(4).get_string_from_ascii()
+	if hdr != "RIFF":
+		return null
+	f.get_32()
+	var wave := f.get_buffer(4).get_string_from_ascii()
+	if wave != "WAVE":
+		return null
+	var rate := 48000
+	var ch := 2
+	var data := PackedByteArray()
+	while f.get_position() + 8 <= f.get_length():
+		var cid := f.get_buffer(4).get_string_from_ascii()
+		var sz := f.get_32()
+		var next: int = f.get_position() + sz
+		if cid == "fmt ":
+			f.get_16()
+			ch = f.get_16()
+			rate = f.get_32()
+			f.get_32()
+			f.get_16()
+			f.get_16()
+			f.seek(next + (sz & 1))
+		elif cid == "data":
+			data = f.get_buffer(sz)
+			break
+		else:
+			f.seek(next + (sz & 1))
+	if data.is_empty():
+		return null
+	var s := AudioStreamWAV.new()
+	s.format = AudioStreamWAV.FORMAT_16_BITS
+	s.mix_rate = rate
+	s.stereo = ch == 2
+	s.data = data
+	s.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	s.loop_begin = 0
+	var frame_bytes: int = 2 * maxi(ch, 1)
+	s.loop_end = int(data.size() / frame_bytes)
+	return s
 
 
 func play(id: String, pitch: float = 1.0, vol: float = 1.0) -> void:

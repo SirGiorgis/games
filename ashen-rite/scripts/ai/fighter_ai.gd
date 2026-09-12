@@ -54,6 +54,13 @@ func _apply_difficulty() -> void:
 			_aggro -= 0.1
 		"mixup":
 			_mistake *= 0.7
+	if GameState.survival:
+		var w: float = float(maxi(GameState.survival_wave - 1, 0))
+		_reaction = maxf(0.06, _reaction - w * 0.012)
+		_mistake = maxf(0.02, _mistake - w * 0.015)
+		_aggro = minf(0.95, _aggro + w * 0.03)
+		_special_bias = minf(0.72, _special_bias + w * 0.02)
+		_block_bias = minf(0.8, _block_bias + w * 0.02)
 
 
 func poll() -> Dictionary:

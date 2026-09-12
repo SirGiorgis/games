@@ -3,6 +3,7 @@ extends Node
 
 const SplashScr := preload("res://scripts/ui/splash_screen.gd")
 const StageScr := preload("res://scripts/ui/stage_select.gd")
+const GalleryScr := preload("res://scripts/ui/gallery_screen.gd")
 
 var _host: Control
 var _splash: Control
@@ -12,6 +13,7 @@ var _stage: Control
 var _options: OptionsScreen
 var _controls: ControlsScreen
 var _result: ResultScreen
+var _gallery: Control
 var _match: MatchDirector
 
 
@@ -81,6 +83,24 @@ func _on_menu(id: String) -> void:
 			GameState.training = false
 			GameState.attract = false
 			GameState.arcade = true
+			GameState.survival = false
+			GameState.time_attack = false
+			GameState.p2_is_cpu = true
+			_show_select()
+		"SURVIVAL":
+			GameState.training = false
+			GameState.attract = false
+			GameState.arcade = false
+			GameState.survival = true
+			GameState.time_attack = false
+			GameState.p2_is_cpu = true
+			_show_select()
+		"TIME ATTACK":
+			GameState.training = false
+			GameState.attract = false
+			GameState.arcade = false
+			GameState.survival = false
+			GameState.time_attack = true
 			GameState.p2_is_cpu = true
 			_show_select()
 		"TRAINING":
@@ -92,6 +112,8 @@ func _on_menu(id: String) -> void:
 		"CHARACTER SELECT":
 			GameState.end_arcade()
 			_show_select()
+		"GALLERY":
+			_show_gallery()
 		"OPTIONS":
 			_show_options()
 		"CONTROLS":
@@ -125,6 +147,10 @@ func _on_stage_picked() -> void:
 	GameState.attract = false
 	if GameState.arcade:
 		GameState.begin_arcade(GameState.p1_character_id)
+	elif GameState.survival:
+		GameState.begin_survival(GameState.p1_character_id)
+	elif GameState.time_attack:
+		GameState.begin_time_attack(GameState.p1_character_id)
 	else:
 		GameState.rounds_to_win = 2
 	_start_match()
@@ -138,6 +164,15 @@ func _show_options() -> void:
 		_options.closed.connect(_show_menu)
 	_options.visible = true
 	_options._refresh()
+
+
+func _show_gallery() -> void:
+	_hide_ui()
+	if _gallery:
+		_gallery.queue_free()
+	_gallery = GalleryScr.new()
+	_host.add_child(_gallery)
+	_gallery.closed.connect(_show_menu)
 
 
 func _show_controls() -> void:
@@ -186,6 +221,10 @@ func _on_match_over(code: int) -> void:
 		if GameState.next_arcade_bout():
 			_start_match()
 			return
+	if GameState.survival and GameState.last_winner == 0:
+		GameState.next_survival_wave()
+		_start_match()
+		return
 	_hide_ui()
 	if _result == null:
 		_result = ResultScreen.new()
@@ -202,4 +241,6 @@ func _on_rematch() -> void:
 		var last_bout: bool = GameState.arcade_index >= GameState.arcade_queue.size()
 		if last_bout and GameState.last_winner == 0:
 			GameState.begin_arcade(GameState.p1_character_id)
+	elif GameState.survival and GameState.last_winner != 0:
+		GameState.begin_survival(GameState.p1_character_id)
 	_start_match()

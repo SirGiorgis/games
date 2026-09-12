@@ -19,30 +19,31 @@ func _ready() -> void:
 	PixelUI.add_title(self, "SELECT STAGE", 40, Color(0.95, 0.22, 0.28))
 	_ids = ArenaWorld.all_ids()
 	_ids.append("random")
-	var start_x: float = 70.0
+	var start_x: float = 16.0
+	var slot: float = 90.0
 	for i in _ids.size():
 		var card := TextureRect.new()
-		card.position = Vector2(start_x + i * 200.0, 120)
-		card.size = Vector2(180, 110)
+		card.position = Vector2(start_x + i * slot, 118)
+		card.size = Vector2(84, 52)
 		card.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		card.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		card.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		add_child(card)
 		_cards.append(card)
 		var nm := PixelLabel.new()
-		nm.position = Vector2(start_x + i * 200.0, 236)
+		nm.position = Vector2(start_x + i * slot, 174)
 		add_child(nm)
 		_names.append(nm)
 
-	PixelUI.add_panel(self, Vector2(160, 280), Vector2(960, 340), PixelUI.GOLD)
+	PixelUI.add_panel(self, Vector2(160, 210), Vector2(960, 400), PixelUI.GOLD)
 	_preview = TextureRect.new()
-	_preview.position = Vector2(176, 296)
-	_preview.size = Vector2(928, 260)
+	_preview.position = Vector2(176, 226)
+	_preview.size = Vector2(928, 320)
 	_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	add_child(_preview)
-	_title = PixelUI.label_at(self, "", Vector2(0, 568), 3, Color(1, 0.88, 0.42), 0, 1280)
+	_title = PixelUI.label_at(self, "", Vector2(0, 552), 3, Color(1, 0.88, 0.42), 0, 1280)
 	_title.set_centered(1280)
 	PixelUI.add_footer(self, "A/D SELECT  ENTER FIGHT  ESC BACK")
 	_sync_from_state()
@@ -104,7 +105,9 @@ func _refresh() -> void:
 	if pick == "random":
 		_preview.texture = PixelArenaBake.texture("grass_field")
 		_title.set_pix("RANDOM STAGE", 3, Color(1, 0.88, 0.42))
+		AudioDirector.play_music("menu")
 	else:
 		_preview.texture = PixelArenaBake.texture(pick)
 		_title.set_pix(ArenaWorld.display_name(pick), 3, Color(1, 0.88, 0.42))
+		AudioDirector.play_music("stage:" + pick)
 	_title.set_centered(1280)

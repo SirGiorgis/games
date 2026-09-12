@@ -62,7 +62,17 @@ func present() -> void:
 	_index = 0
 	var p1_win := GameState.p1_rounds >= GameState.rounds_to_win
 	var arcade_clear: bool = GameState.arcade and p1_win and GameState.arcade_index >= GameState.arcade_queue.size()
-	if arcade_clear:
+	if GameState.survival:
+		if p1_win:
+			_title.set_pix("WAVE %d" % GameState.survival_wave, 5, Color(0.95, 0.82, 0.32))
+			AudioDirector.play("victory")
+		else:
+			_title.set_pix("SURVIVAL OVER", 4, Color(0.88, 0.22, 0.28))
+			AudioDirector.play("defeat")
+	elif GameState.time_attack:
+		_title.set_pix("TIME ATTACK", 5, Color(0.95, 0.82, 0.32))
+		AudioDirector.play("victory")
+	elif arcade_clear:
 		_title.set_pix("ARCADE CLEAR", 5, Color(0.95, 0.82, 0.32))
 		AudioDirector.play("victory")
 	elif GameState.arcade and not p1_win:
@@ -83,6 +93,10 @@ func present() -> void:
 	var q: String = winner.win_quote
 	if arcade_clear:
 		q = "SCORE %d   MAX %d HIT   %d DMG" % [GameState.arcade_score, GameState.match_max_combo, int(GameState.match_damage)]
+	elif GameState.survival:
+		q = "WAVE %d   SCORE %d   MAX %d HIT" % [GameState.survival_wave, GameState.arcade_score, GameState.match_max_combo]
+	elif GameState.time_attack:
+		q = "DMG %d   MAX %d HIT   HITS %d" % [int(GameState.match_damage), GameState.match_max_combo, GameState.match_hits]
 	elif GameState.last_was_perfect:
 		q = "PERFECT - " + q
 	elif GameState.last_was_dramatic:
