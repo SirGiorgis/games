@@ -48,8 +48,8 @@ func _ready() -> void:
 	p2 = Fighter.new()
 	var c1 := CharacterCatalog.get_def(GameState.p1_character_id)
 	var c2 := CharacterCatalog.get_def(GameState.p2_character_id)
-	p1.setup(0, c1, false, Vector2(360, 500))
-	p2.setup(1, c2, GameState.p2_is_cpu, Vector2(920, 500))
+	p1.setup(0, c1, GameState.attract, Vector2(360, 500))
+	p2.setup(1, c2, GameState.p2_is_cpu or GameState.attract, Vector2(920, 500))
 	p1.opponent = p2
 	p2.opponent = p1
 	add_child(p1)
@@ -133,7 +133,11 @@ func _begin_round() -> void:
 	_first_hit = true
 	_super_dip = 0.0
 	var final_r: bool = GameState.p1_rounds >= GameState.rounds_to_win - 1 and GameState.p2_rounds >= GameState.rounds_to_win - 1 and round_index > 1
-	if final_r:
+	if GameState.training:
+		_set_banner("TRAINING")
+	elif GameState.attract:
+		_set_banner("DEMO")
+	elif final_r:
 		_set_banner("FINAL ROUND")
 	else:
 		_set_banner("ROUND %d" % round_index)
@@ -150,6 +154,9 @@ func _process(delta: float) -> void:
 			_restore_time()
 	if _paused:
 		return
+	if GameState.attract and (Input.is_action_just_pressed(ControlMap.MENU.confirm) or Input.is_action_just_pressed(ControlMap.P1.pause)):
+		_quit_match()
+		return
 	if _pause_lock <= 0.0 and Input.is_action_just_pressed(ControlMap.P1.pause):
 		_pause()
 		return
@@ -159,7 +166,8 @@ func _process(delta: float) -> void:
 	match phase:
 		"vs":
 			phase_t += delta
-			if phase_t > 1.85 or Input.is_action_just_pressed(ControlMap.MENU.confirm):
+			var vs_need: float = 0.45 if (GameState.training or GameState.attract) else 1.85
+			if phase_t > vs_need or Input.is_action_just_pressed(ControlMap.MENU.confirm):
 				vs_layer.dismiss()
 				_begin_round()
 		"intro":
@@ -177,14 +185,20 @@ func _process(delta: float) -> void:
 				p2.can_act = true
 				phase = "fight"
 		"fight":
-			time_left = max(0.0, time_left - delta)
-			var t: int = int(ceil(time_left))
-			hud.set_timer(t)
-			if t != _last_tick and t in [10, 5, 3, 2, 1]:
-				AudioDirector.play("tick", 1.0 + (10 - t) * 0.04, 0.55)
-			_last_tick = t
-			if time_left <= 0.0:
-				_timeout()
+			if GameState.training:
+				time_left = 99.0
+				hud.set_timer(99)
+				if p1 and not p1.is_cpu:
+					p1.training_tick(delta)
+			else:
+				time_left = max(0.0, time_left - delta)
+				var t: int = int(ceil(time_left))
+				hud.set_timer(t)
+				if t != _last_tick and t in [10, 5, 3, 2, 1]:
+					AudioDirector.play("tick", 1.0 + (10 - t) * 0.04, 0.55)
+				_last_tick = t
+				if time_left <= 0.0:
+					_timeout()
 		"slowko":
 			phase_t += delta
 			if phase_t > 0.42:
@@ -193,7 +207,7 @@ func _process(delta: float) -> void:
 				phase_t = 0.0
 		"ko":
 			phase_t += delta
-			if phase_t > 1.7:
+			if phase_t > (0.55 if GameState.training else 1.7):
 				_finish_round()
 		"endwait":
 			phase_t += delta
@@ -214,6 +228,12 @@ func _resolve_ko() -> void:
 		return
 	p1.lock_out()
 	p2.lock_out()
+	if GameState.training:
+		_set_banner("RESET")
+		AudioDirector.play("ko")
+		phase = "ko"
+		phase_t = 0.0
+		return
 	var d1: bool = p1.health <= 0.0
 	var d2: bool = p2.health <= 0.0
 	GameState.last_was_timeout = false
@@ -304,6 +324,12 @@ func _restore_time() -> void:
 
 func _finish_round() -> void:
 	_restore_time()
+	if GameState.training:
+		_begin_round()
+		return
+	if GameState.attract:
+		match_over.emit(GameState.last_winner)
+		return
 	if GameState.last_was_double:
 		_begin_round()
 		return
@@ -425,7 +451,7 @@ func _set_banner(text: String) -> void:
 		col = Color(0.55, 0.88, 1.0)
 	elif text == "REVERSAL" or text == "SUPER CANCEL" or text == "PUSHBLOCK" or text == "WALL BOUNCE":
 		col = Color(1.0, 0.72, 0.28)
-	elif text == "FINAL ROUND" or text == "FIRST HIT":
+	elif text == "EX" or text == "TRAINING" or text == "DEMO" or text == "RESET" or text == "FINAL ROUND" or text == "FIRST HIT":
 		col = Color(1.0, 0.86, 0.32)
 	var sc: int = 5 if text.length() > 10 else 6
 	_banner.set_pix(text, sc, col)

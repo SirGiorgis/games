@@ -5,7 +5,7 @@ signal closed
 
 var _index := 0
 var _entries: Array[Dictionary] = []
-const KEYS := ["difficulty", "cpu", "arena", "music", "sfx", "shake", "hitboxes", "back"]
+const KEYS := ["difficulty", "cpu", "dummy", "arena", "music", "sfx", "shake", "hitboxes", "back"]
 
 
 func _ready() -> void:
@@ -14,7 +14,7 @@ func _ready() -> void:
 	PixelUI.add_panel(self, Vector2(240, 36), Vector2(800, 640), PixelUI.GOLD)
 	PixelUI.add_title(self, "OPTIONS", 64, Color(0.95, 0.22, 0.28))
 	for i in KEYS.size():
-		_entries.append(PixelUI.add_menu_row(self, 140.0 + i * 46.0, 600))
+		_entries.append(PixelUI.add_menu_row(self, 128.0 + i * 44.0, 600))
 	PixelUI.add_footer(self, "A/D ADJUST  ENTER CONFIRM  ESC BACK")
 	_refresh()
 
@@ -50,6 +50,12 @@ func _nudge(dir: int) -> void:
 			GameState.cycle_difficulty(dir)
 		"cpu":
 			GameState.p2_is_cpu = not GameState.p2_is_cpu
+		"dummy":
+			var modes := ["cpu", "block", "stand"]
+			var di := modes.find(GameState.dummy_mode)
+			if di < 0:
+				di = 0
+			GameState.dummy_mode = modes[posmod(di + dir, modes.size())]
 		"arena":
 			var ids := ArenaWorld.all_ids()
 			if GameState.random_arena:
@@ -84,6 +90,7 @@ func _refresh() -> void:
 	var vals := [
 		"AI  < %s >" % GameState.difficulty_name(),
 		"P2  < %s >" % ("CPU" if GameState.p2_is_cpu else "HUMAN"),
+		"DUMMY  < %s >" % GameState.dummy_mode.to_upper(),
 		"ARENA  < %s >" % arena,
 		"MUSIC  < %d >" % int(GameState.music_volume * 100),
 		"SFX  < %d >" % int(GameState.sfx_volume * 100),

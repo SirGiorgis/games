@@ -27,6 +27,9 @@ var music_volume: float = 0.55
 var sfx_volume: float = 0.9
 var shake_strength: float = 1.0
 var show_hitboxes: bool = false
+var training: bool = false
+var attract: bool = false
+var dummy_mode: String = "cpu"
 
 var custom_description: String = "Male fighter, tall, athletic build, black hair, black jacket, aggressive personality, lightning-based powers."
 var custom_photo_path: String = "res://data/characters/refs/custom.png"

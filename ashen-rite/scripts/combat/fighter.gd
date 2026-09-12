@@ -75,6 +75,7 @@ var _coyote: float = 0.0
 var _guard_age: float = 99.0
 var _taunt_t: float = 0.0
 var _wall_used: bool = false
+var _hit_pass: int = 0
 
 var visual: FighterVisual
 var hurtbox: Area2D
@@ -172,6 +173,7 @@ func reset_round(start_pos: Vector2) -> void:
 	_guard_age = 99.0
 	_taunt_t = 0.0
 	_wall_used = false
+	_hit_pass = -1
 	rotation = 0
 	visual.rotation = 0
 	visual.set_pose_name("idle")
@@ -247,7 +249,7 @@ func _gather_command() -> Dictionary:
 		"light": false, "heavy": false, "special": false, "block": false,
 		"grab": false, "ultimate": false,
 		"fwd": false, "back": false, "run": false, "backdash": false,
-		"qcf": false, "qcf2": false,
+		"qcf": false, "qcf2": false, "dp": false,
 	}
 	if round_over or not can_act:
 		return cmd
@@ -272,6 +274,7 @@ func _gather_command() -> Dictionary:
 	cmd.backdash = mot.backdash
 	cmd.qcf = mot.qcf
 	cmd.qcf2 = mot.qcf2
+	cmd.dp = mot.dp
 	return cmd
 
 
@@ -367,10 +370,24 @@ func _think(cmd: Dictionary, delta: float) -> void:
 	if _busy_attack():
 		attack_timer += delta
 		visual.attack_u = clamp(attack_timer / max(attack_duration, 0.01), 0.0, 1.0)
-		if attack_timer >= attack_active_from and attack_timer <= attack_active_until:
-			if not hitbox.active:
+		var hits: int = maxi(int(current_attack.get("hits", 1)), 1)
+		var gap: float = float(current_attack.get("hit_gap", 0.08))
+		var act: float = maxf(attack_active_until - attack_active_from, 0.02)
+		var live := false
+		var hit_i := 0
+		for i in hits:
+			var a0: float = attack_active_from + float(i) * (act + gap)
+			var a1: float = a0 + act
+			if attack_timer >= a0 and attack_timer <= a1:
+				live = true
+				hit_i = i
+				break
+		if live:
+			if (not hitbox.active) or _hit_pass != hit_i:
+				hitbox.disarm()
 				hitbox.arm(current_attack)
-		elif hitbox.active and attack_timer > attack_active_until:
+				_hit_pass = hit_i
+		elif hitbox.active:
 			hitbox.disarm()
 		_queue_inputs(cmd)
 		if attack_timer >= attack_duration:
@@ -413,7 +430,7 @@ func _think(cmd: Dictionary, delta: float) -> void:
 			opponent.freeze_frames = max(opponent.freeze_frames, 0.28)
 		freeze_frames = max(freeze_frames, 0.12)
 		return
-	var want_special: bool = (cmd.special and special_meter >= 50.0) or (cmd.qcf and (cmd.light or cmd.heavy or cmd.special) and special_meter >= 50.0)
+	var want_special: bool = (cmd.special and special_meter >= 50.0) or ((cmd.qcf or cmd.dp) and (cmd.light or cmd.heavy or cmd.special) and special_meter >= 50.0) or (cmd.dp and special_meter >= 50.0)
 	if want_special:
 		_buf.consume_motion()
 		_start_attack("special")
@@ -603,15 +620,25 @@ func _try_chain(cmd: Dictionary) -> void:
 
 func _start_attack(kind: String) -> void:
 	var atk := CombatRules.make_attack(kind, def)
+	var ex := false
+	if kind == "special" and special_meter >= MAX_SPECIAL:
+		atk = CombatRules.apply_ex(atk, def)
+		ex = true
 	current_attack = atk
 	last_attack_was_hit = false
 	attack_timer = 0.0
-	attack_duration = atk.duration
+	_hit_pass = -1
+	var hits: int = maxi(int(atk.get("hits", 1)), 1)
+	var extra: float = 0.0
+	if hits > 1:
+		extra = float(hits - 1) * (float(atk.active) + float(atk.get("hit_gap", 0.08)))
+	attack_duration = float(atk.duration) + extra
 	attack_active_from = atk.startup
 	attack_active_until = atk.startup + atk.active
 	hitbox.disarm()
-	hitbox.configure(atk.size, Vector2(atk.reach * facing, atk.y))
-	visual.set_attack_timing(atk.startup, atk.active, atk.duration)
+	hitbox.configure(atk.size, Vector2(float(atk.reach) * float(facing), atk.y))
+	visual.set_attack_timing(atk.startup, atk.active, attack_duration)
+	invuln = max(invuln, float(atk.get("invuln", 0.0)))
 	match kind:
 		"light", "clight", "jlight":
 			state = State.LIGHT
@@ -621,18 +648,19 @@ func _start_attack(kind: String) -> void:
 			AudioDirector.play("whoosh", 0.85, 0.6)
 		"special":
 			state = State.SPECIAL
-			special_meter = max(0.0, special_meter - 50.0)
-			AudioDirector.play("special")
-			if def.special_id == "dash":
-				velocity.x = facing * 620.0
-				velocity.y = -60.0
-			elif def.special_id == "slam":
-				velocity.y = -240.0
+			special_meter = 0.0 if ex else max(0.0, special_meter - 50.0)
+			AudioDirector.play("special", 1.15 if ex else 1.0, 0.75 if ex else 0.55)
+			if ex:
+				announced.emit("EX")
+			else:
+				announced.emit(def.special_name.to_upper())
+			_apply_special_motion(atk)
 			_spawn_projectile_if_any()
 		"ultimate":
 			state = State.ULTIMATE
 			ultimate_meter = 0.0
 			AudioDirector.play("ultimate")
+			_apply_special_motion(atk)
 			_spawn_projectile_if_any()
 			super_started.emit()
 		"grab":
@@ -647,15 +675,46 @@ func _start_attack(kind: String) -> void:
 		velocity.x = lerpf(velocity.x, float(facing) * step, 0.78)
 
 
+func _apply_special_motion(atk: Dictionary) -> void:
+	var spd: float = float(atk.get("dash_spd", 0.0))
+	if spd != 0.0:
+		velocity.x = float(facing) * spd
+		velocity.y = minf(velocity.y, -40.0)
+		if visual:
+			visual.dust()
+	if def.special_id == "slam" and str(atk.get("kind", "")) == "special":
+		velocity.y = -260.0
+	if atk.get("teleport") and opponent:
+		invuln = max(invuln, 0.16)
+		position.x = clampf(opponent.position.x + float(facing) * 58.0, 80.0, 1200.0)
+		facing = -facing
+		visual.facing = facing
+		if visual:
+			visual.punch_impact(0.8)
+		AudioDirector.play("whoosh", 1.4, 0.7)
+	if atk.get("quake") and visual:
+		visual.dust()
+		AudioDirector.play("hit_h", 0.7, 0.8)
+
+
 func _spawn_projectile_if_any() -> void:
-	var kind: String = current_attack.get("projectile", "")
+	var kind: String = str(current_attack.get("projectile", ""))
 	if kind.is_empty():
 		return
-	var p := Projectile.new()
-	p.setup(self, kind, def.accent)
-	p.position = global_position + Vector2(28 * facing, -58)
-	p.velocity = Vector2(current_attack.get("proj_speed", 520.0) * facing, 0)
-	get_parent().add_child(p)
+	var n: int = maxi(int(current_attack.get("proj_count", 1)), 1)
+	var spread: float = float(current_attack.get("proj_spread", 0.0))
+	for i in n:
+		var p := Projectile.new()
+		p.setup(self, kind, def.accent)
+		p.pierce = bool(current_attack.get("pierce", false))
+		p.freeze = bool(current_attack.get("freeze", false))
+		p.life = float(current_attack.get("proj_life", 0.7))
+		p.position = global_position + Vector2(28 * facing, -58 - i * 6)
+		var vy: float = 0.0
+		if n > 1:
+			vy = spread * (float(i) - float(n - 1) * 0.5) / maxf(float(n - 1), 1.0)
+		p.velocity = Vector2(float(current_attack.get("proj_speed", 520.0)) * float(facing), vy)
+		get_parent().add_child(p)
 
 
 func _busy_attack() -> bool:
@@ -777,6 +836,10 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 	AudioDirector.play(snd, randf_range(0.92, 1.08))
 	freeze_frames = float(attack.hitstop) * (1.25 if counter else 1.0)
 	attacker.freeze_frames = float(attack.hitstop) * 0.85
+	if bool(attack.get("freeze", false)):
+		freeze_frames = max(freeze_frames, 0.22)
+		if visual:
+			visual.flash = 1.0
 	health_changed.emit(health, max_health)
 	meters_changed.emit(special_meter, ultimate_meter)
 	attacker.meters_changed.emit(attacker.special_meter, attacker.ultimate_meter)
@@ -940,6 +1003,14 @@ func _taunt() -> void:
 	if visual:
 		visual.set_pose_name("victory")
 		visual.punch_impact(0.35)
+
+
+func training_tick(delta: float) -> void:
+	if round_over:
+		return
+	special_meter = min(MAX_SPECIAL, special_meter + 30.0 * delta)
+	ultimate_meter = min(MAX_ULTIMATE, ultimate_meter + 18.0 * delta)
+	meters_changed.emit(special_meter, ultimate_meter)
 
 
 func _integrate(_delta: float) -> void:

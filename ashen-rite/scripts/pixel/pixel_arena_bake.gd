@@ -189,53 +189,83 @@ static func _cottage(img: Image, x: int, y: int, w: int, h: int) -> void:
 
 
 static func _temple(img: Image) -> void:
-	Pix.rect(img, 0, 0, W, 148, Color(0.05, 0.06, 0.14))
-	Pix.rect(img, 0, 40, W, 40, Color(0.07, 0.08, 0.18))
-	_stars(img, 40, Color(0.75, 0.8, 1.0))
-	Pix.disc(img, 250, 28, 14, Color(0.78, 0.82, 0.95))
-	Pix.disc(img, 246, 26, 10, Color(0.05, 0.06, 0.14))
-	for i in 5:
-		var x := 18 + i * 62
-		Pix.rect(img, x, 70, 14, 78, Color(0.18, 0.14, 0.22))
-		Pix.rect(img, x + 2, 74, 4, 10, Color(0.08, 0.07, 0.1))
-		Pix.rect(img, x + 8, 74, 4, 10, Color(0.08, 0.07, 0.1))
-		Pix.rect(img, x - 2, 66, 18, 6, Color(0.32, 0.2, 0.14))
-	Pix.rect(img, 40, 62, 240, 5, Color(0.3, 0.18, 0.12))
+	for y in 148:
+		var t: float = float(y) / 148.0
+		Pix.hline(img, 0, y, W, Color(0.04, 0.05, 0.12).lerp(Color(0.10, 0.08, 0.20), t))
+	_stars(img, 70, Color(0.78, 0.84, 1.0, 0.85))
+	Pix.disc(img, 252, 26, 16, Color(0.82, 0.86, 0.98))
+	Pix.disc(img, 247, 24, 11, Color(0.05, 0.06, 0.14))
+	Pix.disc(img, 258, 28, 4, Color(0.9, 0.92, 1.0, 0.35))
+	for x in W:
+		var ridge: int = 58 + int(sin(float(x) * 0.04) * 6.0)
+		Pix.put(img, x, ridge, Color(0.16, 0.12, 0.22, 0.8))
+	Pix.rect(img, 36, 62, 248, 8, Color(0.28, 0.16, 0.12))
+	Pix.rect(img, 40, 58, 240, 5, Color(0.38, 0.22, 0.14))
+	for i in 6:
+		var x := 22 + i * 50
+		Pix.rect(img, x, 70, 16, 78, Color(0.20, 0.14, 0.24))
+		Pix.rect(img, x + 2, 74, 5, 12, Color(0.55, 0.72, 0.9, 0.45))
+		Pix.rect(img, x + 9, 74, 5, 12, Color(0.55, 0.72, 0.9, 0.3))
+		Pix.rect(img, x - 2, 66, 20, 6, Color(0.36, 0.22, 0.16))
+		Pix.rect(img, x + 6, 52, 4, 16, Color(0.24, 0.16, 0.18))
+	Pix.rect(img, 118, 78, 84, 70, Color(0.18, 0.12, 0.22))
+	Pix.rect(img, 130, 90, 18, 28, Color(0.08, 0.06, 0.1))
+	Pix.rect(img, 172, 90, 18, 28, Color(0.08, 0.06, 0.1))
+	for i in 8:
+		Pix.put(img, 40 + i * 30, 50, Color(0.85, 0.75, 0.45, 0.7))
 
 
 static func _neon(img: Image) -> void:
-	Pix.rect(img, 0, 0, W, 148, Color(0.07, 0.03, 0.1))
-	_stars(img, 18, Color(0.9, 0.4, 0.8))
-	for i in 8:
-		var x := 6 + i * 40
-		var h := 70 + (i % 3) * 16
-		Pix.rect(img, x, 148 - h, 28, h, Color(0.1, 0.08, 0.16))
-		var signc := Color(0.15, 0.9, 0.85) if i % 2 == 0 else Color(0.95, 0.2, 0.55)
-		Pix.rect(img, x + 4, 148 - h + 8, 20, 6, signc)
-		for wy in range(148 - h + 18, 140, 10):
-			Pix.rect(img, x + 4, wy, 6, 5, Color(0.95, 0.85, 0.4, 0.7))
-			Pix.rect(img, x + 16, wy, 6, 5, Color(0.4, 0.7, 1.0, 0.5))
+	for y in 148:
+		Pix.hline(img, 0, y, W, Color(0.06, 0.02, 0.10).lerp(Color(0.12, 0.04, 0.16), float(y) / 148.0))
+	_stars(img, 22, Color(0.95, 0.4, 0.85, 0.7))
+	Pix.rect(img, 0, 118, W, 4, Color(0.2, 0.9, 0.85, 0.35))
+	for i in 9:
+		var x := 4 + i * 36
+		var h := 64 + (i % 4) * 14
+		Pix.rect(img, x, 148 - h, 30, h, Color(0.09, 0.07, 0.16))
+		Pix.rect(img, x + 1, 148 - h + 2, 28, 3, Color(0.16, 0.12, 0.22))
+		var signc := Color(0.15, 0.95, 0.88) if i % 2 == 0 else Color(0.95, 0.22, 0.58)
+		Pix.rect(img, x + 4, 148 - h + 8, 22, 7, signc)
+		Pix.rect(img, x + 5, 148 - h + 9, 20, 2, signc.lightened(0.25))
+		for wy in range(148 - h + 20, 138, 11):
+			Pix.rect(img, x + 5, wy, 7, 6, Color(0.95, 0.85, 0.4, 0.55 + 0.2 * float(i % 2)))
+			Pix.rect(img, x + 16, wy, 7, 6, Color(0.35, 0.7, 1.0, 0.4))
+	Pix.hline(img, 0, 146, W, Color(0.85, 0.25, 0.65, 0.5))
 
 
 static func _pit(img: Image) -> void:
-	Pix.rect(img, 0, 0, W, 148, Color(0.06, 0.03, 0.03))
-	Pix.rect(img, 0, 20, W, 24, Color(0.16, 0.05, 0.05))
-	for i in 6:
-		var x := 16 + i * 52
-		Pix.rect(img, x, 50, 8, 98, Color(0.2, 0.08, 0.07))
-		Pix.rect(img, x + 2, 58, 4, 6, Color(0.9, 0.35, 0.12))
-	Pix.rect(img, 70, 56, 180, 4, Color(0.55, 0.12, 0.1))
+	Pix.rect(img, 0, 0, W, 148, Color(0.07, 0.03, 0.03))
+	for y in 28:
+		Pix.hline(img, 0, 16 + y, W, Color(0.18, 0.05, 0.05).lerp(Color(0.07, 0.03, 0.03), float(y) / 28.0))
+	for i in 7:
+		var x := 12 + i * 46
+		Pix.rect(img, x, 48, 10, 100, Color(0.22, 0.08, 0.07))
+		Pix.rect(img, x + 2, 56, 6, 8, Color(0.95, 0.38, 0.12))
+		Pix.rect(img, x + 3, 58, 4, 4, Color(1.0, 0.75, 0.3))
+		for spark in 4:
+			Pix.put(img, x + 1 + spark, 52 - spark, Color(1.0, 0.5, 0.15, 0.6))
+	Pix.rect(img, 60, 54, 200, 5, Color(0.55, 0.12, 0.1))
+	Pix.rect(img, 64, 52, 192, 3, Color(0.7, 0.18, 0.12))
+	for i in 18:
+		Pix.put(img, 70 + i * 10, 64, Color(0.9, 0.3, 0.12, 0.5))
 
 
 static func _keep(img: Image) -> void:
-	Pix.rect(img, 0, 0, W, 148, Color(0.08, 0.06, 0.08))
-	Pix.disc(img, 48, 26, 11, Color(0.9, 0.5, 0.32))
-	_stars(img, 22, Color(0.9, 0.7, 0.5))
-	for i in 4:
-		var x := 30 + i * 70
-		Pix.rect(img, x, 55, 36, 93, Color(0.2, 0.14, 0.16))
-		Pix.rect(img, x + 6, 64, 8, 12, Color(0.05, 0.04, 0.05))
-		Pix.rect(img, x + 20, 64, 8, 12, Color(0.05, 0.04, 0.05))
-		for by in range(55, 140, 6):
-			Pix.hline(img, x, by, 36, Color(0.12, 0.09, 0.1))
-	Pix.rect(img, 20, 50, 280, 6, Color(0.28, 0.14, 0.14))
+	for y in 148:
+		Pix.hline(img, 0, y, W, Color(0.10, 0.06, 0.08).lerp(Color(0.18, 0.08, 0.08), float(y) / 180.0))
+	Pix.disc(img, 46, 24, 13, Color(0.92, 0.48, 0.28))
+	Pix.disc(img, 46, 24, 8, Color(1.0, 0.78, 0.4))
+	_stars(img, 28, Color(0.92, 0.72, 0.5, 0.7))
+	for i in 5:
+		var x := 18 + i * 60
+		Pix.rect(img, x, 50, 40, 98, Color(0.22, 0.14, 0.16))
+		for by in range(50, 140, 7):
+			Pix.hline(img, x, by, 40, Color(0.14, 0.10, 0.12))
+		Pix.rect(img, x + 6, 62, 10, 14, Color(0.05, 0.04, 0.05))
+		Pix.rect(img, x + 22, 62, 10, 14, Color(0.05, 0.04, 0.05))
+		Pix.rect(img, x + 8, 64, 6, 5, Color(0.55, 0.18, 0.12, 0.7))
+		Pix.rect(img, x + 14, 42, 10, 12, Color(0.18, 0.12, 0.14))
+		Pix.rect(img, x + 16, 36, 6, 8, Color(0.16, 0.1, 0.12))
+	Pix.rect(img, 14, 46, 292, 7, Color(0.32, 0.14, 0.14))
+	Pix.rect(img, 18, 44, 284, 3, Color(0.45, 0.2, 0.16))

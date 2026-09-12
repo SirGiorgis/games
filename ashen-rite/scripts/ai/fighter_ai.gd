@@ -79,6 +79,16 @@ func _process(delta: float) -> void:
 		if _rng.randf() < 0.35:
 			_intent.heavy = true
 		return
+	if GameState.training:
+		match GameState.dummy_mode:
+			"stand":
+				_clear()
+				return
+			"block":
+				_clear()
+				_intent.block = true
+				_retreat()
+				return
 	if me.state == Fighter.State.BLOCK and me.hitstun > 0.0 and me.special_meter >= 25.0 and _rng.randf() < 0.22:
 		_intent.special = true
 		return
@@ -184,5 +194,5 @@ func _clear() -> void:
 		"left": false, "right": false, "up": false, "down": false,
 		"light": false, "heavy": false, "special": false, "block": false,
 		"grab": false, "ultimate": false, "run": false, "qcf": false, "qcf2": false,
-		"fwd": false, "back": false, "backdash": false,
+		"fwd": false, "back": false, "backdash": false, "dp": false,
 	}

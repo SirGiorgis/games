@@ -173,32 +173,44 @@ func _fanfare() -> AudioStreamWAV:
 
 func _music(fight: bool) -> AudioStreamWAV:
 	var rate := 22050
-	var bpm := 140.0 if fight else 100.0
+	var bpm := 148.0 if fight else 104.0
 	var beat := 60.0 / bpm
-	var bars := 4
+	var bars := 8
 	var dur := beat * 4.0 * bars
 	var n := int(dur * rate)
 	var frames := PackedFloat32Array()
 	frames.resize(n)
 	var rng := RandomNumberGenerator.new()
-	rng.seed = 7 if fight else 3
-	var root := 55.0 if fight else 73.4
-	var pattern := [0, 0, 7, 3, 0, 10, 7, 0] if fight else [0, 3, 7, 3, 0, 5, 7, 8]
+	rng.seed = 11 if fight else 5
+	var root := 58.27 if fight else 73.42
+	var bass_pat := [0, 0, 7, 3, 0, 10, 7, 5, 0, 0, 8, 3, 0, 7, 10, 12] if fight else [0, 3, 7, 3, 0, 5, 7, 8, 0, 3, 5, 7, 8, 7, 5, 3]
+	var lead_pat := [12, 15, 19, 15, 12, 22, 19, 15, 12, 14, 15, 19, 17, 15, 14, 12] if fight else [12, 15, 19, 17, 15, 14, 12, 15]
 	for i in n:
 		var t := float(i) / rate
-		var step := int(t / (beat * 0.5)) % pattern.size()
-		var f := root * pow(2.0, pattern[step] / 12.0)
-		var bass := sin(TAU * f * t) * 0.16
-		bass += sin(TAU * f * 0.5 * t) * 0.08
+		var eighth := beat * 0.5
+		var step := int(t / eighth) % bass_pat.size()
+		var f := root * pow(2.0, bass_pat[step] / 12.0)
+		var bass := sin(TAU * f * t) * 0.15
+		bass += sin(TAU * f * 0.5 * t) * 0.09
 		var hat := 0.0
-		if int(t / (beat * 0.5)) % 2 == 1:
-			hat = rng.randf_range(-1.0, 1.0) * 0.04 * exp(-fmod(t, beat * 0.5) * 40.0)
+		if int(t / eighth) % 2 == 1:
+			hat = rng.randf_range(-1.0, 1.0) * 0.045 * exp(-fmod(t, eighth) * 42.0)
 		var kick := 0.0
+		var kt := fmod(t, beat)
 		if int(t / beat) % 2 == 0:
-			var kt := fmod(t, beat)
-			kick = sin(TAU * (90.0 - kt * 80.0) * kt) * 0.22 * exp(-kt * 12.0)
+			kick = sin(TAU * (88.0 - kt * 90.0) * kt) * 0.24 * exp(-kt * 14.0)
+		var snare := 0.0
+		if int(t / beat) % 2 == 1:
+			snare = rng.randf_range(-1.0, 1.0) * 0.12 * exp(-fmod(t, beat) * 18.0)
+			snare += sin(TAU * 180.0 * kt) * 0.04 * exp(-kt * 16.0)
 		var lead := 0.0
-		if fight:
-			lead = sin(TAU * f * 4.0 * t) * 0.05 * (0.5 + 0.5 * sin(t * 8.0))
-		frames[i] = bass + hat + kick + lead
+		var li := int(t / eighth) % lead_pat.size()
+		var lf := root * pow(2.0, lead_pat[li] / 12.0)
+		var lenv: float = 0.5 + 0.5 * sin(t * (10.0 if fight else 6.0))
+		lead = sin(TAU * lf * t) * (0.055 if fight else 0.04) * lenv
+		lead += sin(TAU * lf * 2.0 * t) * 0.018 * lenv
+		var chord := 0.0
+		if fight and int(t / beat) % 4 == 0:
+			chord = sin(TAU * f * 2.0 * t) * 0.03 * exp(-kt * 6.0)
+		frames[i] = clampf(bass + hat + kick + snare + lead + chord, -1.0, 1.0)
 	return _pcm(frames, rate, true)

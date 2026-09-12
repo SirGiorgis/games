@@ -46,6 +46,20 @@ static func _atk(kind: String, dmg: float, kb: float, launch: float, stun: float
 		"juggle": launch < -80.0 or kind.begins_with("j"),
 		"guard": guard,
 		"step": step,
+		"hits": 1,
+		"hit_gap": 0.08,
+		"proj_count": 0,
+		"proj_speed": 520.0,
+		"proj_life": 0.7,
+		"proj_spread": 0.0,
+		"pierce": false,
+		"teleport": false,
+		"explode": false,
+		"freeze": false,
+		"quake": false,
+		"ex": false,
+		"dash_spd": 0.0,
+		"invuln": 0.0,
 	}
 
 
@@ -55,35 +69,116 @@ static func _special(def: CharacterDef) -> Dictionary:
 	match def.special_id:
 		"bolt":
 			base.projectile = "bolt"
-			base.damage = 90.0 * def.attack
+			base.proj_count = 1
+			base.proj_speed = 640.0
+			base.proj_life = 0.85
+			base.damage = 92.0 * def.attack
 		"wave":
 			base.projectile = "wave"
-			base.damage = 72.0 * def.attack
-			base.active = 0.16
+			base.proj_count = 1
+			base.proj_speed = 480.0
+			base.hits = 2
+			base.hit_gap = 0.10
+			base.active = 0.10
+			base.duration = 0.58
+			base.damage = 64.0 * def.attack
 		"dash":
-			base.reach = 120.0
-			base.startup = 0.08
-			base.knockback = 180.0
+			base.reach = 118.0
+			base.startup = 0.07
+			base.knockback = 188.0
 			base.juggle = true
+			base.dash_spd = 640.0
+			base.invuln = 0.08
+			if def.id == "nyx_hollow":
+				base.teleport = true
+				base.invuln = 0.16
+				base.dash_spd = 0.0
+				base.reach = 52.0
+				base.damage = 88.0 * def.attack
+			elif def.id == "hoodrich_stacks":
+				base.dash_spd = 540.0
+				base.invuln = 0.13
+				base.damage = 100.0 * def.attack
+			elif def.id == "chris_xrisakis":
+				base.dash_spd = 720.0
+				base.step = 160.0
 		"slam":
 			base.y = -16.0
-			base.size = Vector2(80, 22)
-			base.reach = 24.0
+			base.size = Vector2(86, 24)
+			base.reach = 28.0
 			base.knockdown = true
-			base.launch = -60.0
+			base.launch = -70.0
+			base.dash_spd = 0.0
 		"blast":
-			base.projectile = "blast"
-			base.hitstun = 0.55
+			base.projectile = "ice"
+			base.proj_count = 1
+			base.proj_speed = 400.0
+			base.proj_life = 0.9
+			base.freeze = true
+			base.hitstun = 0.62
 	return base
 
 
 static func _ultimate(def: CharacterDef) -> Dictionary:
 	var u := _atk("ultimate", 220.0, 420.0, -380.0, 0.75, 0.14, 0.18, 0.18, 0.72, Vector2(96, 52), 58.0, -52.0, true, def)
 	u.meter = 0.0
-	u.projectile = "ult"
-	u.proj_speed = 400.0
-	u.element = def.ultimate_id
+	u.invuln = 0.18
+	match def.ultimate_id:
+		"nova":
+			u.explode = true
+			u.projectile = ""
+			u.size = Vector2(168, 96)
+			u.reach = 8.0
+			u.y = -52.0
+			u.hits = 2
+			u.hit_gap = 0.12
+			u.active = 0.14
+			u.duration = 0.78
+			u.damage = 150.0 * def.attack
+			if def.id == "asha_wren":
+				u.freeze = true
+				u.hitstun = 0.9
+		"void":
+			u.projectile = "void"
+			u.proj_count = 3
+			u.proj_speed = 460.0
+			u.proj_spread = 140.0
+			u.proj_life = 0.85
+			u.pierce = true
+			u.damage = 70.0 * def.attack
+		"quake":
+			u.quake = true
+			u.projectile = ""
+			u.size = Vector2(420, 30)
+			u.reach = 0.0
+			u.y = -18.0
+			u.knockdown = true
+			u.launch = -40.0
+			u.hits = 2
+			u.hit_gap = 0.14
+			u.duration = 0.82
+		_:
+			u.projectile = "ult"
+			u.proj_count = 1
+			u.proj_speed = 420.0
+			u.proj_life = 0.9
+			u.dash_spd = 520.0 if def.special_id == "dash" else 0.0
+			u.element = def.ultimate_id
 	return u
+
+
+static func apply_ex(atk: Dictionary, def: CharacterDef) -> Dictionary:
+	atk.ex = true
+	atk.damage = float(atk.damage) * 1.38
+	var sz: Vector2 = atk.size
+	atk.size = Vector2(sz.x * 1.18, sz.y * 1.12)
+	atk.hitstun = float(atk.hitstun) * 1.12
+	atk.invuln = maxf(float(atk.get("invuln", 0.0)), 0.12)
+	if str(atk.get("projectile", "")) != "":
+		atk.proj_count = maxi(int(atk.get("proj_count", 1)), 1) + 1
+		atk.proj_speed = float(atk.get("proj_speed", 520.0)) * 1.12
+	atk.hits = maxi(int(atk.get("hits", 1)), 2)
+	return atk
 
 
 static func combo_scale(hits: int) -> float:

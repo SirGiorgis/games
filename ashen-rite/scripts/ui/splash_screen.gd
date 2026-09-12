@@ -2,6 +2,7 @@ class_name SplashScreen
 extends Control
 
 signal finished
+signal attract
 
 var _press: PixelLabel
 var _t := 0.0
@@ -42,7 +43,7 @@ func _ready() -> void:
 
 	_press = PixelUI.label_at(self, "PRESS ENTER", Vector2(0, 600), 3, Color(1, 0.92, 0.45), 0, 1280)
 	_press.set_centered(1280)
-	PixelUI.add_footer(self, "ENTER / J / SPACE   START")
+	PixelUI.add_footer(self, "ENTER START   WAIT FOR DEMO")
 	AudioDirector.play_music("menu")
 
 
@@ -70,8 +71,17 @@ func _process(delta: float) -> void:
 		_giorgis.position.y = 440.0 + sin(_t * 2.2 + 1.0) * 5.0
 	if _press:
 		_press.modulate.a = 0.35 + 0.65 * (0.5 + 0.5 * sin(_t * 6.0))
-	if Input.is_action_just_pressed(ControlMap.MENU.confirm) or Input.is_action_just_pressed(ControlMap.MENU.back) or _t > 10.0:
+	if Input.is_action_just_pressed(ControlMap.MENU.confirm) or Input.is_action_just_pressed(ControlMap.MENU.back):
 		_finish()
+	elif _t > 8.0:
+		_go_attract()
+
+
+func _go_attract() -> void:
+	if _done:
+		return
+	_done = true
+	attract.emit()
 
 
 func _finish() -> void:

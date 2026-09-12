@@ -96,7 +96,7 @@ func _ready() -> void:
 	_cpu_label = PixelUI.label_at(self, "", Vector2(880, 572), 2, Color(0.65, 0.82, 0.95), 36)
 	_arena_lbl = PixelUI.label_at(self, "", Vector2(420, 548), 2, Color(0.88, 0.78, 0.42), 36)
 
-	PixelUI.add_footer(self, "A/D SELECT  J CONFIRM  R RANDOM  C CPU  T ARENA  F FORGE  ESC BACK")
+	PixelUI.add_footer(self, "A/D SELECT  J THEN STAGE  R RANDOM  C CPU  T ARENA  F FORGE  ESC BACK")
 	_apply_indices_from_state()
 	for id in _ids:
 		_cached_frames(id)

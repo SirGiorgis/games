@@ -2,11 +2,13 @@ extends Node
 ## Builds every screen in code so the project runs from a single bootstrap scene.
 
 const SplashScr := preload("res://scripts/ui/splash_screen.gd")
+const StageScr := preload("res://scripts/ui/stage_select.gd")
 
 var _host: Control
 var _splash: Control
 var _menu: MainMenu
 var _select: CharacterSelect
+var _stage: Control
 var _options: OptionsScreen
 var _controls: ControlsScreen
 var _result: ResultScreen
@@ -42,16 +44,19 @@ func _hide_ui() -> void:
 func _show_splash() -> void:
 	_clear_match()
 	_hide_ui()
+	GameState.attract = false
 	if _splash:
 		_splash.queue_free()
 	_splash = SplashScr.new()
 	_host.add_child(_splash)
 	_splash.finished.connect(_show_menu)
+	_splash.attract.connect(_start_attract)
 
 
 func _show_menu() -> void:
 	_clear_match()
 	_hide_ui()
+	GameState.attract = false
 	if _splash:
 		_splash.queue_free()
 		_splash = null
@@ -66,6 +71,13 @@ func _show_menu() -> void:
 func _on_menu(id: String) -> void:
 	match id:
 		"PLAY":
+			GameState.training = false
+			GameState.attract = false
+			_start_match()
+		"TRAINING":
+			GameState.training = true
+			GameState.attract = false
+			GameState.p2_is_cpu = true
 			_start_match()
 		"CHARACTER SELECT":
 			_show_select()
@@ -83,8 +95,24 @@ func _show_select() -> void:
 		_select.queue_free()
 	_select = CharacterSelect.new()
 	_host.add_child(_select)
-	_select.confirmed.connect(_start_match)
+	_select.confirmed.connect(_show_stage)
 	_select.cancelled.connect(_show_menu)
+
+
+func _show_stage() -> void:
+	_hide_ui()
+	if _stage:
+		_stage.queue_free()
+	_stage = StageScr.new()
+	_host.add_child(_stage)
+	_stage.confirmed.connect(_on_stage_picked)
+	_stage.cancelled.connect(_show_select)
+
+
+func _on_stage_picked() -> void:
+	GameState.training = false
+	GameState.attract = false
+	_start_match()
 
 
 func _show_options() -> void:
@@ -106,6 +134,15 @@ func _show_controls() -> void:
 	_controls.visible = true
 
 
+func _start_attract() -> void:
+	GameState.attract = true
+	GameState.training = false
+	GameState.p2_is_cpu = true
+	GameState.p1_character_id = "chris_xrisakis"
+	GameState.p2_character_id = "hoodrich_stacks"
+	_start_match()
+
+
 func _start_match() -> void:
 	_hide_ui()
 	_clear_match()
@@ -116,8 +153,17 @@ func _start_match() -> void:
 
 
 func _on_match_over(code: int) -> void:
+	var was_attract: bool = GameState.attract
+	GameState.attract = false
 	_clear_match()
+	if was_attract:
+		_show_splash()
+		return
 	if code == -2:
+		GameState.training = false
+		_show_menu()
+		return
+	if GameState.training:
 		_show_menu()
 		return
 	_hide_ui()

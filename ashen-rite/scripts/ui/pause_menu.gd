@@ -84,7 +84,7 @@ func _pick() -> void:
 			_active = false
 			restarted.emit()
 		2:
-			_hint.set_pix("A/D MOVE  W JUMP  S CROUCH  J/K/L ATTACKS  U BLOCK  I GRAB  O ULT", 2, Color(0.82, 0.78, 0.72), 36)
+			_hint.set_pix("A/D MOVE  W JUMP  S CROUCH  J/K LIGHT HEAVY  L SPECIAL  U BLOCK  I GRAB  O SUPER  FULL PINK = EX", 2, Color(0.82, 0.78, 0.72), 36)
 			_hint.set_centered(1280)
 		3:
 			_active = false
