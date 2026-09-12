@@ -184,6 +184,9 @@ func _process(delta: float) -> void:
 		if uid == "flex" and _rng.randf() < 0.58:
 			_intent.ultimate = true
 			return
+		if uid == "drip" and dist < 280.0 and _rng.randf() < 0.60:
+			_intent.ultimate = true
+			return
 		if uid == "cotton" and _rng.randf() < 0.62:
 			_intent.ultimate = true
 			return

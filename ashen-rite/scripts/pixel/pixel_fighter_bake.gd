@@ -57,17 +57,28 @@ static func bake(def: CharacterDef) -> Dictionary:
 		"defeat": _seq(def, "defeat", 8),
 		"grab": _seq(def, "grab", 10),
 	}
-	if def.ultimate_id == "flex":
+	var alt := _alt_suffix(def)
+	if alt != "":
 		var extra := {}
 		for key in result.keys():
-			if str(key).ends_with("_rip") or str(key) == "ultimate":
+			if str(key).ends_with(alt) or str(key) == "ultimate":
 				continue
 			var arr: Array = result[key]
-			extra[str(key) + "_rip"] = _seq(def, str(key) + "_rip", arr.size())
+			extra[str(key) + alt] = _seq(def, str(key) + alt, arr.size())
 		for k in extra.keys():
 			result[k] = extra[k]
 	_anim_cache[def.id] = result
 	return result
+
+
+static func _alt_suffix(def: CharacterDef) -> String:
+	match def.ultimate_id:
+		"flex":
+			return "_rip"
+		"drip":
+			return "_drip"
+		_:
+			return ""
 
 
 static func clear_cache(id: String = "") -> void:

@@ -30,7 +30,8 @@
     "theme:mako": "theme_mako.wav",
     "theme:fogas": "theme_fogas.wav",
     "theme:giannis": "theme_giannis.wav",
-    "theme:vag": "theme_vag.wav"
+    "theme:vag": "theme_vag.wav",
+    "theme:spyros": "theme_spyros.wav"
   },
   "tracks": [
     {
@@ -199,6 +200,12 @@
       "id": "theme:mako",
       "file": "theme_mako.wav",
       "title": "STILL STANDING",
+      "seconds": 72
+    },
+    {
+      "id": "theme:spyros",
+      "file": "theme_spyros.wav",
+      "title": "TRAP DROP",
       "seconds": 72
     },
     {

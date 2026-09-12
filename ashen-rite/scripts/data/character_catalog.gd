@@ -105,6 +105,7 @@ func _fallback_roster() -> void:
 		["fogas", "Male fighter, heavy chubby build, short brown hair, glasses, cream t-shirt, black shorts."],
 		["giannis", "Male fighter, athletic build, curly dark hair, wrap sunglasses, navy hoodie."],
 		["vag", "Male fighter, athletic build, buzz cut, cream v-neck, navy cargo shorts."],
+		["spyros", "Male fighter, athletic build, tight curly dark crop, thick brows, black crew t-shirt, gold chain."],
 	]
 	for s in specs:
 		var def := CharacterForge.forge(s[1], "", s[0])

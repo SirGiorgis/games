@@ -439,6 +439,9 @@ func _on_super(f: Fighter) -> void:
 		"flex":
 			flash_col = Color(0.35, 0.82, 0.92)
 			fx.shirt_rip(f.global_position + Vector2(0, -70))
+		"drip":
+			flash_col = Color(0.92, 0.78, 0.32)
+			fx.drip_drop(f.global_position + Vector2(0, -24))
 		"cotton":
 			flash_col = Color(0.96, 0.92, 0.78)
 			fx.cotton_scatter(f.global_position + Vector2(0, -12))

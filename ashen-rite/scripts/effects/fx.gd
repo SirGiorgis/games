@@ -201,6 +201,29 @@ func cotton_scatter(pos: Vector2) -> void:
 		tw.tween_callback(s.queue_free)
 
 
+func drip_drop(pos: Vector2) -> void:
+	shockwave(pos)
+	spark(pos, Color(0.92, 0.78, 0.32), true)
+	for i in 14:
+		var img := Pix.image(5, 5, Color(0, 0, 0, 0))
+		var gold := Color(0.90, 0.76, 0.36) if i % 2 == 0 else Color(0.98, 0.90, 0.55)
+		Pix.rect(img, 1, 1, 3, 3, gold)
+		Pix.put(img, 2, 0, gold.lightened(0.2))
+		Pix.put(img, 2, 2, Color(1, 1, 1, 0.7))
+		var s := Sprite2D.new()
+		s.texture = Pix.tex(img)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		s.scale = Vector2(3, 3)
+		s.centered = true
+		s.global_position = pos + Vector2(randf_range(-48, 48), randf_range(-18, 22))
+		add_child(s)
+		var tw := s.create_tween()
+		tw.tween_property(s, "position", s.position + Vector2(randf_range(-70, 70), randf_range(-36, 28)), 0.46)
+		tw.parallel().tween_property(s, "rotation", randf_range(-1.8, 1.8), 0.46)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.46)
+		tw.tween_callback(s.queue_free)
+
+
 func shirt_rip(pos: Vector2) -> void:
 	shockwave(pos)
 	spark(pos, Color(0.35, 0.82, 0.92), true)

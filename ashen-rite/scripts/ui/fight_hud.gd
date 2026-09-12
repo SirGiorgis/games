@@ -364,6 +364,9 @@ func _sync_buff(lbl: PixelLabel, f: Fighter) -> void:
 	elif f.def.ultimate_id == "flex":
 		tag = "FLEX"
 		col = Color(1.0, 0.72, 0.28)
+	elif f.def.ultimate_id == "drip":
+		tag = "DRIP"
+		col = Color(0.92, 0.78, 0.32)
 	lbl.set_pix(tag, 1, col)
 	lbl.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 9.0))
 

@@ -208,7 +208,7 @@ func _pose_shift() -> float:
 			if attack_u > 0.18 and attack_u < 0.62:
 				return facing * smoothstep(0.18, 0.48, attack_u) * 10.0
 		"special", "ultimate":
-			if def and def.ultimate_id in ["flex", "vodka", "fart", "cotton"] and pose == "ultimate":
+			if def and def.ultimate_id in ["flex", "vodka", "fart", "cotton", "drip"] and pose == "ultimate":
 				return 0.0
 			if def and def.ultimate_id == "dempsey" and pose == "ultimate":
 				return facing * sin(_time * 22.0) * 10.0
@@ -272,16 +272,35 @@ func _current_tex() -> Texture2D:
 
 
 func _sheet_key(p: String) -> String:
-	if p != "ultimate" and _ripped() and _frames.has(p + "_rip"):
-		return p + "_rip"
+	if p == "ultimate":
+		return p
+	var suf := _alt_suffix()
+	if suf != "" and _alt_form() and _frames.has(p + suf):
+		return p + suf
 	return p
 
 
-func _ripped() -> bool:
-	if def == null or def.ultimate_id != "flex":
+func _alt_suffix() -> String:
+	if def == null:
+		return ""
+	match def.ultimate_id:
+		"flex":
+			return "_rip"
+		"drip":
+			return "_drip"
+		_:
+			return ""
+
+
+func _alt_form() -> bool:
+	if _alt_suffix() == "":
 		return false
 	var host = get_parent()
 	return host and host.has_method("buffed") and host.buffed()
+
+
+func _ripped() -> bool:
+	return def != null and def.ultimate_id == "flex" and _alt_form()
 
 
 func _loop_fps() -> float:

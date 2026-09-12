@@ -7,6 +7,9 @@ static func paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) -
 	var ripped := pose.ends_with("_rip")
 	if ripped:
 		pose = pose.substr(0, pose.length() - 4)
+	var dripped := pose.ends_with("_drip")
+	if dripped:
+		pose = pose.substr(0, pose.length() - 5)
 	var m: Dictionary = _motion(pose, f, n, def)
 	var pal: Dictionary = _palette(def)
 	var cx: int = 24 + int(m.lean) + int(m.xoff)
@@ -20,18 +23,20 @@ static func paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) -
 	var u: float = float(f) / float(maxi(n - 1, 1))
 	if pose == "ultimate" and def.ultimate_id == "flex" and u > 0.28:
 		ripped = true
+	if pose == "ultimate" and def.ultimate_id == "drip" and u > 0.28:
+		dripped = true
 
 	if pose in ["knockdown", "defeat"]:
-		_paint_down(img, pal, def, u, ripped)
+		_paint_down(img, pal, def, u, ripped, dripped)
 		return
 
 	# Far to near: rear leg, rear arm, torso, near leg, head, lead arm.
 	var fat: int = 3 if def.style == "tee" else (2 if def.build == "heavy" else 0)
 	_leg(img, cx - 5 - fat + int(m.back_x), hip_y, int(m.back_k), int(m.get("back_lift", 0)), pal.jeans_dk, pal.shoe, pal.sock, def.style == "kit")
 	_arm(img, cx - 7 - fat, hip_y - 11, int(m.rear_ax), int(m.rear_ay), pal.sleeve, pal.skin, false, punch, fat > 0)
-	_torso(img, def, pal, cx, hip_y, ripped)
+	_torso(img, def, pal, cx, hip_y, ripped, dripped)
 	_leg(img, cx + 4 + fat + int(m.front_x), hip_y, int(m.front_k), int(m.get("front_lift", 0)), pal.jeans, pal.shoe, pal.sock, def.style == "kit")
-	_head(img, def, pal, hx, hy, pose, blink)
+	_head(img, def, pal, hx, hy, pose, blink, dripped)
 	if punch == 2:
 		_smear(img, cx + 6, hip_y - 12, pal.trim)
 	_arm(img, cx + 6, hip_y - 11, int(m.lead_ax), int(m.lead_ay), pal.sleeve_hi, pal.skin, true, punch, fat > 0)
@@ -47,6 +52,8 @@ static func paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) -
 		_shreds(img, cx, hip_y - 6, f)
 	if pose == "ultimate" and def.ultimate_id == "cotton":
 		_cotton_toss(img, cx, hip_y, f)
+	if pose == "ultimate" and def.ultimate_id == "drip":
+		_drip_notes(img, cx, hip_y, f, dripped)
 
 
 static func _palette(def: CharacterDef) -> Dictionary:
@@ -56,8 +63,10 @@ static func _palette(def: CharacterDef) -> Dictionary:
 	var tee: bool = def.style == "tee"
 	var shades: bool = def.style == "shades"
 	var cargo: bool = def.style == "cargo"
-	var jeans: Color = Color(0.12, 0.16, 0.24) if cargo else (Color(0.10, 0.10, 0.12) if (bare or tee or shades) else (Color(0.22, 0.38, 0.62) if kit else (Color(0.16, 0.22, 0.40) if street else def.outfit.darkened(0.28))))
+	var trap: bool = def.style == "trap"
+	var jeans: Color = Color(0.10, 0.10, 0.12) if trap else (Color(0.12, 0.16, 0.24) if cargo else (Color(0.10, 0.10, 0.12) if (bare or tee or shades) else (Color(0.22, 0.38, 0.62) if kit else (Color(0.16, 0.22, 0.40) if street else def.outfit.darkened(0.28)))))
 	var shoe: Color = Color(0.92, 0.90, 0.86) if cargo else Color(0.11, 0.10, 0.12)
+	var sleeved: bool = kit or street or tee or shades or cargo or trap or def.style == "racing"
 	return {
 		"skin": def.skin,
 		"skin_hi": def.skin.lightened(0.10),
@@ -69,8 +78,8 @@ static func _palette(def: CharacterDef) -> Dictionary:
 		"outfit": def.outfit,
 		"trim": def.trim,
 		"accent": def.accent,
-		"sleeve": def.outfit if (kit or street or tee or shades or cargo or def.style == "racing") else def.skin,
-		"sleeve_hi": (def.outfit if (kit or street or tee or shades or cargo or def.style == "racing") else def.skin).lightened(0.10),
+		"sleeve": def.outfit if sleeved else def.skin,
+		"sleeve_hi": (def.outfit if sleeved else def.skin).lightened(0.10),
 		"jeans": jeans,
 		"jeans_dk": jeans.darkened(0.14),
 		"jeans_hi": jeans.lightened(0.10),
@@ -111,6 +120,12 @@ static func _motion(pose: String, f: int, n: int, def: CharacterDef = null) -> D
 				d.lead_ay = 6
 				d.rear_ax = 7
 				d.rear_ay = 5
+			elif def and def.style == "trap":
+				d.lean = 1
+				d.lead_ax = 2
+				d.lead_ay = 4
+				d.rear_ax = -3
+				d.rear_ay = 4
 		"block":
 			d.bob = 0 if sin(ph) < 0.2 else 1
 			d.squat = 1
@@ -302,6 +317,24 @@ static func _motion(pose: String, f: int, n: int, def: CharacterDef = null) -> D
 					d.rear_ax = -11
 					d.rear_ay = -8
 					d.flash = true
+			elif pose == "ultimate" and uid == "drip":
+				d.punch = 0
+				d.squat = 1 if u < 0.32 else 0
+				d.head_y = -1 if u > 0.32 else 0
+				d.lean = 1
+				if u < 0.32:
+					# stacking the chain
+					d.lead_ax = 1
+					d.lead_ay = 3
+					d.rear_ax = -1
+					d.rear_ay = 4
+				else:
+					# swagger arms out
+					d.lead_ax = 10
+					d.lead_ay = -6
+					d.rear_ax = -10
+					d.rear_ay = -5
+					d.flash = true
 			elif pose == "ultimate" and uid == "cotton":
 				d.punch = 0
 				d.squat = 2
@@ -341,7 +374,7 @@ static func _motion(pose: String, f: int, n: int, def: CharacterDef = null) -> D
 			d.blink = true
 		"victory":
 			d.bob = 0 if sin(ph * 2.0) < 0.0 else 1
-			if def and def.style == "shades":
+			if def and (def.style == "shades" or def.style == "trap"):
 				d.lead_ax = 11
 				d.lead_ay = -9
 				d.rear_ax = -11
@@ -393,7 +426,7 @@ static func _arm(img: Image, sx: int, sy: int, dx: int, dy: int, sleeve: Color, 
 		Pix.put(img, hx + 2, hy + 1, skin.darkened(0.2))
 
 
-static func _torso(img: Image, def: CharacterDef, pal: Dictionary, cx: int, hip_y: int, ripped: bool = false) -> void:
+static func _torso(img: Image, def: CharacterDef, pal: Dictionary, cx: int, hip_y: int, ripped: bool = false, dripped: bool = false) -> void:
 	var top: int = hip_y - 14
 	if def.style == "kit":
 		Pix.rect(img, cx - 6, top + 4, 13, 11, pal.trim)
@@ -491,6 +524,8 @@ static func _torso(img: Image, def: CharacterDef, pal: Dictionary, cx: int, hip_
 		# cargo flap
 		Pix.rect(img, cx + 2, hip_y - 1, 5, 3, pal.jeans_dk)
 		Pix.hline(img, cx + 2, hip_y - 1, 5, pal.jeans_hi)
+	elif def.style == "trap":
+		_trap_torso(img, pal, cx, hip_y, dripped)
 	elif def.style == "racing":
 		Pix.rect(img, cx - 5, top, 11, 14, pal.outfit)
 		Pix.vline(img, cx, top + 2, 10, pal.accent)
@@ -501,7 +536,7 @@ static func _torso(img: Image, def: CharacterDef, pal: Dictionary, cx: int, hip_
 		Pix.hline(img, cx - 4, top + 6, 9, pal.trim)
 
 
-static func _head(img: Image, def: CharacterDef, pal: Dictionary, cx: int, cy: int, pose: String, blink: bool) -> void:
+static func _head(img: Image, def: CharacterDef, pal: Dictionary, cx: int, cy: int, pose: String, blink: bool, dripped: bool = false) -> void:
 	# neck
 	Pix.rect(img, cx - 1, cy + 6, 4, 4, pal.skin_dk)
 	# ears
@@ -513,10 +548,13 @@ static func _head(img: Image, def: CharacterDef, pal: Dictionary, cx: int, cy: i
 	Pix.oval(img, cx + 1, cy + 2, 5, 6, pal.skin_hi)
 	Pix.rect(img, cx - 3, cy + 5, 7, 3, pal.skin)
 	Pix.hline(img, cx - 2, cy + 7, 5, pal.skin_dk)
-	# brows
+	# brows — trap crop gets a thicker set
 	var brow_y: int = cy - 1 if pose != "hit" else cy
 	Pix.hline(img, cx - 4, brow_y, 4, pal.hair_dk)
 	Pix.hline(img, cx + 1, brow_y, 4, pal.hair_dk)
+	if def.style == "trap":
+		Pix.hline(img, cx - 4, brow_y - 1, 4, pal.hair)
+		Pix.hline(img, cx + 1, brow_y - 1, 4, pal.hair)
 	if pose == "hit":
 		Pix.put(img, cx - 4, brow_y - 1, pal.hair_dk)
 		Pix.put(img, cx + 4, brow_y - 1, pal.hair_dk)
@@ -559,6 +597,12 @@ static func _head(img: Image, def: CharacterDef, pal: Dictionary, cx: int, cy: i
 	elif pose == "ultimate" and def.ultimate_id == "flex":
 		Pix.rect(img, cx - 1, cy + 5, 3, 2, pal.skin_dk)
 		Pix.put(img, cx, cy + 6, Color(0.28, 0.12, 0.12))
+	elif def.style == "trap" and dripped:
+		# gold grill — original, no artist mark
+		Pix.rect(img, cx - 2, cy + 5, 5, 2, pal.trim)
+		Pix.put(img, cx, cy + 6, pal.accent)
+		Pix.put(img, cx - 1, cy + 5, pal.accent.lightened(0.12))
+		Pix.put(img, cx + 1, cy + 5, pal.trim.darkened(0.12))
 	elif def.style == "tee":
 		Pix.hline(img, cx - 2, cy + 5, 5, pal.skin_dk)
 		Pix.put(img, cx - 2, cy + 4, pal.skin_dk)
@@ -584,6 +628,10 @@ static func _head(img: Image, def: CharacterDef, pal: Dictionary, cx: int, cy: i
 		_shades(img, cx, cy)
 	elif def.style == "cargo":
 		_hair_buzz(img, cx, cy, pal)
+	elif def.style == "trap":
+		_hair_crop(img, cx, cy, pal)
+		if dripped:
+			_trap_shades(img, cx, cy)
 	else:
 		_hair_curly(img, cx, cy, pal)
 
@@ -653,6 +701,99 @@ static func _hair_short(img: Image, cx: int, cy: int, pal: Dictionary) -> void:
 	Pix.rect(img, cx + 6, cy - 2, 2, 4, pal.hair)
 	Pix.hline(img, cx - 7, cy + 2, 2, pal.hair_dk)
 	Pix.put(img, cx - 5, cy - 3, pal.hair_hi)
+
+
+static func _hair_crop(img: Image, cx: int, cy: int, pal: Dictionary) -> void:
+	# Tight curly crop with a fade — photo-like, shorter than Giannis curls.
+	Pix.oval(img, cx, cy - 5, 8, 5, pal.hair)
+	Pix.rect(img, cx - 7, cy - 8, 15, 6, pal.hair)
+	var tufts: Array[Vector2i] = [
+		Vector2i(-6, -4), Vector2i(-3, -7), Vector2i(0, -8), Vector2i(3, -7),
+		Vector2i(6, -4), Vector2i(-5, -6), Vector2i(2, -6), Vector2i(5, -2),
+		Vector2i(-4, -2), Vector2i(1, -9),
+	]
+	for d in tufts:
+		var col: Color = pal.hair_hi if ((d.x + d.y) & 1) == 0 else pal.hair_dk
+		Pix.disc(img, cx + d.x, cy + d.y, 2, col)
+	Pix.rect(img, cx - 8, cy - 2, 2, 4, pal.hair_dk)
+	Pix.rect(img, cx + 6, cy - 2, 2, 4, pal.hair)
+	Pix.hline(img, cx - 4, cy - 3, 3, pal.hair_dk)
+	Pix.hline(img, cx + 2, cy - 3, 3, pal.hair)
+
+
+static func _trap_torso(img: Image, pal: Dictionary, cx: int, hip_y: int, dripped: bool) -> void:
+	var top: int = hip_y - 14
+	var tee: Color = pal.outfit
+	var tee_hi: Color = pal.outfit.lightened(0.10)
+	var tee_dk: Color = pal.outfit.darkened(0.12)
+	var gold: Color = pal.trim
+	var gold_hi: Color = pal.accent
+	if dripped:
+		# black puffer over the tee — original quilt, no brand
+		Pix.rect(img, cx - 9, top + 2, 19, 13, tee)
+		Pix.rect(img, cx - 8, top + 3, 17, 10, tee_hi)
+		Pix.rect(img, cx - 12, top + 4, 5, 8, tee)
+		Pix.rect(img, cx + 8, top + 4, 5, 8, tee_hi)
+		Pix.rect(img, cx - 5, top, 11, 4, tee_dk)
+		Pix.hline(img, cx - 3, top + 3, 7, pal.skin_dk)
+		for row in 3:
+			Pix.hline(img, cx - 6, top + 6 + row * 3, 13, tee_dk)
+		Pix.vline(img, cx - 2, top + 5, 9, tee_dk)
+		Pix.vline(img, cx + 2, top + 5, 9, tee_dk)
+		# stacked chains
+		Pix.hline(img, cx - 3, top + 5, 7, gold)
+		Pix.put(img, cx, top + 6, gold_hi)
+		Pix.hline(img, cx - 2, top + 7, 5, gold.darkened(0.12))
+		Pix.put(img, cx, top + 8, gold_hi)
+		Pix.rect(img, cx - 1, top + 9, 3, 2, gold)
+		Pix.rect(img, cx - 7, hip_y - 2, 15, 3, pal.jeans)
+		Pix.hline(img, cx - 5, hip_y - 2, 11, pal.jeans_hi)
+		return
+	# black crew tee + thin gold chain
+	Pix.rect(img, cx - 7, top + 3, 15, 12, tee)
+	Pix.rect(img, cx - 6, top + 4, 13, 9, tee_hi)
+	Pix.rect(img, cx - 10, top + 4, 5, 8, tee)
+	Pix.rect(img, cx + 6, top + 4, 5, 8, tee_hi)
+	Pix.rect(img, cx - 5, top, 11, 4, tee_dk)
+	Pix.hline(img, cx - 3, top + 3, 7, pal.skin_dk)
+	Pix.hline(img, cx - 2, top + 5, 5, gold.darkened(0.08))
+	Pix.put(img, cx, top + 6, gold)
+	Pix.put(img, cx, top + 7, gold_hi)
+	Pix.rect(img, cx - 6, hip_y - 2, 13, 3, pal.jeans)
+	Pix.hline(img, cx - 4, hip_y - 2, 9, pal.jeans_hi)
+
+
+static func _trap_shades(img: Image, cx: int, cy: int) -> void:
+	# Dark wrap with gold rim — original, not a brand or cyan/pink split.
+	var frame := Color(0.10, 0.09, 0.08)
+	var lens := Color(0.12, 0.11, 0.10)
+	var gold := Color(0.83, 0.70, 0.40)
+	Pix.hline(img, cx - 7, cy, 15, gold)
+	Pix.rect(img, cx - 6, cy, 6, 3, lens)
+	Pix.rect(img, cx + 1, cy, 6, 3, lens.lightened(0.06))
+	Pix.vline(img, cx - 6, cy, 3, gold)
+	Pix.vline(img, cx, cy, 3, gold)
+	Pix.vline(img, cx + 6, cy, 3, gold)
+	Pix.hline(img, cx - 6, cy + 3, 6, frame)
+	Pix.hline(img, cx + 1, cy + 3, 6, frame)
+	Pix.put(img, cx - 5, cy, Color(0.95, 0.88, 0.62, 0.55))
+	Pix.put(img, cx + 2, cy, Color(1, 1, 1, 0.28))
+	Pix.put(img, cx - 7, cy + 1, gold)
+	Pix.put(img, cx + 7, cy + 1, gold)
+
+
+static func _drip_notes(img: Image, cx: int, hip_y: int, f: int, dripped: bool) -> void:
+	var gold := Color(0.90, 0.78, 0.38, 0.85)
+	var hi := Color(1.0, 0.94, 0.62, 0.9)
+	var spots: Array[Vector2i] = [
+		Vector2i(-12, -8), Vector2i(11, -10), Vector2i(-8, 4), Vector2i(10, 2), Vector2i(0, -14),
+	]
+	for i in spots.size():
+		var p: Vector2i = spots[i]
+		var oy: int = int(sin(float(f * 2 + i) * 0.7) * 2.0)
+		Pix.put(img, cx + p.x, hip_y + p.y + oy, gold if (i % 2) == 0 else hi)
+		if dripped:
+			Pix.put(img, cx + p.x + 1, hip_y + p.y + oy - 2, hi)
 
 
 static func _hoodie_torso(img: Image, pal: Dictionary, cx: int, hip_y: int, ripped: bool) -> void:
@@ -769,7 +910,7 @@ static func _flash(img: Image, x: int, y: int, col: Color) -> void:
 	Pix.put(img, x + 5, y + 1, Color(col, 0.6))
 
 
-static func _paint_down(img: Image, pal: Dictionary, def: CharacterDef, u: float, ripped: bool = false) -> void:
+static func _paint_down(img: Image, pal: Dictionary, def: CharacterDef, u: float, ripped: bool = false, dripped: bool = false) -> void:
 	var y: int = int(lerpf(28.0, 42.0, clampf(u * 1.2, 0.0, 1.0)))
 	Pix.capsule(img, 8, y + 4, 28, y + 5, 5, pal.outfit if not ripped else pal.skin)
 	Pix.oval(img, 32, y + 2, 7, 6, pal.skin)
@@ -790,3 +931,8 @@ static func _paint_down(img: Image, pal: Dictionary, def: CharacterDef, u: float
 	elif def.style == "cargo":
 		Pix.hline(img, 10, y + 4, 14, pal.outfit)
 		Pix.hline(img, 10, y + 6, 12, pal.jeans)
+	elif def.style == "trap":
+		Pix.hline(img, 10, y + 4, 14, pal.outfit)
+		if dripped:
+			Pix.hline(img, 12, y + 5, 10, pal.trim.darkened(0.2))
+			Pix.put(img, 16, y + 6, pal.accent)

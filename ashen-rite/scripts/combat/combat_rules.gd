@@ -127,6 +127,10 @@ static func _special(def: CharacterDef) -> Dictionary:
 			elif def.id == "vag":
 				base.dash_spd = 600.0
 				base.startup = 0.09
+			elif def.id == "spyros":
+				base.dash_spd = 590.0
+				base.startup = 0.10
+				base.damage = 96.0 * def.attack
 		"slam":
 			base.y = -16.0
 			base.size = Vector2(86, 24)
@@ -295,6 +299,25 @@ static func _ultimate(def: CharacterDef) -> Dictionary:
 			u.knockdown = false
 			u.push_away = true
 			u.atk_boost = 1.42
+			u.atk_boost_t = 10.0
+		"drip":
+			u.projectile = ""
+			u.quake = true
+			u.damage = 58.0 * def.attack
+			u.knockback = 380.0
+			u.launch = -36.0
+			u.hitstun = 0.48
+			u.blockstun = 0.24
+			u.size = Vector2(420, 72)
+			u.reach = 80.0
+			u.y = -24.0
+			u.startup = 0.16
+			u.active = 0.18
+			u.duration = 0.70
+			u.invuln = 0.20
+			u.armor = 2
+			u.knockdown = false
+			u.atk_boost = 1.40
 			u.atk_boost_t = 10.0
 		"cotton":
 			u.projectile = ""

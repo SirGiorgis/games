@@ -15,9 +15,9 @@ func _init() -> void:
 	field.blend_rect(veil, Rect2i(0, 0, 1280, 720), Vector2i.ZERO)
 
 	var title := PixelFont.make("UNIQUE SUPERS", Color(0.95, 0.82, 0.35), 4).get_image()
-	_blit(field, title, 640 - title.get_width() / 2, 10)
+	_blit(field, title, 640 - title.get_width() / 2, 8)
 	var sub := PixelFont.make("O  WHEN SUPER IS FULL", Color(0.92, 0.90, 0.84), 2).get_image()
-	_blit(field, sub, 640 - sub.get_width() / 2, 52)
+	_blit(field, sub, 640 - sub.get_width() / 2, 46)
 
 	var chris := _def("chris_xrisakis")
 	var mako := _def("mako")
@@ -25,54 +25,63 @@ func _init() -> void:
 	var fogas := _def("fogas")
 	var giannis := _def("giannis")
 	var vag := _def("vag")
+	var spyros := _def("spyros")
 
-	_panel(field, 16, 88, 404, 292)
-	_panel(field, 438, 88, 404, 292)
-	_panel(field, 860, 88, 404, 292)
-	_panel(field, 16, 396, 404, 292)
-	_panel(field, 438, 396, 404, 292)
-	_panel(field, 860, 396, 404, 292)
+	# 4 x 2 panels
+	var pw := 300
+	var ph := 300
+	var xs: Array[int] = [16, 328, 640, 952]
+	var ys: Array[int] = [72, 392]
+	for yi in ys.size():
+		for xi in xs.size():
+			if yi == 1 and xi == 3:
+				continue
+			_panel(field, xs[xi], ys[yi], pw, ph)
 
-	_stamp_fighter(field, chris, "ultimate", 8, 218, 300, false)
+	_stamp_fighter(field, chris, "ultimate", 8, 166, 268, false)
 	var car: Image = Pix.car()
 	car.resize(car.get_width() * 3, car.get_height() * 3, Image.INTERPOLATE_NEAREST)
-	field.blend_rect(car, Rect2i(0, 0, car.get_width(), car.get_height()), Vector2i(240, 268))
-	_label(field, "CHRIS", Color(0.96, 0.22, 0.28), 218, 312)
-	_label(field, chris.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 218, 336)
-	_wrap(field, "Original open-wheel pack. CX mark.", Color(0.88, 0.86, 0.80), 36, 360, 32)
+	field.blend_rect(car, Rect2i(0, 0, car.get_width(), car.get_height()), Vector2i(188, 236))
+	_label(field, "CHRIS", Color(0.96, 0.22, 0.28), 166, 280)
+	_label(field, chris.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 166, 304)
+	_wrap(field, "Original open-wheel pack. CX mark.", Color(0.88, 0.86, 0.80), 28, 328, 28)
 
-	_stamp_fighter(field, mako, "ultimate", 4, 640, 300, false)
-	_label(field, "MAKO", Color(0.88, 0.62, 0.38), 640, 312)
-	_label(field, mako.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 640, 336)
-	_wrap(field, "Weaving hook storm. Armor in.", Color(0.88, 0.86, 0.80), 458, 360, 32)
+	_stamp_fighter(field, mako, "ultimate", 4, 478, 268, false)
+	_label(field, "MAKO", Color(0.88, 0.62, 0.38), 478, 280)
+	_label(field, mako.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 478, 304)
+	_wrap(field, "Weaving hook storm. Armor in.", Color(0.88, 0.86, 0.80), 340, 328, 28)
 
-	_stamp_fighter(field, giorgis, "ultimate", 8, 1062, 300, false)
-	_label(field, "GIORGIS", Color(0.55, 0.82, 0.95), 1062, 312)
-	_label(field, giorgis.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 1062, 336)
-	_wrap(field, "Heals 28% HP. ATK x1.38 for 10s.", Color(0.88, 0.86, 0.80), 880, 360, 32)
+	_stamp_fighter(field, giorgis, "ultimate", 8, 790, 268, false)
+	_label(field, "GIORGIS", Color(0.55, 0.82, 0.95), 790, 280)
+	_label(field, giorgis.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 790, 304)
+	_wrap(field, "Heals 28% HP. ATK x1.38 for 10s.", Color(0.88, 0.86, 0.80), 652, 328, 28)
 
-	_stamp_fighter(field, fogas, "ultimate", 8, 218, 608, false)
+	_stamp_fighter(field, fogas, "ultimate", 8, 1102, 268, false)
 	var gas: Image = Pix.gas()
 	gas.resize(gas.get_width() * 3, gas.get_height() * 3, Image.INTERPOLATE_NEAREST)
-	field.blend_rect(gas, Rect2i(0, 0, gas.get_width(), gas.get_height()), Vector2i(158, 560))
-	_label(field, "FOGAS", Color(0.92, 0.86, 0.70), 218, 620)
-	_label(field, fogas.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 218, 644)
-	_wrap(field, "Stun blast, then poison cloud.", Color(0.88, 0.86, 0.80), 36, 668, 32)
+	field.blend_rect(gas, Rect2i(0, 0, gas.get_width(), gas.get_height()), Vector2i(1042, 220))
+	_label(field, "FOGAS", Color(0.92, 0.86, 0.70), 1102, 280)
+	_label(field, fogas.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 1102, 304)
+	_wrap(field, "Stun blast, then poison cloud.", Color(0.88, 0.86, 0.80), 964, 328, 28)
 
-	_stamp_fighter(field, giannis, "ultimate", 10, 640, 608, false)
-	_label(field, "GIANNIS", Color(0.35, 0.82, 0.92), 640, 620)
-	_label(field, giannis.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 640, 644)
-	_wrap(field, "Rips the hoodie. Pushes all. ATK x1.42.", Color(0.88, 0.86, 0.80), 458, 668, 32)
+	_stamp_fighter(field, giannis, "ultimate", 10, 166, 588, false)
+	_label(field, "GIANNIS", Color(0.35, 0.82, 0.92), 166, 600)
+	_label(field, giannis.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 166, 624)
+	_wrap(field, "Rips the hoodie. Pushes all. ATK x1.42.", Color(0.88, 0.86, 0.80), 28, 648, 28)
 
-	_stamp_fighter(field, vag, "ultimate", 8, 1062, 608, false)
+	_stamp_fighter(field, vag, "ultimate", 8, 478, 588, false)
 	var boll: Image = Pix.cotton()
 	boll.resize(boll.get_width() * 4, boll.get_height() * 4, Image.INTERPOLATE_NEAREST)
-	field.blend_rect(boll, Rect2i(0, 0, boll.get_width(), boll.get_height()), Vector2i(980, 568))
-	field.blend_rect(boll, Rect2i(0, 0, boll.get_width(), boll.get_height()), Vector2i(1048, 576))
-	field.blend_rect(boll, Rect2i(0, 0, boll.get_width(), boll.get_height()), Vector2i(1116, 564))
-	_label(field, "VAG", Color(0.92, 0.88, 0.78), 1062, 620)
-	_label(field, vag.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 1062, 644)
-	_wrap(field, "Cotton on the floor. Pick up to heal and chip.", Color(0.88, 0.86, 0.80), 880, 668, 32)
+	field.blend_rect(boll, Rect2i(0, 0, boll.get_width(), boll.get_height()), Vector2i(396, 548))
+	field.blend_rect(boll, Rect2i(0, 0, boll.get_width(), boll.get_height()), Vector2i(464, 556))
+	_label(field, "VAG", Color(0.92, 0.88, 0.78), 478, 600)
+	_label(field, vag.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 478, 624)
+	_wrap(field, "Cotton on the floor. Pick up to heal and chip.", Color(0.88, 0.86, 0.80), 340, 648, 28)
+
+	_stamp_fighter(field, spyros, "ultimate", 10, 790, 588, false)
+	_label(field, "SPYROS", Color(0.92, 0.78, 0.32), 790, 600)
+	_label(field, spyros.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 790, 624)
+	_wrap(field, "Bass drop. Stacks the chain. ATK x1.40.", Color(0.88, 0.86, 0.80), 652, 648, 28)
 
 	var out := "res://.godot/super_preview"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(out))
