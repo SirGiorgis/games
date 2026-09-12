@@ -45,12 +45,12 @@ func build(d: CharacterDef) -> void:
 	_sprite.scale = _base_scale
 	add_child(_sprite)
 	var sh := Sprite2D.new()
-	var simg := Pix.image(24, 8, Color(0, 0, 0, 0))
-	Pix.dither_fill(simg, 0, 2, 24, 4, Color(0, 0, 0, 0.5), Color(0, 0, 0, 0.12))
+	var simg := Pix.image(14, 5, Color(0, 0, 0, 0))
+	Pix.dither_fill(simg, 0, 1, 14, 3, Color(0, 0, 0, 0.4), Color(0, 0, 0, 0.1))
 	sh.texture = Pix.tex(simg)
 	sh.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	sh.centered = true
-	sh.position = Vector2(0, 6)
+	sh.position = Vector2(0, 4)
 	sh.scale = Vector2(sc, sc)
 	sh.z_index = -2
 	add_child(sh)

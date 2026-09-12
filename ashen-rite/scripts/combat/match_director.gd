@@ -195,7 +195,7 @@ func _finish_round() -> void:
 
 func _on_hit(f: Fighter, attack: Dictionary, crit: bool) -> void:
 	var strong: bool = attack.get("kind", "") in ["heavy", "special", "ultimate"] or crit
-	fx.spark(f.global_position + Vector2(0, -70), p1.def.accent if f == p2 else p2.def.accent, strong)
+	fx.spark(f.global_position + Vector2(0, -40), p1.def.accent if f == p2 else p2.def.accent, strong)
 	cam.shake(0.35 if strong else 0.12)
 	if crit:
 		_set_banner("CRITICAL")

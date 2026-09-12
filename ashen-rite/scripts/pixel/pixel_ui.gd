@@ -195,27 +195,37 @@ static func round_gem(on: bool) -> ImageTexture:
 
 
 static func timer_box() -> ImageTexture:
-	var img := Pix.image(40, 16, Color(0, 0, 0, 0))
-	Pix.rect(img, 0, 0, 40, 16, Color(0.06, 0.04, 0.08, 0.95))
-	Pix.hline(img, 0, 0, 40, GOLD)
-	Pix.hline(img, 0, 15, 40, RED.darkened(0.2))
-	Pix.vline(img, 0, 0, 16, GOLD.darkened(0.15))
-	Pix.vline(img, 39, 0, 16, GOLD.darkened(0.15))
+	var img := Pix.image(22, 22, Color(0, 0, 0, 0))
+	Pix.disc(img, 11, 11, 10, Color(0.08, 0.07, 0.08))
+	Pix.disc(img, 11, 11, 8, Color(0.16, 0.14, 0.15))
+	Pix.disc(img, 11, 11, 7, Color(0.06, 0.05, 0.06))
 	return Pix.tex(img)
 
 
 static func hud_top() -> ImageTexture:
-	var img := Pix.image(W, 28, Color(0, 0, 0, 0))
-	# left plate
-	Pix.rect(img, 0, 0, 130, 28, Color(0.05, 0.03, 0.07, 0.88))
-	Pix.rect(img, 0, 0, 4, 28, RED)
-	# right plate
-	Pix.rect(img, W - 130, 0, 130, 28, Color(0.05, 0.03, 0.07, 0.88))
-	Pix.rect(img, W - 4, 0, 4, 28, RED)
-	# center timer zone
-	Pix.rect(img, 130, 0, W - 260, 28, Color(0.04, 0.02, 0.06, 0.75))
-	Pix.hline(img, 0, 0, W, Color(0.25, 0.18, 0.14, 0.9))
-	Pix.hline(img, 0, 27, W, Color(0.12, 0.08, 0.1, 0.9))
+	var img := Pix.image(W, 18, Color(0, 0, 0, 0))
+	return Pix.tex(img)
+
+
+static func tiny_hp(w: int, h: int, fill: Color, t: float) -> ImageTexture:
+	var img := Pix.image(w, h, Color(0, 0, 0, 0))
+	Pix.rect(img, 0, 0, w, h, Color(0.05, 0.05, 0.06))
+	Pix.rect(img, 1, 1, w - 2, h - 2, Color(0.12, 0.12, 0.12))
+	var fw: int = int(clampf(t, 0.0, 1.0) * float(w - 4))
+	if fw > 0:
+		Pix.rect(img, 2, 2, fw, h - 4, fill)
+		Pix.hline(img, 2, 2, fw, fill.lightened(0.28))
+		Pix.hline(img, 2, h - 3, fw, fill.darkened(0.18))
+	Pix.hline(img, 0, 0, w, Color(0.02, 0.02, 0.02))
+	Pix.hline(img, 0, h - 1, w, Color(0.02, 0.02, 0.02))
+	return Pix.tex(img)
+
+
+static func name_pill(w: int, h: int, fill: Color) -> ImageTexture:
+	var img := Pix.image(w, h, Color(0, 0, 0, 0))
+	Pix.rect(img, 1, 0, w - 2, h, fill)
+	Pix.rect(img, 0, 1, w, h - 2, fill)
+	Pix.hline(img, 1, 0, w - 2, fill.lightened(0.15))
 	return Pix.tex(img)
 
 

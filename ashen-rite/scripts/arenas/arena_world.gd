@@ -4,7 +4,7 @@ extends Node2D
 const FLOOR_Y := 620.0
 const WIDTH := 1280.0
 
-var arena_id: String = "moonlit_temple"
+var arena_id: String = "grass_field"
 
 
 func build(id: String) -> void:
@@ -51,11 +51,13 @@ func _walls() -> void:
 
 
 func _dust(id: String) -> void:
-	var col := Color(0.7, 0.75, 1.0, 0.5)
+	var col := Color(0.85, 0.9, 0.55, 0.35)
 	if id == "neon_street":
 		col = Color(0.9, 0.3, 0.7, 0.45)
 	elif id == "the_pit":
 		col = Color(0.9, 0.3, 0.15, 0.5)
+	elif id == "grass_field":
+		col = Color(0.7, 0.82, 0.4, 0.28)
 	var parts := CPUParticles2D.new()
 	parts.position = Vector2(640, 240)
 	parts.emitting = true
@@ -77,7 +79,7 @@ func _dust(id: String) -> void:
 
 
 static func all_ids() -> PackedStringArray:
-	return PackedStringArray(["moonlit_temple", "neon_street", "the_pit", "crimson_keep"])
+	return PackedStringArray(["grass_field", "moonlit_temple", "neon_street", "the_pit", "crimson_keep"])
 
 
 static func display_name(id: String) -> String:
@@ -88,5 +90,7 @@ static func display_name(id: String) -> String:
 			return "THE UNDER-RITE"
 		"crimson_keep":
 			return "CRIMSON KEEP"
-		_:
+		"moonlit_temple":
 			return "MOONLIT TEMPLE"
+		_:
+			return "GREEN HILL FIELD"

@@ -32,7 +32,7 @@ func _ready() -> void:
 	_preview.texture = frames["idle"][0]
 	_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_preview.centered = true
-	var sc: float = 2.8 if _preview.texture.get_width() >= 120 else 4.0
+	var sc: float = 6.0 if _preview.texture.get_width() <= 40 else 4.0
 	_preview.scale = Vector2(sc, sc)
 	_preview.position = Vector2(976, 400)
 	_preview_frames = frames["walk"]

@@ -7,10 +7,10 @@ enum ScreenId { BOOT, MENU, SELECT, OPTIONS, CONTROLS, MATCH, RESULT }
 
 var difficulty: Difficulty = Difficulty.NORMAL
 var p1_character_id: String = "chris_xrisakis"
-var p2_character_id: String = "nyx_hollow"
+var p2_character_id: String = "hoodrich_stacks"
 var p2_is_cpu: bool = true
-var arena_id: String = "moonlit_temple"
-var random_arena: bool = true
+var arena_id: String = "grass_field"
+var random_arena: bool = false
 
 var p1_rounds: int = 0
 var p2_rounds: int = 0

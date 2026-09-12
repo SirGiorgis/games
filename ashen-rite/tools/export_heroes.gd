@@ -25,6 +25,9 @@ func _export_id(id: String) -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
 	for key in ["idle", "walk", "run", "light", "heavy", "jump"]:
 		_save_strip(frames, key, dir)
+	var arena := PixelArenaBake.texture("grass_field").get_image()
+	arena.resize(arena.get_width() * 2, arena.get_height() * 2, Image.INTERPOLATE_NEAREST)
+	arena.save_png(ProjectSettings.globalize_path("res://.godot/grass_field.png"))
 	print("  %s -> %s" % [def.name, dir])
 
 

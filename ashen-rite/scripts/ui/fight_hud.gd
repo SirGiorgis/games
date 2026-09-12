@@ -24,91 +24,92 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 
-	var top := TextureRect.new()
-	top.texture = PixelUI.hud_top()
-	top.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	top.position = Vector2(0, 0)
-	top.size = Vector2(1280, 112)
-	top.stretch_mode = TextureRect.STRETCH_SCALE
-	root.add_child(top)
+	# Tiny Fight-style top strip: name pills + HP + round timer
+	var p1_pill := TextureRect.new()
+	p1_pill.texture = PixelUI.name_pill(72, 8, Color(0.08, 0.08, 0.09))
+	p1_pill.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	p1_pill.position = Vector2(16, 12)
+	p1_pill.scale = Vector2(4, 4)
+	root.add_child(p1_pill)
+	PixelUI.label_at(root, p1.def.name.to_upper(), Vector2(24, 16), 1, Color(0.95, 0.95, 0.92))
 
-	var p1_plate := TextureRect.new()
-	p1_plate.texture = PixelUI.name_plate(80, 8, p1.def.accent)
-	p1_plate.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	p1_plate.position = Vector2(24, 8)
-	p1_plate.scale = Vector2(4, 4)
-	root.add_child(p1_plate)
-	PixelUI.label_at(root, p1.def.name.to_upper(), Vector2(56, 10), 2, Color(0.95, 0.9, 0.82))
+	var p2_pill := TextureRect.new()
+	p2_pill.texture = PixelUI.name_pill(72, 8, Color(0.08, 0.08, 0.09))
+	p2_pill.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	p2_pill.position = Vector2(976, 12)
+	p2_pill.scale = Vector2(4, 4)
+	root.add_child(p2_pill)
+	var p2n := PixelUI.label_at(root, p2.def.name.to_upper(), Vector2(976, 16), 1, Color(0.95, 0.95, 0.92), 0, 288)
+	p2n.set_centered(288)
 
-	var p2_plate := TextureRect.new()
-	p2_plate.texture = PixelUI.name_plate(80, 8, p2.def.accent)
-	p2_plate.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	p2_plate.position = Vector2(960, 8)
-	p2_plate.scale = Vector2(4, 4)
-	root.add_child(p2_plate)
-	var p2n := PixelUI.label_at(root, p2.def.name.to_upper(), Vector2(960, 10), 2, Color(0.95, 0.9, 0.82), 0, 264)
-	p2n.set_centered(264)
+	_p1_hp = _bar_tex(root, Vector2(16, 48), 112, 8, Color(0.28, 0.82, 0.22))
+	_p2_hp = _bar_tex(root, Vector2(816, 48), 112, 8, Color(0.86, 0.18, 0.22))
 
 	var tbox := TextureRect.new()
 	tbox.texture = PixelUI.timer_box()
 	tbox.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	tbox.position = Vector2(600, 12)
+	tbox.position = Vector2(596, 8)
 	tbox.scale = Vector2(4, 4)
 	root.add_child(tbox)
-	_timer = PixelUI.label_at(root, "99", Vector2(0, 18), 4, Color(1, 0.9, 0.45), 0, 1280)
+	_timer = PixelUI.label_at(root, "99", Vector2(0, 28), 3, Color(1, 1, 1), 0, 1280)
 	_timer.set_centered(1280)
 
-	_p1_hp = _bar_tex(root, Vector2(24, 44), 120, 8)
-	_p2_hp = _bar_tex(root, Vector2(808, 44), 120, 8)
-	_p1_sp = _meter_tex(root, Vector2(24, 80), 40, 5)
-	_p2_sp = _meter_tex(root, Vector2(1080, 80), 40, 5)
-	_p1_ult = _meter_tex(root, Vector2(200, 80), 44, 5)
-	_p2_ult = _meter_tex(root, Vector2(808, 80), 44, 5)
-
-	PixelUI.label_at(root, "SP", Vector2(24, 68), 1, Color(0.45, 0.78, 1.0))
-	PixelUI.label_at(root, "ULT", Vector2(200, 68), 1, Color(0.95, 0.82, 0.35))
-	PixelUI.label_at(root, "SP", Vector2(1080, 68), 1, Color(0.45, 0.78, 1.0))
-	PixelUI.label_at(root, "ULT", Vector2(952, 68), 1, Color(0.95, 0.82, 0.35))
+	_p1_sp = _meter_tex(root, Vector2(16, 84), 48, 5, Color(0.86, 0.32, 0.62))
+	_p2_sp = _meter_tex(root, Vector2(1072, 84), 48, 5, Color(0.86, 0.32, 0.62))
+	PixelUI.label_at(root, "BLOCK", Vector2(16, 72), 1, Color(0.92, 0.45, 0.7))
+	PixelUI.label_at(root, "BLOCK", Vector2(1072, 72), 1, Color(0.92, 0.45, 0.7))
 
 	for i in 2:
-		_p1_rounds.append(_gem(root, Vector2(24 + i * 36, 96)))
-		_p2_rounds.append(_gem(root, Vector2(1216 - i * 36, 96)))
+		_p1_rounds.append(_gem(root, Vector2(220 + i * 28, 80)))
+		_p2_rounds.append(_gem(root, Vector2(1032 - i * 28, 80)))
 
-	PixelUI.label_at(root, arena_name, Vector2(0, 108), 2, Color(0.68, 0.64, 0.58), 0, 1280).set_centered(1280)
+	_p1_ult = _meter_tex(root, Vector2(16, 676), 80, 6, Color(0.25, 0.72, 0.95))
+	_p2_ult = _meter_tex(root, Vector2(944, 676), 80, 6, Color(0.95, 0.78, 0.25))
+	PixelUI.label_at(root, "SPECIAL", Vector2(16, 660), 1, Color(0.55, 0.82, 1.0))
+	PixelUI.label_at(root, "SPECIAL", Vector2(944, 660), 1, Color(0.95, 0.82, 0.4))
+
+	PixelUI.label_at(root, "J LIGHT   K HEAVY   L SPECIAL", Vector2(16, 620), 1, Color(0.12, 0.12, 0.12))
+	PixelUI.label_at(root, "U BLOCK   I THROW   O SUPER", Vector2(16, 636), 1, Color(0.12, 0.12, 0.12))
+	var hints := PixelUI.label_at(root, "ATTACK J   POWER K   DASH L   BLOCK U", Vector2(720, 636), 1, Color(0.12, 0.12, 0.12), 0, 544)
+	hints.set_centered(544)
+
+	PixelUI.label_at(root, arena_name, Vector2(0, 108), 1, Color(0.18, 0.22, 0.16), 0, 1280).set_centered(1280)
 	_combo = PixelUI.label_at(root, "", Vector2(0, 140), 3, Color(1, 0.85, 0.3), 0, 1280)
 	_combo.set_centered(1280)
 
-	p1.health_changed.connect(func(c, m): _paint_hp(_p1_hp, c, m))
-	p2.health_changed.connect(func(c, m): _paint_hp(_p2_hp, c, m))
+	p1.health_changed.connect(func(c, m): _paint_hp(_p1_hp, c, m, true))
+	p2.health_changed.connect(func(c, m): _paint_hp(_p2_hp, c, m, false))
 	p1.meters_changed.connect(func(s, u): _paint_meters(true, s, u))
 	p2.meters_changed.connect(func(s, u): _paint_meters(false, s, u))
-	_paint_hp(_p1_hp, p1.health, p1.max_health)
-	_paint_hp(_p2_hp, p2.health, p2.max_health)
+	_paint_hp(_p1_hp, p1.health, p1.max_health, true)
+	_paint_hp(_p2_hp, p2.health, p2.max_health, false)
 	_paint_meters(true, p1.special_meter, p1.ultimate_meter)
 	_paint_meters(false, p2.special_meter, p2.ultimate_meter)
 
 
-func _bar_tex(root: Control, pos: Vector2, w: int, h: int) -> TextureRect:
+func _bar_tex(root: Control, pos: Vector2, w: int, h: int, col: Color) -> TextureRect:
 	var t := TextureRect.new()
 	t.position = pos
 	t.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	t.texture = PixelUI.bar(w, h, Color(0.82, 0.16, 0.22), 1.0)
+	t.texture = PixelUI.tiny_hp(w, h, col, 1.0)
 	t.scale = Vector2(4, 4)
 	root.add_child(t)
 	t.set_meta("bw", w)
 	t.set_meta("bh", h)
+	t.set_meta("col", col)
 	return t
 
 
-func _meter_tex(root: Control, pos: Vector2, w: int, h: int) -> TextureRect:
+func _meter_tex(root: Control, pos: Vector2, w: int, h: int, col: Color) -> TextureRect:
 	var t := TextureRect.new()
 	t.position = pos
 	t.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	t.texture = PixelUI.meter_bar(w, h, Color(0.3, 0.75, 1.0), 0.0)
+	t.texture = PixelUI.meter_bar(w, h, col, 0.0)
 	t.scale = Vector2(4, 4)
 	root.add_child(t)
 	t.set_meta("bw", w)
 	t.set_meta("bh", h)
+	t.set_meta("col", col)
 	return t
 
 
@@ -116,26 +117,29 @@ func _gem(root: Control, pos: Vector2) -> TextureRect:
 	var t := TextureRect.new()
 	t.position = pos
 	t.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	t.scale = Vector2(4, 4)
+	t.scale = Vector2(3, 3)
 	root.add_child(t)
 	return t
 
 
-func _paint_hp(bar: TextureRect, cur: float, mx: float) -> void:
+func _paint_hp(bar: TextureRect, cur: float, mx: float, _left: bool) -> void:
 	var t := clampf(cur / max(mx, 1.0), 0.0, 1.0)
-	var col := Color(0.82, 0.16, 0.22).lerp(Color(0.95, 0.8, 0.2), 1.0 - t)
-	bar.texture = PixelUI.bar(int(bar.get_meta("bw")), int(bar.get_meta("bh")), col, t)
+	var base: Color = bar.get_meta("col")
+	var col: Color = base if t > 0.3 else Color(0.95, 0.75, 0.15)
+	bar.texture = PixelUI.tiny_hp(int(bar.get_meta("bw")), int(bar.get_meta("bh")), col, t)
 
 
 func _paint_meters(left: bool, s: float, u: float) -> void:
 	var sp: TextureRect = _p1_sp if left else _p2_sp
 	var ult: TextureRect = _p1_ult if left else _p2_ult
-	sp.texture = PixelUI.meter_bar(int(sp.get_meta("bw")), int(sp.get_meta("bh")), Color(0.3, 0.75, 1.0), s / 100.0, s >= 100.0)
-	ult.texture = PixelUI.meter_bar(int(ult.get_meta("bw")), int(ult.get_meta("bh")), Color(0.95, 0.78, 0.25), u / 100.0, u >= 100.0)
+	var spc: Color = sp.get_meta("col")
+	var uc: Color = ult.get_meta("col")
+	sp.texture = PixelUI.meter_bar(int(sp.get_meta("bw")), int(sp.get_meta("bh")), spc, s / 100.0, s >= 100.0)
+	ult.texture = PixelUI.meter_bar(int(ult.get_meta("bw")), int(ult.get_meta("bh")), uc, u / 100.0, u >= 100.0)
 
 
 func set_timer(v: int) -> void:
-	_timer.set_pix("%02d" % v, 4, Color(1, 0.35, 0.3) if v <= 10 else Color(1, 0.9, 0.45))
+	_timer.set_pix("%02d" % v, 3, Color(1, 0.35, 0.3) if v <= 10 else Color(1, 1, 1))
 	_timer.set_centered(1280)
 
 

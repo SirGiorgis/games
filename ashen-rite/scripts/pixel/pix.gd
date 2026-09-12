@@ -63,6 +63,31 @@ static func oval(img: Image, cx: int, cy: int, rx: int, ry: int, c: Color) -> vo
 				put(img, cx + xx, cy + yy, c)
 
 
+static func round_rect(img: Image, x: int, y: int, w: int, h: int, r: int, c: Color) -> void:
+	var rr: int = mini(r, mini(w, h) / 2)
+	rect(img, x + rr, y, w - rr * 2, h, c)
+	rect(img, x, y + rr, w, h - rr * 2, c)
+	disc(img, x + rr, y + rr, rr, c)
+	disc(img, x + w - 1 - rr, y + rr, rr, c)
+	disc(img, x + rr, y + h - 1 - rr, rr, c)
+	disc(img, x + w - 1 - rr, y + h - 1 - rr, rr, c)
+
+
+static func star(img: Image, cx: int, cy: int, on: bool) -> void:
+	var a: Color = Color(0.98, 0.82, 0.18) if on else Color(0.16, 0.16, 0.16)
+	var b: Color = Color(1.0, 0.95, 0.55) if on else Color(0.10, 0.10, 0.10)
+	put(img, cx, cy - 3, a)
+	put(img, cx, cy - 2, a)
+	hline(img, cx - 1, cy - 1, 3, a)
+	hline(img, cx - 3, cy, 7, a)
+	hline(img, cx - 1, cy + 1, 3, a)
+	put(img, cx - 2, cy + 2, a)
+	put(img, cx + 2, cy + 2, a)
+	put(img, cx - 3, cy + 3, a)
+	put(img, cx + 3, cy + 3, a)
+	put(img, cx, cy, b)
+
+
 static func outline(img: Image, oc: Color) -> void:
 	var w := img.get_width()
 	var h := img.get_height()
