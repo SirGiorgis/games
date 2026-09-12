@@ -70,6 +70,7 @@ static func _atk(kind: String, dmg: float, kb: float, launch: float, stun: float
 		"poison_t": 0.0,
 		"poison_dps": 0.0,
 		"stun": false,
+		"cotton": false,
 	}
 
 
@@ -123,6 +124,9 @@ static func _special(def: CharacterDef) -> Dictionary:
 			elif def.id == "giannis":
 				base.dash_spd = 580.0
 				base.startup = 0.11
+			elif def.id == "vag":
+				base.dash_spd = 600.0
+				base.startup = 0.09
 		"slam":
 			base.y = -16.0
 			base.size = Vector2(86, 24)
@@ -292,6 +296,23 @@ static func _ultimate(def: CharacterDef) -> Dictionary:
 			u.push_away = true
 			u.atk_boost = 1.42
 			u.atk_boost_t = 10.0
+		"cotton":
+			u.projectile = ""
+			u.damage = 0.0
+			u.knockback = 0.0
+			u.launch = 0.0
+			u.hitstun = 0.0
+			u.blockstun = 0.0
+			u.size = Vector2(8, 8)
+			u.reach = 0.0
+			u.y = -20.0
+			u.startup = 0.10
+			u.active = 0.04
+			u.duration = 0.52
+			u.invuln = 0.20
+			u.armor = 1
+			u.knockdown = false
+			u.cotton = true
 		_:
 			u.projectile = "ult"
 			u.proj_count = 1

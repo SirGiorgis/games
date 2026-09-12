@@ -352,12 +352,18 @@ func _callsign(def: CharacterDef) -> String:
 
 
 func _sync_buff(lbl: PixelLabel, f: Fighter) -> void:
-	lbl.visible = f.buffed()
+	var cotton := f.cotton_left > 0
+	lbl.visible = f.buffed() or cotton
 	if not lbl.visible:
 		return
-	var flex: bool = f.def.ultimate_id == "flex"
-	var tag := "FLEX" if flex else "VODKA"
-	var col := Color(1.0, 0.72, 0.28) if flex else Color(0.62, 0.95, 0.88)
+	var tag := "VODKA"
+	var col := Color(0.62, 0.95, 0.88)
+	if cotton:
+		tag = "COTTON"
+		col = Color(0.96, 0.92, 0.78)
+	elif f.def.ultimate_id == "flex":
+		tag = "FLEX"
+		col = Color(1.0, 0.72, 0.28)
 	lbl.set_pix(tag, 1, col)
 	lbl.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 9.0))
 

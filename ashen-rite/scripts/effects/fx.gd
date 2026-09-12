@@ -183,6 +183,24 @@ func vodka_glug(pos: Vector2) -> void:
 		tw.tween_callback(s.queue_free)
 
 
+func cotton_scatter(pos: Vector2) -> void:
+	shockwave(pos)
+	for i in 10:
+		var img: Image = Pix.cotton()
+		var s := Sprite2D.new()
+		s.texture = Pix.tex(img)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		s.scale = Vector2(3, 3)
+		s.centered = true
+		s.global_position = pos + Vector2(randf_range(-40, 40), randf_range(-18, 8))
+		add_child(s)
+		var tw := s.create_tween()
+		tw.tween_property(s, "position:y", s.position.y + randf_range(28, 52), 0.42)
+		tw.parallel().tween_property(s, "position:x", s.position.x + randf_range(-90, 90), 0.42)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.42)
+		tw.tween_callback(s.queue_free)
+
+
 func shirt_rip(pos: Vector2) -> void:
 	shockwave(pos)
 	spark(pos, Color(0.35, 0.82, 0.92), true)

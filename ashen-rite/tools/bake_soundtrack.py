@@ -53,6 +53,7 @@ TRACKS = [
     ("theme:mako", "STILL STANDING", 128, 2, 9),
     ("theme:fogas", "STILL SMILING", 96, 5, 3),
     ("theme:giannis", "SHOW OUT", 132, 11, 6),
+    ("theme:vag", "COTTON RUN", 118, 4, 2),
 ]
 
 

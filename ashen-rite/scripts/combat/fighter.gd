@@ -87,6 +87,7 @@ var attack_mul: float = 1.0
 var attack_mul_t: float = 0.0
 var poison_t: float = 0.0
 var poison_dps: float = 0.0
+var cotton_left: int = 0
 
 var visual: FighterVisual
 var hurtbox: Area2D
@@ -194,6 +195,7 @@ func reset_round(start_pos: Vector2) -> void:
 	attack_mul_t = 0.0
 	poison_t = 0.0
 	poison_dps = 0.0
+	cotton_left = 0
 	rotation = 0
 	visual.rotation = 0
 	visual.set_pose_name("idle")
@@ -760,6 +762,7 @@ func _start_attack(kind: String) -> void:
 			_apply_buff_if_any(atk)
 			_apply_special_motion(atk)
 			_spawn_projectile_if_any()
+			_spawn_cotton_if_any()
 			super_started.emit()
 		"grab":
 			state = State.GRAB
@@ -809,6 +812,28 @@ func _apply_buff_if_any(atk: Dictionary) -> void:
 	if boost > 1.0 and boost_t > 0.0:
 		attack_mul = boost
 		attack_mul_t = boost_t
+
+
+func _spawn_cotton_if_any() -> void:
+	if not bool(current_attack.get("cotton", false)):
+		return
+	for n in get_tree().get_nodes_in_group("cotton_pickup"):
+		if n.get("owner_fighter") == self and n.has_method("discard"):
+			n.discard()
+	cotton_left = 0
+	var slots: Array[float] = [160.0, 320.0, 480.0, 640.0, 800.0, 960.0, 1120.0]
+	var mine: float = global_position.x
+	var placed := 0
+	for x in slots:
+		if placed >= 6:
+			break
+		if absf(x - mine) < 90.0:
+			continue
+		var c := CottonPickup.new()
+		c.setup(self, x + randf_range(-18.0, 18.0))
+		get_parent().add_child(c)
+		placed += 1
+	cotton_left = placed
 
 
 func _spawn_projectile_if_any() -> void:

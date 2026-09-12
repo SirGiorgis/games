@@ -208,7 +208,7 @@ func _pose_shift() -> float:
 			if attack_u > 0.18 and attack_u < 0.62:
 				return facing * smoothstep(0.18, 0.48, attack_u) * 10.0
 		"special", "ultimate":
-			if def and def.ultimate_id in ["flex", "vodka", "fart"] and pose == "ultimate":
+			if def and def.ultimate_id in ["flex", "vodka", "fart", "cotton"] and pose == "ultimate":
 				return 0.0
 			if def and def.ultimate_id == "dempsey" and pose == "ultimate":
 				return facing * sin(_time * 22.0) * 10.0

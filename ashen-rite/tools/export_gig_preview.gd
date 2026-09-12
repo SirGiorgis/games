@@ -9,7 +9,7 @@ func _init() -> void:
 
 	var title := PixelFont.make("GIORGIS FIGHTING", Color(0.95, 0.22, 0.28), 4).get_image()
 	_blit(field, title, 640 - title.get_width() / 2, 16)
-	var sub := PixelFont.make("CHRIS  GIORGIS  MAKO  FOGAS  GIANNIS", Color(0.95, 0.82, 0.35), 2).get_image()
+	var sub := PixelFont.make("CHRIS  GIORGIS  MAKO  FOGAS  GIANNIS  VAG", Color(0.95, 0.82, 0.35), 2).get_image()
 	_blit(field, sub, 640 - sub.get_width() / 2, 64)
 
 	var stages := [
@@ -26,11 +26,11 @@ func _init() -> void:
 		_blit(field, tex, 28 + col * 180, 96 + row * 108)
 
 	var ids := [
-		"chris_xrisakis", "hoodrich_stacks", "mako", "fogas", "giannis",
+		"chris_xrisakis", "hoodrich_stacks", "mako", "fogas", "giannis", "vag",
 	]
 	for i in ids.size():
 		var def := _def(ids[i])
-		var feet_x: int = 128 + i * 256
+		var feet_x: int = 110 + i * 178
 		var feet_y: int = 560
 		_stamp_fighter(field, def, "ultimate", 8, feet_x, feet_y, i % 2 == 1)
 		var nm: Image = PixelFont.make(def.callsign(), def.accent, 1).get_image()
@@ -38,7 +38,7 @@ func _init() -> void:
 		var ult: Image = PixelFont.make(def.ultimate_name.to_upper(), Color(0.95, 0.82, 0.35), 1).get_image()
 		_blit(field, ult, feet_x - ult.get_width() / 2, feet_y + 24)
 
-	var foot := PixelFont.make("CHRIS  GIORGIS  MAKO  FOGAS  GIANNIS", Color(0.85, 0.78, 0.62), 2).get_image()
+	var foot := PixelFont.make("CHRIS  GIORGIS  MAKO  FOGAS  GIANNIS  VAG", Color(0.85, 0.78, 0.62), 2).get_image()
 	_blit(field, foot, 640 - foot.get_width() / 2, 688)
 
 	var out := "res://.godot/gig_preview"

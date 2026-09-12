@@ -110,6 +110,7 @@ func _ready() -> void:
 
 func _open_match() -> void:
 	round_index = 1
+	_clear_pickups()
 	p1.reset_round(Vector2(360, 500))
 	p2.reset_round(Vector2(920, 500))
 	p1.can_act = false
@@ -118,6 +119,20 @@ func _open_match() -> void:
 	phase_t = 0.0
 	vs_layer.present(p1.def, p2.def, ArenaWorld.display_name(_aid))
 	AudioDirector.play("round")
+
+
+func _clear_pickups() -> void:
+	if not is_inside_tree():
+		return
+	for n in get_tree().get_nodes_in_group("cotton_pickup"):
+		if n.has_method("discard"):
+			n.discard()
+		else:
+			n.queue_free()
+	if p1:
+		p1.cotton_left = 0
+	if p2:
+		p2.cotton_left = 0
 
 
 func _begin_round() -> void:
@@ -131,6 +146,7 @@ func _begin_round() -> void:
 		time_left = 99.0
 		_last_tick = 99
 	_ko_pending = false
+	_clear_pickups()
 	p1.reset_round(Vector2(360, 500))
 	p2.reset_round(Vector2(920, 500))
 	p1.can_act = false
@@ -423,6 +439,9 @@ func _on_super(f: Fighter) -> void:
 		"flex":
 			flash_col = Color(0.35, 0.82, 0.92)
 			fx.shirt_rip(f.global_position + Vector2(0, -70))
+		"cotton":
+			flash_col = Color(0.96, 0.92, 0.78)
+			fx.cotton_scatter(f.global_position + Vector2(0, -12))
 	fx.super_flash(flash_col, 0.42)
 	fx.shade(0.55)
 	fx.shockwave(f.global_position + Vector2(0, -70))

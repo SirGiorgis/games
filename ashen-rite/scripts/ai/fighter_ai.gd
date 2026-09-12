@@ -122,6 +122,16 @@ func _process(delta: float) -> void:
 					_intent.heavy = true
 				_advance()
 				return
+	var boll := _nearest_cotton()
+	if boll != null:
+		_clear()
+		var opp_atk := opp.state in [Fighter.State.LIGHT, Fighter.State.HEAVY, Fighter.State.SPECIAL, Fighter.State.ULTIMATE, Fighter.State.GRAB]
+		if opp_atk and dist < 140.0 and _rng.randf() < _block_bias:
+			_intent.block = true
+			_retreat()
+			return
+		_run_to(boll.global_position.x)
+		return
 	if me.state == Fighter.State.BLOCK and me.hitstun > 0.0 and me.special_meter >= 25.0 and _rng.randf() < 0.22:
 		_intent.special = true
 		return
@@ -172,6 +182,9 @@ func _process(delta: float) -> void:
 			_intent.ultimate = true
 			return
 		if uid == "flex" and _rng.randf() < 0.58:
+			_intent.ultimate = true
+			return
+		if uid == "cotton" and _rng.randf() < 0.62:
 			_intent.ultimate = true
 			return
 		if dist < 180.0 and _rng.randf() < 0.45:
@@ -254,6 +267,31 @@ func _wander() -> void:
 		_intent.right = true
 	if _rng.randf() < 0.15:
 		_intent.light = true
+
+
+func _run_to(x: float) -> void:
+	var dx: float = x - me.position.x
+	if dx > 8.0:
+		_intent.right = true
+	elif dx < -8.0:
+		_intent.left = true
+	if absf(dx) > 88.0:
+		_intent.run = true
+
+
+func _nearest_cotton() -> Node2D:
+	if me == null or not me.is_inside_tree() or me.cotton_left <= 0:
+		return null
+	var best: Node2D = null
+	var best_d := 99999.0
+	for n in me.get_tree().get_nodes_in_group("cotton_pickup"):
+		if n.get("owner_fighter") != me:
+			continue
+		var d: float = absf(n.global_position.x - me.position.x)
+		if d < best_d:
+			best_d = d
+			best = n
+	return best
 
 
 func _clear() -> void:

@@ -45,6 +45,8 @@ static func paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) -
 		_gas_cloud(img, cx - 6, hip_y + 2, f)
 	if pose == "ultimate" and def.ultimate_id == "flex" and ripped:
 		_shreds(img, cx, hip_y - 6, f)
+	if pose == "ultimate" and def.ultimate_id == "cotton":
+		_cotton_toss(img, cx, hip_y, f)
 
 
 static func _palette(def: CharacterDef) -> Dictionary:
@@ -53,7 +55,9 @@ static func _palette(def: CharacterDef) -> Dictionary:
 	var bare: bool = def.style == "bare"
 	var tee: bool = def.style == "tee"
 	var shades: bool = def.style == "shades"
-	var jeans: Color = Color(0.10, 0.10, 0.12) if (bare or tee or shades) else (Color(0.22, 0.38, 0.62) if kit else (Color(0.16, 0.22, 0.40) if street else def.outfit.darkened(0.28)))
+	var cargo: bool = def.style == "cargo"
+	var jeans: Color = Color(0.12, 0.16, 0.24) if cargo else (Color(0.10, 0.10, 0.12) if (bare or tee or shades) else (Color(0.22, 0.38, 0.62) if kit else (Color(0.16, 0.22, 0.40) if street else def.outfit.darkened(0.28))))
+	var shoe: Color = Color(0.92, 0.90, 0.86) if cargo else Color(0.11, 0.10, 0.12)
 	return {
 		"skin": def.skin,
 		"skin_hi": def.skin.lightened(0.10),
@@ -65,13 +69,13 @@ static func _palette(def: CharacterDef) -> Dictionary:
 		"outfit": def.outfit,
 		"trim": def.trim,
 		"accent": def.accent,
-		"sleeve": def.outfit if (kit or street or tee or shades or def.style == "racing") else def.skin,
-		"sleeve_hi": (def.outfit if (kit or street or tee or shades or def.style == "racing") else def.skin).lightened(0.10),
+		"sleeve": def.outfit if (kit or street or tee or shades or cargo or def.style == "racing") else def.skin,
+		"sleeve_hi": (def.outfit if (kit or street or tee or shades or cargo or def.style == "racing") else def.skin).lightened(0.10),
 		"jeans": jeans,
 		"jeans_dk": jeans.darkened(0.14),
 		"jeans_hi": jeans.lightened(0.10),
-		"shoe": Color(0.11, 0.10, 0.12),
-		"shoe_hi": Color(0.28, 0.28, 0.30),
+		"shoe": shoe,
+		"shoe_hi": shoe.lightened(0.12),
 		"sock": Color(0.94, 0.94, 0.96),
 		"silver": Color(0.84, 0.86, 0.90),
 	}
@@ -298,6 +302,17 @@ static func _motion(pose: String, f: int, n: int, def: CharacterDef = null) -> D
 					d.rear_ax = -11
 					d.rear_ay = -8
 					d.flash = true
+			elif pose == "ultimate" and uid == "cotton":
+				d.punch = 0
+				d.squat = 2
+				d.lean = 1
+				d.head = 1
+				d.head_y = 2
+				d.lead_ax = 5
+				d.lead_ay = 9
+				d.rear_ax = -5
+				d.rear_ay = 7
+				d.flash = u > 0.18 and u < 0.88
 			else:
 				var sp: float = smoothstep(0.10, 0.52, u)
 				d.punch = 2 if sp > 0.4 and u < 0.85 else 1
@@ -457,6 +472,25 @@ static func _torso(img: Image, def: CharacterDef, pal: Dictionary, cx: int, hip_
 		Pix.hline(img, cx - 7, hip_y - 3, 15, pal.jeans_hi)
 	elif def.style == "shades":
 		_hoodie_torso(img, pal, cx, hip_y, ripped)
+	elif def.style == "cargo":
+		var shirt: Color = pal.outfit
+		var shirt_hi: Color = pal.outfit.lightened(0.08)
+		var shirt_dk: Color = pal.outfit.darkened(0.10)
+		Pix.rect(img, cx - 8, top + 3, 17, 11, shirt)
+		Pix.rect(img, cx - 7, top + 4, 15, 9, shirt_hi)
+		Pix.rect(img, cx - 11, top + 4, 5, 7, shirt)
+		Pix.rect(img, cx + 7, top + 4, 5, 7, shirt_hi)
+		Pix.rect(img, cx - 4, top, 9, 4, shirt_dk)
+		# v-neck — original, no marks
+		Pix.put(img, cx, top + 2, pal.skin)
+		Pix.put(img, cx - 1, top + 3, pal.skin)
+		Pix.put(img, cx + 1, top + 3, pal.skin)
+		Pix.hline(img, cx - 2, top + 4, 5, pal.skin_dk)
+		Pix.rect(img, cx - 7, hip_y - 3, 15, 5, pal.jeans)
+		Pix.hline(img, cx - 6, hip_y - 3, 13, pal.jeans_hi)
+		# cargo flap
+		Pix.rect(img, cx + 2, hip_y - 1, 5, 3, pal.jeans_dk)
+		Pix.hline(img, cx + 2, hip_y - 1, 5, pal.jeans_hi)
 	elif def.style == "racing":
 		Pix.rect(img, cx - 5, top, 11, 14, pal.outfit)
 		Pix.vline(img, cx, top + 2, 10, pal.accent)
@@ -548,6 +582,8 @@ static func _head(img: Image, def: CharacterDef, pal: Dictionary, cx: int, cy: i
 	elif def.style == "shades":
 		_hair_curly(img, cx, cy, pal)
 		_shades(img, cx, cy)
+	elif def.style == "cargo":
+		_hair_buzz(img, cx, cy, pal)
 	else:
 		_hair_curly(img, cx, cy, pal)
 
@@ -583,6 +619,29 @@ static func _hair_mako(img: Image, cx: int, cy: int, pal: Dictionary) -> void:
 	Pix.hline(img, cx + 1, cy - 4, 5, pal.hair)
 	Pix.put(img, cx - 1, cy - 4, pal.hair_hi)
 	Pix.put(img, cx + 3, cy - 5, pal.hair_hi)
+
+
+static func _hair_buzz(img: Image, cx: int, cy: int, pal: Dictionary) -> void:
+	# Tight fade. Ears stay out. No logo, no cap.
+	Pix.oval(img, cx, cy - 4, 7, 4, pal.hair)
+	Pix.rect(img, cx - 7, cy - 7, 15, 4, pal.hair_dk)
+	Pix.hline(img, cx - 4, cy - 8, 9, pal.hair)
+	Pix.hline(img, cx - 6, cy - 3, 3, pal.hair_dk)
+	Pix.hline(img, cx + 4, cy - 3, 3, pal.hair)
+	Pix.put(img, cx - 1, cy - 6, pal.hair_hi)
+	Pix.put(img, cx + 2, cy - 5, pal.hair_hi)
+
+
+static func _cotton_toss(img: Image, cx: int, hip_y: int, f: int) -> void:
+	var fluff := Color(0.96, 0.94, 0.88)
+	var spots: Array[Vector2i] = [
+		Vector2i(-12, 6), Vector2i(10, 8), Vector2i(-6, 12), Vector2i(14, 4), Vector2i(2, 14), Vector2i(-14, 10),
+	]
+	for i in spots.size():
+		var p: Vector2i = spots[i]
+		var oy: int = int(sin(float(f * 2 + i) * 0.55) * 2.0)
+		Pix.disc(img, cx + p.x, hip_y + p.y + oy, 2, fluff)
+		Pix.put(img, cx + p.x, hip_y + p.y + oy - 1, Color(1, 1, 1))
 
 
 static func _hair_short(img: Image, cx: int, cy: int, pal: Dictionary) -> void:
@@ -728,3 +787,6 @@ static func _paint_down(img: Image, pal: Dictionary, def: CharacterDef, u: float
 		Pix.hline(img, 10, y + 3, 14, pal.outfit)
 		if ripped:
 			Pix.hline(img, 14, y + 5, 8, pal.skin)
+	elif def.style == "cargo":
+		Pix.hline(img, 10, y + 4, 14, pal.outfit)
+		Pix.hline(img, 10, y + 6, 12, pal.jeans)

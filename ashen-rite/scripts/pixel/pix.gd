@@ -155,6 +155,24 @@ static func car(color: Color = Color(0.78, 0.08, 0.10)) -> Image:
 	return img
 
 
+static func cotton() -> Image:
+	var img := image(12, 10, Color(0, 0, 0, 0))
+	var fluff := Color(0.96, 0.94, 0.88)
+	var fluff_hi := Color(1.0, 0.99, 0.96)
+	var fluff_dk := Color(0.82, 0.78, 0.70)
+	var stem := Color(0.42, 0.32, 0.18)
+	disc(img, 6, 4, 3, fluff)
+	disc(img, 4, 5, 2, fluff_dk)
+	disc(img, 8, 5, 2, fluff_hi)
+	disc(img, 6, 6, 2, fluff)
+	put(img, 5, 3, Color(1, 1, 1, 0.9))
+	put(img, 7, 4, fluff_hi)
+	rect(img, 5, 8, 2, 2, stem)
+	put(img, 6, 7, stem.lightened(0.15))
+	outline(img, Color(0.18, 0.14, 0.10, 0.55))
+	return img
+
+
 static func gas(color: Color = Color(0.48, 0.78, 0.32)) -> Image:
 	var img := image(18, 14, Color(0, 0, 0, 0))
 	var g1: Color = color
