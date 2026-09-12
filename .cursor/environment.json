@@ -1,0 +1,4 @@
+{
+  "name": "Giorgis Games",
+  "install": "bash .cursor/install.sh"
+}
