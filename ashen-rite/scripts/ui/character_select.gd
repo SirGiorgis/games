@@ -20,6 +20,7 @@ var _p2_walk: Array = []
 var _walk_t := 0.0
 var _ids: PackedStringArray = PackedStringArray()
 var _held: Dictionary = {}
+var _frame_cache: Dictionary = {}
 
 const CARD_W := 48
 const CARD_H := 36
@@ -83,6 +84,8 @@ func _ready() -> void:
 
 	PixelUI.add_footer(self, "A/D SELECT  W/S P1 OR CPU  J CONFIRM  R RANDOM  F FORGE  C CPU  ESC BACK")
 	_apply_indices_from_state()
+	for id in _ids:
+		_cached_frames(id)
 	_refresh()
 
 
@@ -132,6 +135,8 @@ func _process(delta: float) -> void:
 		_refresh()
 	if _edge(KEY_F):
 		CharacterCatalog.rebuild_custom(GameState.custom_description, GameState.custom_photo_path)
+		PixelFighterBake.clear_cache("custom")
+		_frame_cache.erase("custom")
 		_ids = CharacterCatalog.ids()
 		for i in _ids.size():
 			if _ids[i] == "custom":
@@ -166,13 +171,19 @@ func _commit() -> void:
 	GameState.p2_character_id = _ids[_p2_index]
 
 
+func _cached_frames(id: String) -> Dictionary:
+	if not _frame_cache.has(id):
+		_frame_cache[id] = PixelFighterBake.bake(CharacterCatalog.get_def(id))
+	return _frame_cache[id]
+
+
 func _refresh() -> void:
 	for i in _cards.size():
 		var def := CharacterCatalog.get_def(_ids[i])
 		var p1 := i == _p1_index
 		var p2 := i == _p2_index
 		_cards[i].texture = PixelUI.char_card(CARD_W, CARD_H, def.accent, p1, p2)
-		var frames: Dictionary = PixelFighterBake.bake(def)
+		var frames: Dictionary = _cached_frames(_ids[i])
 		var idle: Array = frames.get("idle", [])
 		if not idle.is_empty():
 			_thumbs[i].texture = idle[0]
@@ -198,8 +209,8 @@ func _refresh() -> void:
 		focus_def.ultimate_name
 	], 2, Color(0.65, 0.82, 0.95), 36)
 
-	var p1_frames: Dictionary = PixelFighterBake.bake(p1_def)
-	var p2_frames: Dictionary = PixelFighterBake.bake(p2_def)
+	var p1_frames: Dictionary = _cached_frames(_ids[_p1_index])
+	var p2_frames: Dictionary = _cached_frames(_ids[_p2_index])
 	_p1_walk = p1_frames.get("walk", p1_frames["idle"])
 	_p2_walk = p2_frames.get("walk", p2_frames["idle"])
 	_p1_preview.texture = _p1_walk[0]

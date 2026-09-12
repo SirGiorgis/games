@@ -27,7 +27,7 @@ var _atk_duration := 1.0
 
 const ONE_SHOT := ["hit", "air_hit", "launch", "knockdown", "defeat", "land", "getup", "prejump", "block_hit"]
 const ATTACK_POSES := ["light", "clight", "jlight", "heavy", "cheavy", "jheavy", "special", "ultimate", "grab", "jump"]
-const TRAIL_POSES := ["walk", "run", "backdash", "special", "ultimate"]
+const TRAIL_POSES := ["run", "backdash", "special", "ultimate"]
 
 
 func build(d: CharacterDef) -> void:
@@ -119,7 +119,7 @@ func _process(delta: float) -> void:
 	_sprite.modulate = Color.WHITE.lerp(Color(1.7, 1.65, 1.55), flash)
 
 	if pose in TRAIL_POSES and trail_timer <= 0.0:
-		trail_timer = 0.05 if pose == "backdash" else 0.07
+		trail_timer = 0.10 if pose == "backdash" else 0.14
 		_ghost()
 	trail_timer = max(0.0, trail_timer - delta)
 

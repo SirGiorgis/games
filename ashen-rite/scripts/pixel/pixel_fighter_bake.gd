@@ -22,10 +22,13 @@ const _HIP_Y := 72
 
 static var _face_cache: Dictionary = {}
 static var _model_cache: Dictionary = {}
+static var _anim_cache: Dictionary = {}
 
 
 static func bake(def: CharacterDef) -> Dictionary:
-	return {
+	if _anim_cache.has(def.id):
+		return _anim_cache[def.id]
+	var result := {
 		"idle": _seq(def, "idle", 12),
 		"walk": _seq(def, "walk", 16),
 		"run": _seq(def, "run", 12),
@@ -53,6 +56,19 @@ static func bake(def: CharacterDef) -> Dictionary:
 		"defeat": _seq(def, "defeat", 8),
 		"grab": _seq(def, "grab", 10),
 	}
+	_anim_cache[def.id] = result
+	return result
+
+
+static func clear_cache(id: String = "") -> void:
+	if id.is_empty():
+		_anim_cache.clear()
+		_face_cache.clear()
+		_model_cache.clear()
+		return
+	_anim_cache.erase(id)
+	_face_cache.erase(id)
+	_model_cache.erase(id)
 
 
 static func _seq(def: CharacterDef, pose: String, n: int) -> Array:
@@ -77,8 +93,16 @@ static func _is_kit(def: CharacterDef) -> bool:
 	return def.style == "kit"
 
 
+static func _is_street(def: CharacterDef) -> bool:
+	return def.style == "street"
+
+
+static func _is_hero(def: CharacterDef) -> bool:
+	return _is_kit(def) or _is_street(def)
+
+
 static func _is_model(def: CharacterDef) -> bool:
-	return def.style == "model" or def.id == "chris_xrisakis"
+	return def.style == "model"
 
 
 static func _paint_model(img: Image, def: CharacterDef, pose: String, f: int, n: int) -> void:
@@ -385,17 +409,18 @@ static func _paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) 
 	var skinny: bool = def.build == "lean" or def.width_scale < 0.92
 	var racing: bool = def.style == "racing"
 	var kit: bool = _is_kit(def)
+	var street: bool = _is_street(def)
+	var hero: bool = _is_hero(def)
 	var cx: int = 36 + int(p.xoff)
 	var foot: int = 90
 	var hip_y: int = foot - (18 if skinny else 17) + int(p.squat) + int(p.bob)
 	if pose in ["knockdown", "defeat"]:
-		_downed(img, def, racing, kit, f, n, pose)
+		_downed(img, def, racing, hero, f, n, pose)
 		return
 
-	var pants: Color = Color(0.10, 0.14, 0.32) if kit else (Color(0.12, 0.11, 0.14) if racing else def.outfit.darkened(0.25))
+	var pants: Color = Color(0.10, 0.14, 0.32) if hero else (Color(0.12, 0.11, 0.14) if racing else def.outfit.darkened(0.25))
 	var shoes: Color = Color(0.08, 0.08, 0.09)
-	# football kit is short-sleeve — forearms are skin
-	var sleeve: Color = def.skin if kit else (def.outfit if racing else def.skin)
+	var sleeve: Color = def.outfit if street else (def.skin if kit else (def.outfit if racing else def.skin))
 	var lt: int = 2 if skinny else 3
 	var ls: int = 2 if skinny else 3
 	var at: int = 2 if skinny else 3
@@ -403,10 +428,10 @@ static func _paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) 
 	_limb(img, cx - 2, hip_y, float(p.ll_a), float(p.ll_b), 14, 14, lt, ls, pants, shoes, true, kit)
 	_limb(img, cx + 2, hip_y, float(p.lr_a), float(p.lr_b), 14, 14, lt, ls, pants.lightened(0.06), shoes, true, kit)
 	_arm(img, cx - (4 if skinny else 5), hip_y - 17, float(p.al_a), float(p.al_b), 10, 9, at, sleeve, def.skin)
-	_torso(img, def, cx, hip_y, skinny, racing, kit, int(p.lean))
+	_torso(img, def, cx, hip_y, skinny, racing, kit, street, int(p.lean))
 	_arm(img, cx + (4 if skinny else 5) + int(p.lean), hip_y - 17, float(p.ar_a), float(p.ar_b), 11, 11, at, sleeve.lightened(0.06), def.skin)
 
-	if (racing or kit) and pose in ["special", "ultimate"]:
+	if (racing or hero) and pose in ["special", "ultimate"]:
 		_smear(img, cx, hip_y, def.accent, f)
 	if pose in ["light", "clight", "jlight", "heavy", "cheavy", "jheavy", "grab"] and u > 0.28 and u < 0.62:
 		var fist_x: int = cx + 28 + int(p.lean) + int(p.xoff)
@@ -416,8 +441,8 @@ static func _paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) 
 
 	var hx: int = cx - 1 + int(p.lean) + int(p.head_x)
 	var hy: int = hip_y - 32 + int(int(p.squat) / 2)
-	if kit:
-		_kit_head(img, def, hx, hy, pose)
+	if hero:
+		_photo_head(img, def, hx, hy, pose, street)
 	else:
 		_head(img, def, hx, hy, racing, skinny, pose)
 
@@ -743,33 +768,46 @@ static func _arm(img: Image, sx: int, sy: int, ang: float, bend: float, upper: i
 	Pix.disc(img, hx, hy, 2, hand)
 
 
-static func _torso(img: Image, def: CharacterDef, cx: int, hip_y: int, skinny: bool, racing: bool, kit: bool, lean: int) -> void:
-	var tw: int = 12 if kit else (5 if skinny else (9 if def.build == "heavy" else 7))
-	var h: int = 22 if kit else 18
+static func _torso(img: Image, def: CharacterDef, cx: int, hip_y: int, skinny: bool, racing: bool, kit: bool, street: bool, lean: int) -> void:
+	var tw: int = 12 if kit else (13 if street else (5 if skinny else (9 if def.build == "heavy" else 7)))
+	var h: int = 22 if (kit or street) else 18
 	var top: int = hip_y - h
 	var tx: int = cx - tw / 2 + lean
 	if kit:
-		# Generic red / white vertical stripes + blue V-collar. No crest.
-		Pix.rect(img, tx, top, tw + 1, h, def.outfit)
-		var stripe: int = 0
-		while stripe <= tw:
-			if int(stripe / 2) % 2 == 1:
-				Pix.rect(img, tx + stripe, top + 4, mini(2, tw + 1 - stripe), h - 6, def.trim)
-			stripe += 2
-		# short sleeves
-		Pix.rect(img, tx - 3, top + 3, 4, 6, def.outfit)
-		Pix.rect(img, tx + tw, top + 3, 4, 6, def.outfit)
-		Pix.rect(img, tx - 2, top + 4, 2, 5, def.trim)
-		Pix.rect(img, tx + tw + 1, top + 4, 2, 5, def.trim)
-		Pix.rect(img, tx, top, tw + 1, 4, def.accent)
-		Pix.put(img, tx + 1, top + 3, def.accent.darkened(0.2))
-		Pix.put(img, tx + tw - 1, top + 3, def.accent.darkened(0.2))
-		Pix.put(img, cx + lean, top + 2, def.trim)
+		# Red / white horizontal stripes, blue collar, short sleeves. No crest.
+		Pix.rect(img, tx, top + 4, tw + 1, h - 4, def.trim)
+		var row: int = top + 4
+		while row < top + h - 2:
+			var band: Color = def.outfit if int((row - top) / 3) % 2 == 0 else def.trim
+			Pix.rect(img, tx, row, tw + 1, 3, band)
+			row += 3
+		Pix.rect(img, tx, top, tw + 1, 5, def.accent)
+		Pix.rect(img, tx + 1, top + 2, tw - 1, 3, def.accent.lightened(0.08))
+		Pix.vline(img, cx + lean, top + 4, 5, def.trim)
+		Pix.put(img, cx + lean, top + 5, def.accent.darkened(0.15))
+		Pix.rect(img, tx - 3, top + 4, 4, 7, def.outfit)
+		Pix.rect(img, tx + tw, top + 4, 4, 7, def.outfit)
+		Pix.rect(img, tx - 2, top + 5, 2, 5, def.trim)
+		Pix.rect(img, tx + tw + 1, top + 5, 2, 5, def.trim)
 		Pix.rect(img, tx, top + h - 2, tw + 1, 2, def.outfit.darkened(0.18))
-		# thin black necklace
-		Pix.put(img, cx + lean - 2, top + 3, Color(0.06, 0.05, 0.05))
-		Pix.put(img, cx + lean, top + 5, Color(0.08, 0.07, 0.07))
-		Pix.put(img, cx + lean + 2, top + 3, Color(0.06, 0.05, 0.05))
+		Pix.put(img, cx + lean - 2, top + 4, Color(0.06, 0.05, 0.05))
+		Pix.put(img, cx + lean, top + 6, Color(0.08, 0.07, 0.07))
+		Pix.put(img, cx + lean + 2, top + 4, Color(0.06, 0.05, 0.05))
+	elif street:
+		var shirt: Color = def.outfit
+		var shirt_hi: Color = def.outfit.lightened(0.10)
+		var shirt_dk: Color = def.outfit.darkened(0.12)
+		Pix.rect(img, tx - 1, top + 3, tw + 3, h - 3, shirt)
+		Pix.rect(img, tx, top + 5, tw + 1, h - 7, shirt_hi)
+		Pix.rect(img, tx + 1, top + h - 4, tw - 1, 3, shirt_dk)
+		Pix.rect(img, tx - 3, top + 5, 5, 10, shirt)
+		Pix.rect(img, tx + tw - 1, top + 5, 5, 10, shirt)
+		Pix.rect(img, tx + 2, top + 2, tw - 3, 4, shirt_dk)
+		Pix.hline(img, tx + 3, top + 3, tw - 5, def.skin.darkened(0.06))
+		for i in 4:
+			Pix.put(img, cx + lean - 2 + i, top + 4 + (i & 1), Color(0.78, 0.80, 0.84).darkened(0.06))
+		_logo_hoodrich(img, tx + 3, top + 10, def.trim, def.accent)
+		Pix.hline(img, tx + tw - 6, top + 8, 5, def.trim.darkened(0.12))
 	elif racing:
 		Pix.rect(img, tx, top, tw + 1, h, def.outfit)
 		Pix.rect(img, tx, top, tw + 1, 4, def.accent.darkened(0.25))
@@ -786,26 +824,60 @@ static func _torso(img: Image, def: CharacterDef, cx: int, hip_y: int, skinny: b
 		Pix.rect(img, tx + 1, hip_y - 6, tw - 1, 6, def.outfit.darkened(0.1))
 
 
-static func _kit_head(img: Image, def: CharacterDef, cx: int, cy: int, pose: String) -> void:
+static func _photo_head(img: Image, def: CharacterDef, cx: int, cy: int, pose: String, street: bool) -> void:
 	var face: Image = _photo_face(def)
 	if face != null:
 		var fw: int = face.get_width()
 		var fh: int = face.get_height()
 		var ox: int = cx - fw / 2
-		var oy: int = cy - fh / 2 - 2
+		var oy: int = cy - fh / 2 - (1 if street else 2)
 		if pose == "hit":
 			ox += 2
 			oy += 1
+		Pix.oval(img, cx, cy + 1, 6, 7, def.skin)
 		for y in fh:
 			for x in fw:
 				var c: Color = face.get_pixel(x, y)
 				if c.a < 0.4:
 					continue
 				Pix.put(img, ox + x, oy + y, c)
-		# neck join under photo chin
-		Pix.rect(img, cx - 1, cy + fh / 2 - 2, 3, 4, def.skin.darkened(0.08))
+		Pix.rect(img, cx - 1, cy + fh / 2 - 1, 3, 4, def.skin.darkened(0.08))
+		if street:
+			_paint_street_hair(img, cx, cy, def)
+		else:
+			_paint_curly_hair(img, cx, cy, def)
 		return
-	_head(img, def, cx, cy, true, true, pose)
+	_head(img, def, cx, cy, street, true, pose)
+
+
+static func _paint_curly_hair(img: Image, cx: int, cy: int, def: CharacterDef) -> void:
+	var h1: Color = def.hair
+	var h2: Color = def.hair.lightened(0.14)
+	var h3: Color = def.hair.darkened(0.18)
+	Pix.oval(img, cx, cy - 7, 8, 6, h1)
+	for d in [Vector2i(-6, -4), Vector2i(6, -5), Vector2i(-5, -8), Vector2i(4, -9), Vector2i(-2, -10), Vector2i(3, -10), Vector2i(-7, -1), Vector2i(7, -2), Vector2i(0, -11)]:
+		Pix.disc(img, cx + d.x, cy + d.y, 2, h2 if (d.x + d.y) & 1 == 0 else h3)
+	Pix.disc(img, cx - 4, cy - 5, 2, h1)
+	Pix.disc(img, cx + 5, cy - 6, 2, h1)
+
+
+static func _paint_street_hair(img: Image, cx: int, cy: int, def: CharacterDef) -> void:
+	var h: Color = def.hair
+	Pix.oval(img, cx + 1, cy - 6, 7, 5, h)
+	Pix.rect(img, cx - 7, cy - 8, 15, 5, h)
+	Pix.rect(img, cx - 6, cy - 3, 4, 6, h.darkened(0.06))
+	Pix.hline(img, cx - 4, cy - 2, 4, h.darkened(0.12))
+	Pix.hline(img, cx + 1, cy - 2, 4, h.darkened(0.12))
+	Pix.disc(img, cx - 5, cy + 1, 1, Color(0.78, 0.80, 0.84))
+	Pix.put(img, cx - 5, cy, Color(0.78, 0.80, 0.84).darkened(0.12))
+
+
+static func _logo_hoodrich(img: Image, x: int, y: int, white: Color, blue: Color) -> void:
+	Pix.hline(img, x + 2, y + 2, 8, white)
+	Pix.hline(img, x + 3, y + 4, 7, white)
+	Pix.hline(img, x + 4, y + 6, 6, white)
+	for i in 4:
+		Pix.put(img, x + 1 + i, y + 1 + i, blue.lightened(0.08))
 
 
 static func _photo_face(def: CharacterDef) -> Image:
@@ -820,48 +892,63 @@ static func _photo_face(def: CharacterDef) -> Image:
 		return null
 	var sw: int = src.get_width()
 	var sh: int = src.get_height()
-	# Tuned for the 960x720 selfie: hair through chin, no chest badge.
-	var rx: int = int(round(float(sw) * 0.438))
-	var ry: int = int(round(float(sh) * 0.250))
-	var rw: int = int(round(float(sw) * 0.229))
-	var rh: int = int(round(float(sh) * 0.455))
+	var rx: int
+	var ry: int
+	var rw: int
+	var rh: int
+	var fw: int = 22
+	var fh: int = 28
+	if def.id == "hoodrich_stacks" or float(sh) > float(sw) * 1.1:
+		rx = int(round(float(sw) * 0.26))
+		ry = int(round(float(sh) * 0.05))
+		rw = int(round(float(sw) * 0.48))
+		rh = int(round(float(sh) * 0.28))
+		fw = 24
+		fh = 28
+	else:
+		rx = int(round(float(sw) * 0.438))
+		ry = int(round(float(sh) * 0.250))
+		rw = int(round(float(sw) * 0.229))
+		rh = int(round(float(sh) * 0.455))
 	rx = clampi(rx, 0, sw - 8)
 	ry = clampi(ry, 0, sh - 8)
 	rw = clampi(rw, 8, sw - rx)
 	rh = clampi(rh, 8, sh - ry)
 	var crop := src.get_region(Rect2i(rx, ry, rw, rh))
 	crop.convert(Image.FORMAT_RGBA8)
-	crop.resize(22, 28, Image.INTERPOLATE_NEAREST)
-	var out := Image.create(22, 28, false, Image.FORMAT_RGBA8)
+	crop.resize(fw, fh, Image.INTERPOLATE_NEAREST)
+	var out := Image.create(fw, fh, false, Image.FORMAT_RGBA8)
 	out.fill(Color(0, 0, 0, 0))
-	for y in 28:
-		for x in 22:
+	for y in fh:
+		for x in fw:
 			var c: Color = crop.get_pixel(x, y)
-			if _is_wall(c):
+			if _is_wall(c, def.id):
 				continue
 			out.set_pixel(x, y, c)
-	_flood_key(out)
+	_flood_key(out, def.id)
 	_face_cache[def.id] = out
 	return out
 
 
-static func _is_wall(c: Color) -> bool:
-	# Mint bedroom wall. Skin is orange-hued; wall is green-cyan.
+static func _is_wall(c: Color, char_id: String = "") -> bool:
 	if c.a < 0.05:
 		return true
 	var lum: float = c.get_luminance()
 	if lum > 0.78 and c.s < 0.16:
 		return true
+	if char_id == "hoodrich_stacks":
+		if c.s < 0.22 and lum > 0.45 and lum < 0.92:
+			return true
+		return false
 	var hue: float = c.h
 	if hue > 0.22 and hue < 0.58 and lum > 0.38 and c.s < 0.45:
 		return true
-	# leftover beige wall (desaturated, not skin)
 	if c.s < 0.16 and lum > 0.50 and lum < 0.88:
 		return true
 	return false
 
 
-static func _flood_key(img: Image) -> void:
+static func _flood_key(img: Image, char_id: String = "") -> void:
 	var w: int = img.get_width()
 	var h: int = img.get_height()
 	var stack: Array[Vector2i] = []
@@ -878,7 +965,7 @@ static func _flood_key(img: Image) -> void:
 		var c: Color = img.get_pixel(p.x, p.y)
 		if c.a < 0.1:
 			continue
-		if not _is_wall(c):
+		if not _is_wall(c, char_id):
 			continue
 		img.set_pixel(p.x, p.y, Color(0, 0, 0, 0))
 		stack.append(Vector2i(p.x + 1, p.y))
@@ -940,15 +1027,18 @@ static func _smear(img: Image, cx: int, hip_y: int, accent: Color, f: int) -> vo
 		Pix.put(img, cx - 8 - i, hip_y - 12 + i, Color(accent.lightened(0.2), 0.35))
 
 
-static func _downed(img: Image, def: CharacterDef, racing: bool, kit: bool, f: int, n: int, pose: String) -> void:
+static func _downed(img: Image, def: CharacterDef, racing: bool, hero: bool, f: int, n: int, pose: String) -> void:
 	var u: float = float(f) / float(maxi(n - 1, 1))
 	var fall: float = _ease_in_out(clampf(u * 1.35, 0.0, 1.0))
 	var y: int = int(lerpf(40.0, 64.0, fall))
 	var tilt: int = int(lerpf(0.0, 14.0, fall))
-	if kit:
+	if _is_kit(def):
 		Pix.capsule(img, 14 + tilt, y + 6, 36 + tilt, y + 8, 4, def.outfit)
 		Pix.hline(img, 18 + tilt, y + 6, 14, def.trim)
 		Pix.hline(img, 18 + tilt, y + 8, 14, def.accent)
+	elif _is_street(def):
+		Pix.capsule(img, 14 + tilt, y + 6, 36 + tilt, y + 8, 4, def.outfit)
+		Pix.hline(img, 20 + tilt, y + 7, 8, def.trim.darkened(0.1))
 	else:
 		Pix.capsule(img, 12 + tilt, y + 6, 34 + tilt, y + 8, 3, def.outfit)
 	Pix.oval(img, 42 + tilt, y + 4, 6, 5, def.skin)

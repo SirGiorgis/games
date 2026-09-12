@@ -8,7 +8,7 @@
   "ai_profile": "rushdown",
   "gender": "male",
   "build": "lean",
-  "style": "model",
+  "style": "kit",
   "keep_outfit": true,
   "roster_order": 0,
   "height_scale": 1.04,
@@ -30,5 +30,5 @@
   "ultimate_id": "storm",
   "ultimate_name": "Injury Time",
   "ultimate_desc": "One last surge that hits like a stoppage-time winner.",
-  "reference_image": "res://data/characters/refs/chris_model.png"
+  "reference_image": "res://data/characters/refs/chris.png"
 }
