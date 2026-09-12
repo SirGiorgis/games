@@ -1,0 +1,230 @@
+{
+  "map": {
+    "menu": "menu.wav",
+    "arcade": "arcade.wav",
+    "survival": "survival.wav",
+    "timeattack": "timeattack.wav",
+    "results": "results.wav",
+    "defeat": "defeat.wav",
+    "tutorial": "tutorial.wav",
+    "gallery": "gallery.wav",
+    "attract": "attract.wav",
+    "pause": "pause.wav",
+    "final": "final.wav",
+    "credits": "credits.wav",
+    "stage:grass_field": "stage_grass_field.wav",
+    "stage:moonlit_temple": "stage_moonlit_temple.wav",
+    "stage:neon_street": "stage_neon_street.wav",
+    "stage:the_pit": "stage_the_pit.wav",
+    "stage:crimson_keep": "stage_crimson_keep.wav",
+    "stage:tidal_dock": "stage_tidal_dock.wav",
+    "stage:snow_ridge": "stage_snow_ridge.wav",
+    "stage:desert_gate": "stage_desert_gate.wav",
+    "stage:clocktower": "stage_clocktower.wav",
+    "stage:bamboo_yard": "stage_bamboo_yard.wav",
+    "stage:storm_bridge": "stage_storm_bridge.wav",
+    "stage:sunset_pier": "stage_sunset_pier.wav",
+    "stage:void_garden": "stage_void_garden.wav",
+    "theme:chris_xrisakis": "theme_chris_xrisakis.wav",
+    "theme:hoodrich_stacks": "theme_hoodrich_stacks.wav",
+    "theme:mako": "theme_mako.wav",
+    "theme:fogas": "theme_fogas.wav",
+    "theme:giannis": "theme_giannis.wav",
+    "theme:vag": "theme_vag.wav",
+    "theme:spyros": "theme_spyros.wav"
+  },
+  "tracks": [
+    {
+      "id": "arcade",
+      "file": "arcade.wav",
+      "title": "LADDER DRUMS",
+      "seconds": 72
+    },
+    {
+      "id": "attract",
+      "file": "attract.wav",
+      "title": "ATTRACT DEMO",
+      "seconds": 72
+    },
+    {
+      "id": "credits",
+      "file": "credits.wav",
+      "title": "AFTER THE RITE",
+      "seconds": 72
+    },
+    {
+      "id": "defeat",
+      "file": "defeat.wav",
+      "title": "LIGHTS DOWN",
+      "seconds": 72
+    },
+    {
+      "id": "final",
+      "file": "final.wav",
+      "title": "FINAL ROUND",
+      "seconds": 72
+    },
+    {
+      "id": "gallery",
+      "file": "gallery.wav",
+      "title": "VINYL ROOM",
+      "seconds": 72
+    },
+    {
+      "id": "menu",
+      "file": "menu.wav",
+      "title": "CABINET LIGHTS",
+      "seconds": 72
+    },
+    {
+      "id": "pause",
+      "file": "pause.wav",
+      "title": "HOLD MUSIC",
+      "seconds": 72
+    },
+    {
+      "id": "results",
+      "file": "results.wav",
+      "title": "HOUSE CALL CREST",
+      "seconds": 72
+    },
+    {
+      "id": "stage:bamboo_yard",
+      "file": "stage_bamboo_yard.wav",
+      "title": "BAMBOO YARD",
+      "seconds": 72
+    },
+    {
+      "id": "stage:clocktower",
+      "file": "stage_clocktower.wav",
+      "title": "CLOCKTOWER",
+      "seconds": 72
+    },
+    {
+      "id": "stage:crimson_keep",
+      "file": "stage_crimson_keep.wav",
+      "title": "CRIMSON KEEP",
+      "seconds": 72
+    },
+    {
+      "id": "stage:desert_gate",
+      "file": "stage_desert_gate.wav",
+      "title": "DESERT GATE",
+      "seconds": 72
+    },
+    {
+      "id": "stage:grass_field",
+      "file": "stage_grass_field.wav",
+      "title": "GREEN HILL FIELD",
+      "seconds": 72
+    },
+    {
+      "id": "stage:moonlit_temple",
+      "file": "stage_moonlit_temple.wav",
+      "title": "MOONLIT TEMPLE",
+      "seconds": 72
+    },
+    {
+      "id": "stage:neon_street",
+      "file": "stage_neon_street.wav",
+      "title": "NEON RIFT STREET",
+      "seconds": 72
+    },
+    {
+      "id": "stage:snow_ridge",
+      "file": "stage_snow_ridge.wav",
+      "title": "SNOW RIDGE",
+      "seconds": 72
+    },
+    {
+      "id": "stage:storm_bridge",
+      "file": "stage_storm_bridge.wav",
+      "title": "STORM BRIDGE",
+      "seconds": 72
+    },
+    {
+      "id": "stage:sunset_pier",
+      "file": "stage_sunset_pier.wav",
+      "title": "SUNSET PIER",
+      "seconds": 72
+    },
+    {
+      "id": "stage:the_pit",
+      "file": "stage_the_pit.wav",
+      "title": "THE UNDER-RITE",
+      "seconds": 72
+    },
+    {
+      "id": "stage:tidal_dock",
+      "file": "stage_tidal_dock.wav",
+      "title": "TIDAL DOCK",
+      "seconds": 72
+    },
+    {
+      "id": "stage:void_garden",
+      "file": "stage_void_garden.wav",
+      "title": "VOID GARDEN",
+      "seconds": 72
+    },
+    {
+      "id": "survival",
+      "file": "survival.wav",
+      "title": "WAVE MACHINE",
+      "seconds": 72
+    },
+    {
+      "id": "theme:chris_xrisakis",
+      "file": "theme_chris_xrisakis.wav",
+      "title": "THREAD THE LANE",
+      "seconds": 72
+    },
+    {
+      "id": "theme:fogas",
+      "file": "theme_fogas.wav",
+      "title": "STILL SMILING",
+      "seconds": 72
+    },
+    {
+      "id": "theme:giannis",
+      "file": "theme_giannis.wav",
+      "title": "SHOW OUT",
+      "seconds": 72
+    },
+    {
+      "id": "theme:hoodrich_stacks",
+      "file": "theme_hoodrich_stacks.wav",
+      "title": "SAY THE NAME",
+      "seconds": 72
+    },
+    {
+      "id": "theme:mako",
+      "file": "theme_mako.wav",
+      "title": "STILL STANDING",
+      "seconds": 72
+    },
+    {
+      "id": "theme:spyros",
+      "file": "theme_spyros.wav",
+      "title": "TRAP DROP",
+      "seconds": 72
+    },
+    {
+      "id": "theme:vag",
+      "file": "theme_vag.wav",
+      "title": "COTTON RUN",
+      "seconds": 72
+    },
+    {
+      "id": "timeattack",
+      "file": "timeattack.wav",
+      "title": "CLOCK FUSE",
+      "seconds": 72
+    },
+    {
+      "id": "tutorial",
+      "file": "tutorial.wav",
+      "title": "FIRST STEPS",
+      "seconds": 72
+    }
+  ]
+}

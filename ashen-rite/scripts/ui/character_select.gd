@@ -7,75 +7,121 @@ signal cancelled
 var _p1_index := 0
 var _p2_index := 1
 var _focus := 0
-var _cards: Array[Panel] = []
-var _info: Label
-var _stats: Label
-var _hint: Label
-var _cpu_label: Label
-var _portrait_host: Control
-var _preview: FighterVisual
+var _cards: Array[TextureRect] = []
+var _thumbs: Array[TextureRect] = []
+var _names: Array[PixelLabel] = []
+var _info: PixelLabel
+var _stats: PixelLabel
+var _cpu_label: PixelLabel
+var _arena_lbl: PixelLabel
+var _p1_preview: Sprite2D
+var _p2_preview: Sprite2D
+var _p1_walk: Array = []
+var _p2_walk: Array = []
+var _walk_t := 0.0
 var _ids: PackedStringArray = PackedStringArray()
+var _held: Dictionary = {}
+var _frame_cache: Dictionary = {}
+
+const CARD_W := 40
+const CARD_H := 30
+const CARD_SCALE := 2
+const COLS := 8
+const SLOT_W := 152
+const SLOT_H := 86
+const ROSTER_Y := 72
 
 
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
-	var bg := ColorRect.new()
-	bg.color = Color(0.035, 0.02, 0.05)
-	bg.set_anchors_preset(PRESET_FULL_RECT)
-	add_child(bg)
-	var title := Label.new()
-	title.text = "CHOOSE YOUR RITE"
-	title.position = Vector2(0, 24)
-	title.size = Vector2(1280, 50)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(title, 36, Color(0.92, 0.22, 0.28))
-	add_child(title)
+	PixelUI.full_bg(self)
+	PixelUI.add_title(self, "CHOOSE YOUR RITE", 40, Color(0.95, 0.22, 0.3))
 
 	_ids = CharacterCatalog.ids()
-	var row := HBoxContainer.new()
-	row.position = Vector2(40, 90)
-	row.size = Vector2(1200, 160)
-	row.add_theme_constant_override("separation", 12)
-	add_child(row)
+	var cols: int = mini(COLS, maxi(_ids.size(), 1))
+	var start_x: float = (1280.0 - float(cols) * SLOT_W) * 0.5 + 8.0
 	for i in _ids.size():
 		var def := CharacterCatalog.get_def(_ids[i])
-		var card := _make_card(def)
-		row.add_child(card)
+		var col: int = i % cols
+		var row: int = int(i / cols)
+		var card := TextureRect.new()
+		card.position = Vector2(start_x + col * SLOT_W, ROSTER_Y + row * SLOT_H)
+		card.size = Vector2(CARD_W * CARD_SCALE, CARD_H * CARD_SCALE)
+		card.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		card.stretch_mode = TextureRect.STRETCH_SCALE
+		add_child(card)
 		_cards.append(card)
 
-	_portrait_host = Control.new()
-	_portrait_host.position = Vector2(160, 420)
-	add_child(_portrait_host)
+		var thumb := TextureRect.new()
+		thumb.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		thumb.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+		thumb.position = Vector2(2, 1)
+		thumb.size = Vector2(CARD_W * CARD_SCALE - 4, CARD_H * CARD_SCALE - 6)
+		card.add_child(thumb)
+		_thumbs.append(thumb)
 
-	_info = Label.new()
-	_info.position = Vector2(380, 290)
-	_info.size = Vector2(820, 120)
-	_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	UIKit.style_label(_info, 20)
-	add_child(_info)
+		var nm := PixelLabel.new()
+		nm.position = Vector2(start_x + col * SLOT_W, ROSTER_Y + row * SLOT_H + CARD_H * CARD_SCALE + 2)
+		nm.set_pix(def.name.to_upper(), 1, def.accent, 10)
+		add_child(nm)
+		_names.append(nm)
 
-	_stats = Label.new()
-	_stats.position = Vector2(380, 420)
-	_stats.size = Vector2(820, 140)
-	_stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	UIKit.style_label(_stats, 18, Color(0.85, 0.8, 0.7))
-	add_child(_stats)
+	var vs := TextureRect.new()
+	vs.texture = PixelUI.vs_emblem()
+	vs.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	vs.position = Vector2(616, 268)
+	vs.scale = Vector2(3, 3)
+	add_child(vs)
 
-	_cpu_label = Label.new()
-	_cpu_label.position = Vector2(40, 620)
-	_cpu_label.size = Vector2(1200, 30)
-	UIKit.style_label(_cpu_label, 18, Color(0.7, 0.85, 0.9))
-	add_child(_cpu_label)
+	PixelUI.add_panel(self, Vector2(40, 248), Vector2(360, 300), PixelUI.GOLD)
+	PixelUI.label_at(self, "PLAYER 1", Vector2(40, 256), 2, Color(0.95, 0.78, 0.35), 0, 360).set_centered(360)
+	var g1 := TextureRect.new()
+	g1.texture = PixelUI.stage_strip()
+	g1.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	g1.position = Vector2(56, 478)
+	g1.scale = Vector2(2.7, 3.0)
+	add_child(g1)
+	_p1_preview = _make_preview(Vector2(220, 430))
 
-	_hint = Label.new()
-	_hint.position = Vector2(40, 660)
-	_hint.size = Vector2(1200, 40)
-	_hint.text = "A/D select   W/S P1 or CPU slot   J/Enter confirm   R random CPU   F forge custom from description   Esc back"
-	UIKit.style_label(_hint, 15, Color(0.62, 0.6, 0.58))
-	add_child(_hint)
+	PixelUI.add_panel(self, Vector2(880, 248), Vector2(360, 300), Color(0.35, 0.75, 1.0))
+	var p2_hdr := PixelUI.label_at(self, "OPPONENT", Vector2(880, 256), 2, Color(0.55, 0.85, 1.0), 0, 360)
+	p2_hdr.set_centered(360)
+	p2_hdr.position.x = 880
+	var g2 := TextureRect.new()
+	g2.texture = PixelUI.stage_strip()
+	g2.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	g2.position = Vector2(896, 478)
+	g2.scale = Vector2(2.7, 3.0)
+	add_child(g2)
+	_p2_preview = _make_preview(Vector2(1060, 430))
 
+	PixelUI.add_panel(self, Vector2(420, 548), Vector2(440, 96), Color(0.45, 0.35, 0.55))
+	_info = PixelUI.label_at(self, "", Vector2(432, 560), 2, Color(0.92, 0.9, 0.86), 38)
+	_stats = PixelUI.label_at(self, "", Vector2(432, 604), 1, Color(0.78, 0.74, 0.68), 38)
+	_cpu_label = PixelUI.label_at(self, "", Vector2(880, 552), 2, Color(0.65, 0.82, 0.95), 36)
+	_arena_lbl = PixelUI.label_at(self, "", Vector2(420, 520), 2, Color(0.88, 0.78, 0.42), 36)
+
+	PixelUI.add_footer(self, "A/D / DPAD  CROSS OK  CIRCLE BACK  R RANDOM  C CPU  T ARENA")
+	if GameState.arcade:
+		PixelUI.label_at(self, "ARCADE LADDER", Vector2(0, 12), 2, Color(1, 0.82, 0.32), 0, 1280).set_centered(1280)
+	elif GameState.survival:
+		PixelUI.label_at(self, "SURVIVAL", Vector2(0, 12), 2, Color(1, 0.82, 0.32), 0, 1280).set_centered(1280)
+	elif GameState.time_attack:
+		PixelUI.label_at(self, "TIME ATTACK", Vector2(0, 12), 2, Color(1, 0.82, 0.32), 0, 1280).set_centered(1280)
 	_apply_indices_from_state()
+	for id in _ids:
+		_cached_frames(id)
 	_refresh()
+	_play_theme()
+
+
+func _make_preview(pos: Vector2) -> Sprite2D:
+	var spr := Sprite2D.new()
+	spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	spr.centered = true
+	spr.position = pos
+	add_child(spr)
+	return spr
 
 
 func _apply_indices_from_state() -> void:
@@ -86,50 +132,21 @@ func _apply_indices_from_state() -> void:
 			_p2_index = i
 
 
-func _make_card(def: CharacterDef) -> Panel:
-	var p := Panel.new()
-	p.custom_minimum_size = Vector2(180, 150)
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.1, 0.07, 0.12)
-	sb.border_color = def.accent
-	sb.border_width_left = 2
-	sb.border_width_top = 2
-	sb.border_width_right = 2
-	sb.border_width_bottom = 2
-	p.add_theme_stylebox_override("panel", sb)
-	var name := Label.new()
-	name.text = def.name
-	name.position = Vector2(8, 10)
-	name.size = Vector2(164, 40)
-	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(name, 16, def.accent)
-	p.add_child(name)
-	var t := Label.new()
-	t.text = def.title
-	t.position = Vector2(8, 50)
-	t.size = Vector2(164, 30)
-	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(t, 13, Color(0.8, 0.75, 0.55))
-	p.add_child(t)
-	var swatch := ColorRect.new()
-	swatch.position = Vector2(50, 90)
-	swatch.size = Vector2(80, 40)
-	swatch.color = def.outfit
-	p.add_child(swatch)
-	var sw2 := ColorRect.new()
-	sw2.position = Vector2(70, 100)
-	sw2.size = Vector2(40, 20)
-	sw2.color = def.accent
-	p.add_child(sw2)
-	return p
-
-
-var _held: Dictionary = {}
-
-
-func _process(_d: float) -> void:
+func _process(delta: float) -> void:
 	if not visible:
 		return
+	_walk_t += delta
+	if _p1_preview and not _p1_walk.is_empty():
+		_p1_preview.texture = _p1_walk[int(_walk_t * 14.0) % _p1_walk.size()]
+		_p1_preview.position.y = 430.0 + sin(_walk_t * 2.3) * 5.0
+	if _p2_preview and not _p2_walk.is_empty():
+		_p2_preview.texture = _p2_walk[int(_walk_t * 14.0) % _p2_walk.size()]
+		_p2_preview.position.y = 430.0 + sin(_walk_t * 2.3 + 0.8) * 5.0
+	for i in _cards.size():
+		var on: bool = i == _p1_index or i == _p2_index
+		var pulse: float = 1.0 + (0.035 * sin(_walk_t * 9.0) if on else 0.0)
+		_cards[i].modulate = Color(1.08, 1.06, 1.0) if on else Color(0.70, 0.70, 0.74, 1)
+		_cards[i].scale = Vector2(pulse, pulse)
 	if Input.is_action_just_pressed(ControlMap.MENU.right):
 		_move(1)
 	elif Input.is_action_just_pressed(ControlMap.MENU.left):
@@ -138,8 +155,11 @@ func _process(_d: float) -> void:
 		_focus = 1 - _focus
 		AudioDirector.play("ui")
 		_refresh()
+		_play_theme()
 	elif Input.is_action_just_pressed(ControlMap.MENU.confirm):
-		_confirm()
+		_commit()
+		AudioDirector.play("ui_confirm")
+		confirmed.emit()
 	elif Input.is_action_just_pressed(ControlMap.MENU.back):
 		cancelled.emit()
 	if _edge(KEY_R):
@@ -149,6 +169,8 @@ func _process(_d: float) -> void:
 		_refresh()
 	if _edge(KEY_F):
 		CharacterCatalog.rebuild_custom(GameState.custom_description, GameState.custom_photo_path)
+		PixelFighterBake.clear_cache("custom")
+		_frame_cache.erase("custom")
 		_ids = CharacterCatalog.ids()
 		for i in _ids.size():
 			if _ids[i] == "custom":
@@ -156,8 +178,13 @@ func _process(_d: float) -> void:
 		AudioDirector.play("special")
 		_commit()
 		_refresh()
+		_play_theme()
 	if _edge(KEY_C):
 		GameState.p2_is_cpu = not GameState.p2_is_cpu
+		_refresh()
+	if _edge(KEY_T):
+		_cycle_arena()
+		AudioDirector.play("ui")
 		_refresh()
 
 
@@ -176,6 +203,24 @@ func _move(dir: int) -> void:
 		_p2_index = posmod(_p2_index + dir, _ids.size())
 	_commit()
 	_refresh()
+	_play_theme()
+
+
+func _cycle_arena() -> void:
+	var ids := ArenaWorld.all_ids()
+	if GameState.random_arena:
+		GameState.random_arena = false
+		GameState.arena_id = ids[0]
+		return
+	var i := 0
+	for k in ids.size():
+		if ids[k] == GameState.arena_id:
+			i = k
+	i += 1
+	if i >= ids.size():
+		GameState.random_arena = true
+	else:
+		GameState.arena_id = ids[i]
 
 
 func _commit() -> void:
@@ -183,48 +228,70 @@ func _commit() -> void:
 	GameState.p2_character_id = _ids[_p2_index]
 
 
-func _confirm() -> void:
-	_commit()
-	AudioDirector.play("ui_confirm")
-	confirmed.emit()
-
-
-func _rebuild_cards() -> void:
-	# Cards stay; info updates from catalog.
-	pass
+func _cached_frames(id: String) -> Dictionary:
+	if not _frame_cache.has(id):
+		_frame_cache[id] = PixelFighterBake.bake(CharacterCatalog.get_def(id))
+	return _frame_cache[id]
 
 
 func _refresh() -> void:
 	for i in _cards.size():
-		var sb := _cards[i].get_theme_stylebox("panel").duplicate() as StyleBoxFlat
-		var sel := (i == _p1_index) or (i == _p2_index)
-		sb.border_width_left = 4 if sel else 2
-		sb.border_width_top = 4 if sel else 2
-		sb.border_width_right = 4 if sel else 2
-		sb.border_width_bottom = 4 if sel else 2
-		sb.bg_color = Color(0.18, 0.12, 0.08) if i == _p1_index else (Color(0.08, 0.12, 0.18) if i == _p2_index else Color(0.1, 0.07, 0.12))
-		_cards[i].add_theme_stylebox_override("panel", sb)
-	var def := CharacterCatalog.get_def(_ids[_p1_index if _focus == 0 else _p2_index])
+		var def := CharacterCatalog.get_def(_ids[i])
+		var p1 := i == _p1_index
+		var p2 := i == _p2_index
+		_cards[i].texture = PixelUI.char_card(CARD_W, CARD_H, def.accent, p1, p2)
+		var frames: Dictionary = _cached_frames(_ids[i])
+		var idle: Array = frames.get("idle", [])
+		if not idle.is_empty():
+			_thumbs[i].texture = idle[0]
+		var nm_col: Color = def.accent
+		if p1:
+			nm_col = Color(1, 0.88, 0.4)
+		elif p2:
+			nm_col = Color(0.55, 0.88, 1.0)
+		_names[i].set_pix(def.name.to_upper(), 1, nm_col, 12)
+
+	var p1_def := CharacterCatalog.get_def(_ids[_p1_index])
+	var p2_def := CharacterCatalog.get_def(_ids[_p2_index])
+	var focus_def := p1_def if _focus == 0 else p2_def
 	var who := "PLAYER 1" if _focus == 0 else "CPU / P2"
-	_info.text = "%s — %s  “%s”\n%s" % [who, def.name, def.title, def.description]
-	_stats.text = "HP %d   Speed %d   Jump %d   ATK %.2f   DEF %.2f\nSpecial: %s — %s\nUltimate: %s — %s\nPersonality: %s    AI: %s" % [
-		int(def.health), int(def.speed), int(def.jump), def.attack, def.defense,
-		def.special_name, def.special_desc, def.ultimate_name, def.ultimate_desc,
-		def.personality, def.ai_profile
-	]
-	_cpu_label.text = "Opponent: %s (%s)    C toggle CPU/human    R random CPU    F forge Custom Rite from data/descriptions/example.txt" % [
-		CharacterCatalog.get_def(_ids[_p2_index]).name,
-		"CPU " + GameState.difficulty_name() if GameState.p2_is_cpu else "HUMAN"
-	]
-	_draw_preview(def)
+	_info.set_pix("%s — %s  %s" % [who, focus_def.name, focus_def.title], 2, Color(0.92, 0.9, 0.86), 38)
+	_stats.set_pix("HP %s  SPD %s  ATK %s  DEF %s" % [
+		_pips(focus_def.health, 700.0, 1200.0),
+		_pips(focus_def.speed, 240.0, 380.0),
+		_pips(focus_def.attack, 0.85, 1.15),
+		_pips(focus_def.defense, 0.75, 1.15)
+	], 1, Color(0.78, 0.74, 0.68), 42)
+	_cpu_label.set_pix("%s  ·  %s  ·  L %s  O %s" % [
+		p2_def.name,
+		"CPU " + GameState.difficulty_name() if GameState.p2_is_cpu else "HUMAN",
+		focus_def.special_name,
+		focus_def.ultimate_name
+	], 2, Color(0.65, 0.82, 0.95), 36)
+	if _arena_lbl:
+		var an: String = "RANDOM" if GameState.random_arena else ArenaWorld.display_name(GameState.arena_id)
+		_arena_lbl.set_pix("STAGE  %s" % an, 2, Color(0.88, 0.78, 0.42), 36)
+
+	var p1_frames: Dictionary = _cached_frames(_ids[_p1_index])
+	var p2_frames: Dictionary = _cached_frames(_ids[_p2_index])
+	_p1_walk = p1_frames.get("walk", p1_frames["idle"])
+	_p2_walk = p2_frames.get("walk", p2_frames["idle"])
+	_p1_preview.texture = _p1_walk[0]
+	_p2_preview.texture = _p2_walk[0]
+	_p1_preview.scale = Vector2(3.0 * p1_def.width_scale, 3.0 * p1_def.height_scale)
+	_p2_preview.scale = Vector2(-3.0 * p2_def.width_scale, 3.0 * p2_def.height_scale)
 
 
-func _draw_preview(def: CharacterDef) -> void:
-	if _preview:
-		_preview.queue_free()
-	_preview = FighterVisual.new()
-	_portrait_host.add_child(_preview)
-	_preview.build(def)
-	_preview.position = Vector2(80, 80)
-	_preview.scale = Vector2(1.4, 1.4)
-	_preview.set_pose_name("idle")
+func _pips(v: float, lo: float, hi: float) -> String:
+	var n := clampi(int(round((v - lo) / maxf(hi - lo, 0.01) * 8.0)), 1, 8)
+	var s := ""
+	for i in 8:
+		s += "I" if i < n else "."
+	return s
+
+
+func _play_theme() -> void:
+	if _ids.is_empty():
+		return
+	var idx: int = _p1_index if _focus == 0 else _p2_index
+	AudioDirector.play_music("theme:" + _ids[idx])

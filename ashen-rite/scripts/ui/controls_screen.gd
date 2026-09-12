@@ -6,30 +6,50 @@ signal closed
 
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
-	var bg := ColorRect.new()
-	bg.color = Color(0.04, 0.02, 0.06)
-	bg.set_anchors_preset(PRESET_FULL_RECT)
-	add_child(bg)
-	var title := Label.new()
-	title.text = "CONTROLS"
-	title.position = Vector2(0, 50)
-	title.size = Vector2(1280, 60)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(title, 48, Color(0.92, 0.22, 0.28))
-	add_child(title)
-	var body := Label.new()
-	body.text = ControlMap.help_text()
-	body.position = Vector2(120, 130)
-	body.size = Vector2(1040, 480)
-	UIKit.style_label(body, 20, Color(0.88, 0.86, 0.82))
-	add_child(body)
-	var foot := Label.new()
-	foot.text = "Bindings live in scripts/input/control_map.gd — Esc / Backspace to return"
-	foot.position = Vector2(0, 650)
-	foot.size = Vector2(1280, 30)
-	foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(foot, 16, Color(0.65, 0.62, 0.6))
-	add_child(foot)
+	PixelUI.full_bg(self)
+	PixelUI.add_title(self, "CONTROLS", 40, Color(0.95, 0.22, 0.28))
+
+	PixelUI.add_panel(self, Vector2(40, 120), Vector2(600, 520), PixelUI.GOLD)
+	PixelUI.label_at(self, "KEYBOARD", Vector2(40, 132), 3, Color(0.95, 0.78, 0.35), 0, 600).set_centered(600)
+	PixelUI.label_at(self, """P1  A/D WALK   W JUMP   S CROUCH
+J LIGHT   K HEAVY   L SPECIAL
+U BLOCK   I THROW   O SUPER
+ESC / P   PAUSE
+FWD+U PARRY   RUN+J/K DASH ATTACK
+L+U HIT BURST   GETUP+A ROLL
+
+P2  ARROWS MOVE
+Z LIGHT  X HEAVY  C SPECIAL
+V BLOCK  B THROW  N SUPER
+
+LIGHT > (LIGHT) > HEAVY > SPECIAL > SUPER
+LIGHTS MINUS ON BLOCK
+JUMP CANCEL HEAVY ON HIT
+THROW TECH  PRESS THROW
+LOW HP  RAGE""", Vector2(64, 176), 2, Color(0.92, 0.9, 0.86), 28)
+
+	PixelUI.add_panel(self, Vector2(640, 120), Vector2(600, 520), Color(0.35, 0.75, 1.0))
+	PixelUI.label_at(self, "DUALSENSE  PS5", Vector2(640, 132), 3, Color(0.55, 0.85, 1.0), 0, 600).set_centered(600)
+	PixelUI.label_at(self, """LS / DPAD     MOVE
+LS UP / UP    JUMP
+LS DOWN       CROUCH
+SQUARE        LIGHT
+TRIANGLE      HEAVY
+CIRCLE        SPECIAL
+L1 / L2       BLOCK
+R1            THROW
+R2            SUPER
+OPTIONS       PAUSE
+TOUCHPAD      PAUSE
+FWD+L1        PARRY
+RUN+SQ/TRI    DASH ATTACK
+CIRCLE+L1 HIT BURST
+GETUP+BACK    ROLL
+CROSS         MENU OK
+CIRCLE        MENU BACK
+PAD 1 = P1    PAD 2 = P2""", Vector2(664, 176), 2, Color(0.88, 0.9, 0.94), 22)
+
+	PixelUI.add_footer(self, "ESC / CIRCLE  BACK     ENTER / CROSS  OK")
 
 
 func _process(_d: float) -> void:

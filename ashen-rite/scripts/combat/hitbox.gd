@@ -7,6 +7,7 @@ var owner_fighter: Fighter
 var attack: Dictionary = {}
 var active: bool = false
 var already: Dictionary = {}
+var _dbg: ColorRect
 
 
 func _ready() -> void:
@@ -20,6 +21,11 @@ func _ready() -> void:
 	cs.shape = rect
 	cs.position = Vector2(40, -70)
 	add_child(cs)
+	_dbg = ColorRect.new()
+	_dbg.color = Color(1.0, 0.25, 0.12, 0.38)
+	_dbg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_dbg.visible = false
+	add_child(_dbg)
 	area_entered.connect(_on_area)
 
 
@@ -28,6 +34,9 @@ func configure(size: Vector2, offset: Vector2) -> void:
 	var rect := cs.shape as RectangleShape2D
 	rect.size = size
 	cs.position = offset
+	if _dbg:
+		_dbg.size = size
+		_dbg.position = offset - size * 0.5
 
 
 func arm(atk: Dictionary) -> void:
@@ -35,13 +44,16 @@ func arm(atk: Dictionary) -> void:
 	already.clear()
 	active = true
 	monitoring = true
-	visible = GameState.show_hitboxes
+	if _dbg:
+		_dbg.visible = GameState.show_hitboxes
 
 
 func disarm() -> void:
 	active = false
 	monitoring = false
 	already.clear()
+	if _dbg:
+		_dbg.visible = false
 
 
 func _on_area(area: Area2D) -> void:

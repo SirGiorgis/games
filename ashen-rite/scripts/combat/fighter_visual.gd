@@ -1,234 +1,413 @@
 class_name FighterVisual
 extends Node2D
+## Pixel-art fighter with phased attack playback and motion juice.
+
+const SCALE := PixelFighterBake.SCALE
+const FW := PixelFighterBake.W
+const FH := PixelFighterBake.H
 
 var def: CharacterDef
 var facing: int = 1
 var pose: String = "idle"
 var attack_u: float = 0.0
-var crouch_blend: float = 0.0
+var one_shot_u: float = -1.0
 var flash: float = 0.0
+var impact: float = 0.0
+var recoil: float = 0.0
 var trail_timer: float = 0.0
+var move_speed: float = 0.0
+var frozen: bool = false
+var _land_puff := false
+var _stride := 0.0
+var _flip_squash := 0.0
+var _last_facing: int = 1
 
-var _hip: Node2D
-var _torso: Polygon2D
-var _head: Polygon2D
-var _hair: Polygon2D
-var _arm_l: Polygon2D
-var _arm_r: Polygon2D
-var _leg_l: Polygon2D
-var _leg_r: Polygon2D
-var _cloak: Polygon2D
-var _aura: CPUParticles2D
-var _shadow: Polygon2D
+var _sprite: Sprite2D
+var _frames: Dictionary = {}
 var _time := 0.0
-var _parts: Array[Polygon2D] = []
+var _last_pose := ""
+var _hold_pose := false
+var _base_scale := Vector2.ONE
+var _atk_startup := 0.0
+var _atk_active := 0.0
+var _atk_duration := 1.0
+
+const ONE_SHOT := ["hit", "air_hit", "launch", "knockdown", "defeat", "land", "getup", "prejump", "block_hit"]
+const ATTACK_POSES := ["light", "clight", "jlight", "heavy", "cheavy", "jheavy", "special", "ultimate", "grab", "jump"]
+const TRAIL_POSES := ["run", "backdash", "special", "ultimate"]
 
 
 func build(d: CharacterDef) -> void:
 	def = d
-	_shadow = _poly([Vector2(-28, 6), Vector2(28, 6), Vector2(18, 14), Vector2(-18, 14)], Color(0, 0, 0, 0.45))
-	_shadow.z_index = -2
-	add_child(_shadow)
-
-	_hip = Node2D.new()
-	_hip.position = Vector2(0, -12)
-	add_child(_hip)
-
-	_cloak = _limb(Vector2(18, 10), Vector2(34, 70), def.outfit.darkened(0.25), -0.4)
-	_hip.add_child(_cloak)
-	_leg_l = _limb(Vector2(11, 12), Vector2(52, 16), def.outfit, 0.18)
-	_leg_r = _limb(Vector2(11, 12), Vector2(52, 16), def.outfit.lightened(0.08), -0.18)
-	_hip.add_child(_leg_l)
-	_hip.add_child(_leg_r)
-	_torso = _limb(Vector2(26 * def.width_scale, 18), Vector2(48, 22), def.outfit, 0.0)
-	_torso.position = Vector2(0, -40)
-	_hip.add_child(_torso)
-	var trim := _limb(Vector2(22 * def.width_scale, 8), Vector2(14, 10), def.trim, 0.0)
-	trim.position = Vector2(0, -8)
-	_torso.add_child(trim)
-	_arm_l = _limb(Vector2(9, 9), Vector2(40, 12), def.skin, 0.5)
-	_arm_r = _limb(Vector2(9, 9), Vector2(40, 12), def.skin.lightened(0.05), -0.35)
-	_arm_l.position = Vector2(-10, -16)
-	_arm_r.position = Vector2(10, -16)
-	_torso.add_child(_arm_l)
-	_torso.add_child(_arm_r)
-	_head = _circ(16, def.skin)
-	_head.position = Vector2(0, -36)
-	_torso.add_child(_head)
-	_hair = _circ(17, def.hair)
-	_hair.position = Vector2(-2, -6)
-	_head.add_child(_hair)
-	var eye_l := _circ(3.2, def.eyes)
-	var eye_r := _circ(3.2, def.eyes)
-	eye_l.position = Vector2(5, -2)
-	eye_r.position = Vector2(11, -2)
-	_head.add_child(eye_l)
-	_head.add_child(eye_r)
-
-	_aura = CPUParticles2D.new()
-	_aura.emitting = true
-	_aura.amount = 18
-	_aura.lifetime = 0.7
-	_aura.direction = Vector2(0, -1)
-	_aura.spread = 50
-	_aura.gravity = Vector2(0, -40)
-	_aura.initial_velocity_min = 20
-	_aura.initial_velocity_max = 50
-	_aura.scale_amount_min = 1.5
-	_aura.scale_amount_max = 3.5
-	_aura.color = Color(def.accent, 0.35)
-	_aura.position = Vector2(0, -70)
-	_aura.z_index = -1
-	add_child(_aura)
-
-	scale = Vector2(def.width_scale, def.height_scale)
-
-
-func _poly(pts: Array, color: Color) -> Polygon2D:
-	var p := Polygon2D.new()
-	p.polygon = PackedVector2Array(pts)
-	p.color = color
-	_parts.append(p)
-	return p
-
-
-func _limb(radius: Vector2, length_size: Vector2, color: Color, rot: float) -> Polygon2D:
-	var w := radius.x
-	var h := length_size.x
-	var p := _poly([
-		Vector2(-w, 0), Vector2(w, 0), Vector2(w * 0.7, h), Vector2(-w * 0.7, h)
-	], color)
-	p.rotation = rot
-	return p
-
-
-func _circ(r: float, color: Color) -> Polygon2D:
-	var pts: Array = []
-	for i in 12:
-		var a := TAU * i / 12.0
-		pts.append(Vector2(cos(a), sin(a)) * r)
-	return _poly(pts, color)
+	_frames = PixelFighterBake.bake(d)
+	_sprite = Sprite2D.new()
+	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_sprite.centered = false
+	_sprite.texture = _tex("idle", 0)
+	var tw: int = _sprite.texture.get_width()
+	var th: int = _sprite.texture.get_height()
+	var sc: int = PixelFighterBake.SCALE
+	_base_scale = Vector2(float(sc) * def.width_scale, float(sc) * def.height_scale)
+	_sprite.position = Vector2(-tw * _base_scale.x / 2.0, -th * _base_scale.y)
+	_sprite.scale = _base_scale
+	add_child(_sprite)
+	var sh := Sprite2D.new()
+	var simg := Pix.image(14, 5, Color(0, 0, 0, 0))
+	Pix.dither_fill(simg, 0, 1, 14, 3, Color(0, 0, 0, 0.4), Color(0, 0, 0, 0.1))
+	sh.texture = Pix.tex(simg)
+	sh.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sh.centered = true
+	sh.position = Vector2(0, 4)
+	sh.scale = Vector2(float(sc) * maxf(def.width_scale, 1.0), float(sc))
+	sh.z_index = -2
+	add_child(sh)
 
 
 func set_pose_name(p: String) -> void:
-	pose = p
+	if pose != p:
+		_last_pose = pose
+		pose = p
+		_hold_pose = false
+		if p in ONE_SHOT:
+			one_shot_u = 0.0
+		if p == "land":
+			_land_puff = false
 
 
 func pulse_hit() -> void:
 	flash = 1.0
+	impact = 1.0
+	recoil = 1.0
+
+
+func punch_impact(amount: float = 1.0) -> void:
+	impact = max(impact, amount)
+
+
+func set_attack_timing(startup: float, active: float, duration: float) -> void:
+	_atk_startup = startup
+	_atk_active = active
+	_atk_duration = maxf(duration, 0.01)
+
+
+func idle_tex() -> Texture2D:
+	return _tex("idle", 0)
 
 
 func _process(delta: float) -> void:
-	_time += delta
-	flash = max(0.0, flash - delta * 6.0)
-	var breath := sin(_time * 3.2) * 0.03
-	var walk := sin(_time * 9.0)
+	if _sprite == null:
+		return
+	if facing != _last_facing:
+		_flip_squash = 1.0
+		_last_facing = facing
+	if not frozen:
+		_time += delta
+		flash = max(0.0, flash - delta * 11.0)
+		impact = max(0.0, impact - delta * 7.2)
+		recoil = max(0.0, recoil - delta * 9.0)
+		_flip_squash = max(0.0, _flip_squash - delta * 12.0)
+		if pose in ONE_SHOT and one_shot_u >= 0.0:
+			var rate: float = 1.0 / maxf(_one_shot_duration(), 0.04)
+			one_shot_u = minf(one_shot_u + delta * rate, 1.0)
+			if one_shot_u >= 0.98:
+				_hold_pose = true
+		if pose in ["walk", "run"]:
+			_stride += maxf(absf(move_speed), 80.0) * delta * 0.082
+		if pose in TRAIL_POSES and trail_timer <= 0.0:
+			trail_timer = 0.08 if pose == "backdash" else 0.11
+			_ghost()
+		elif pose in ["light", "clight", "jlight", "heavy", "cheavy", "jheavy"] and attack_u > 0.22 and attack_u < 0.58 and trail_timer <= 0.0:
+			trail_timer = 0.06
+			_ghost()
+		trail_timer = max(0.0, trail_timer - delta)
+		if pose == "land" and not _land_puff:
+			_land_puff = true
+			_puff()
+
+	_sprite.texture = _current_tex()
+	_sprite.flip_h = facing < 0
+	_apply_juice()
+
+
+func _apply_juice() -> void:
+	var squash: float = 1.0
+	var stretch: float = 1.0
+	if impact > 0.05:
+		squash = 1.0 + impact * 0.16
+		stretch = 1.0 - impact * 0.09
+	elif pose == "land":
+		var lu: float = clampf(one_shot_u, 0.0, 1.0)
+		squash = 1.0 + (1.0 - lu) * 0.20
+		stretch = 1.0 - (1.0 - lu) * 0.12
+	elif pose == "prejump":
+		squash = 1.12
+		stretch = 0.90
+	elif pose == "jump":
+		if attack_u < 0.38:
+			squash = 0.92
+			stretch = 1.10
+		else:
+			squash = 1.06
+			stretch = 0.94
+	elif pose in ["light", "clight", "jlight"] and attack_u > 0.20 and attack_u < 0.55:
+		squash = 1.06
+		stretch = 0.95
+	elif pose in ["heavy", "cheavy", "jheavy", "ultimate"] and attack_u > 0.26 and attack_u < 0.52:
+		squash = 1.12
+		stretch = 0.90
+
+	var fx_w: float = 1.0 - _flip_squash * 0.18
+	_sprite.scale = Vector2(_base_scale.x * (1.0 + impact * 0.05) * fx_w, _base_scale.y * stretch * squash)
+	_sprite.position.y = _base_y() + _pose_bob() + impact * 5.0
+	_sprite.position.x = _base_x() + _pose_shift() - float(facing) * recoil * 11.0
+	_sprite.rotation = _pose_tilt() * facing
+	_sprite.modulate = Color.WHITE.lerp(Color(1.75, 1.68, 1.52), flash)
+	var host = get_parent()
+	if host and host.has_method("poisoned") and host.poisoned() and flash < 0.2:
+		_sprite.modulate = Color.WHITE.lerp(Color(0.58, 1.18, 0.42), 0.52 + 0.22 * sin(_time * 10.0))
+	elif host and host.has_method("buffed") and host.buffed() and flash < 0.2:
+		_sprite.modulate = Color.WHITE.lerp(Color(0.72, 1.18, 0.98), 0.48 + 0.22 * sin(_time * 8.0))
+	elif host and host.has_method("raging") and host.raging() and flash < 0.2:
+		_sprite.modulate = Color.WHITE.lerp(Color(1.35, 0.72, 0.68), 0.45 + 0.25 * sin(_time * 9.0))
+
+
+func _base_x() -> float:
+	if _sprite.texture == null:
+		return 0.0
+	var tw: int = _sprite.texture.get_width()
+	var sc: float = absf(_sprite.scale.x)
+	return -tw * sc / 2
+
+
+func _base_y() -> float:
+	if _sprite.texture == null:
+		return 0.0
+	var th: int = _sprite.texture.get_height()
+	var sc: float = absf(_sprite.scale.y)
+	return -th * sc
+
+
+func _pose_bob() -> float:
 	match pose:
-		"walk", "run":
-			_leg_l.rotation = walk * 0.55
-			_leg_r.rotation = -walk * 0.55
-			_arm_l.rotation = -walk * 0.7
-			_arm_r.rotation = walk * 0.7
-			_torso.rotation = walk * 0.05
-			_hip.position.y = -12 + abs(walk) * 3.0
-		"jump":
-			_leg_l.rotation = -0.45
-			_leg_r.rotation = 0.35
-			_arm_l.rotation = -1.1
-			_arm_r.rotation = 0.9
-			_torso.rotation = -0.12
-		"crouch":
-			_hip.position.y = 18
-			_leg_l.rotation = 0.9
-			_leg_r.rotation = -0.55
-			_arm_l.rotation = 0.4
-			_torso.rotation = 0.12
-			_cloak.rotation = 0.2
-		"block":
-			_arm_l.rotation = -1.3
-			_arm_r.rotation = -1.05
-			_torso.rotation = 0.18
-			_hip.position.y = -8
-		"light":
-			_punch(0.9)
-		"heavy":
-			_punch(1.35)
-		"special":
-			_spin_strike()
-		"ultimate":
-			_spin_strike()
-			_aura.modulate = Color(1.4, 1.4, 1.4)
-		"hit":
-			_torso.rotation = 0.35
-			_arm_l.rotation = 0.8
-			_head.rotation = 0.25
-		"knockdown":
-			rotation = facing * 1.35
-			_hip.position.y = 20
+		"idle":
+			return sin(_time * 2.15) * 2.2
+		"walk":
+			return abs(sin(_stride * 1.15)) * 2.4
+		"run", "backdash":
+			return abs(sin(_stride * 1.35)) * 3.4
 		"victory":
-			_arm_r.rotation = -2.4 + sin(_time * 6.0) * 0.1
-			_torso.rotation = -0.15
-			_hip.position.y = -16 + sin(_time * 4.0) * 2.0
-		"defeat":
-			rotation = facing * 1.2
+			return sin(_time * 5.0) * 2.5
+	return 0.0
+
+
+func _pose_shift() -> float:
+	match pose:
+		"backdash":
+			return -facing * 3.0 * sin(_time * 18.0)
+		"light", "clight", "jlight", "heavy", "cheavy", "jheavy":
+			if attack_u > 0.18 and attack_u < 0.62:
+				return facing * smoothstep(0.18, 0.48, attack_u) * 10.0
+		"special", "ultimate":
+			if def and def.ultimate_id in ["flex", "vodka", "fart", "cotton", "drip"] and pose == "ultimate":
+				return 0.0
+			if def and def.ultimate_id == "dempsey" and pose == "ultimate":
+				return facing * sin(_time * 22.0) * 10.0
+			return facing * attack_u * 7.0
+	return 0.0
+
+
+func _pose_tilt() -> float:
+	match pose:
+		"hit", "block_hit":
+			return deg_to_rad(-10.0 * maxf(impact, recoil))
+		"launch", "air_hit":
+			return deg_to_rad(sin(_time * 12.0) * 6.0)
+		"run":
+			return deg_to_rad(5.0)
+		"backdash":
+			return deg_to_rad(-7.0)
+		"jump":
+			return deg_to_rad(lerpf(-3.0, 4.0, clampf(attack_u, 0.0, 1.0)))
+	return 0.0
+
+
+func _one_shot_duration() -> float:
+	match pose:
+		"prejump": return 0.04
+		"land": return 0.10
+		"getup": return 0.14
+		"hit", "block_hit": return 0.20
+		"air_hit": return 0.16
+		"launch": return 0.22
+		"knockdown": return 0.42
+		"defeat": return 0.55
+	return 0.2
+
+
+func _current_tex() -> Texture2D:
+	var key := _sheet_key(pose)
+	if not _frames.has(key):
+		key = "idle"
+	var arr: Array = _frames[key]
+	if arr.is_empty():
+		return _tex("idle", 0)
+
+	if pose in ATTACK_POSES:
+		return arr[_attack_index(arr, attack_u)]
+
+	if pose in ONE_SHOT:
+		var u: float = one_shot_u if one_shot_u >= 0.0 else attack_u
+		var idx: int = clampi(int(u * float(arr.size() - 1)), 0, arr.size() - 1)
+		if _hold_pose:
+			idx = arr.size() - 1
+		return arr[idx]
+
+	if pose in ["walk", "run"]:
+		var idx_s: int = int(floor(_stride)) % arr.size()
+		return arr[idx_s]
+
+	var spd: float = _loop_fps()
+	var idx2: int = int(_time * spd) % arr.size()
+	return arr[idx2]
+
+
+func _sheet_key(p: String) -> String:
+	if p == "ultimate":
+		return p
+	var suf := _alt_suffix()
+	if suf != "" and _alt_form() and _frames.has(p + suf):
+		return p + suf
+	return p
+
+
+func _alt_suffix() -> String:
+	if def == null:
+		return ""
+	match def.ultimate_id:
+		"flex":
+			return "_rip"
+		"drip":
+			return "_drip"
 		_:
-			rotation = 0
-			_hip.position.y = -12 + breath * 10.0
-			_leg_l.rotation = 0.12 + breath
-			_leg_r.rotation = -0.12 - breath
-			_arm_l.rotation = 0.45 + breath * 2.0
-			_arm_r.rotation = -0.35 - breath * 2.0
-			_torso.rotation = breath
-			_head.rotation = -breath
-			_cloak.rotation = -0.35 + breath
-			_aura.modulate = Color.WHITE
-
-	if pose != "knockdown" and pose != "defeat":
-		rotation = lerp_angle(rotation, 0.0, delta * 8.0)
-
-	scale.x = abs(scale.x) * facing
-	var flash_c := Color.WHITE.lerp(Color(2.0, 2.0, 2.0), flash)
-	modulate = flash_c
-	if pose == "walk" or pose == "run" or pose == "special" or pose == "ultimate":
-		trail_timer -= delta
-		if trail_timer <= 0.0:
-			trail_timer = 0.05
-			_spawn_afterimage()
+			return ""
 
 
-func _punch(power: float) -> void:
-	var u := attack_u
-	var swing := 0.0
-	if u < 0.35:
-		swing = lerpf(0.4, -0.2, u / 0.35)
-	else:
-		swing = lerpf(-0.2, -2.2 * power, clamp((u - 0.35) / 0.3, 0.0, 1.0))
-	_arm_r.rotation = swing
-	_arm_l.rotation = 0.6
-	_torso.rotation = -0.25 * power * max(u - 0.3, 0.0)
-	_hip.position.y = -12
-	rotation = 0
+func _alt_form() -> bool:
+	if _alt_suffix() == "":
+		return false
+	var host = get_parent()
+	return host and host.has_method("buffed") and host.buffed()
 
 
-func _spin_strike() -> void:
-	var u := attack_u
-	_arm_r.rotation = -2.6 * u
-	_arm_l.rotation = 2.2 * u
-	_torso.rotation = sin(u * TAU) * 0.4
-	_leg_l.rotation = sin(u * TAU * 2.0) * 0.5
-	_aura.modulate = Color(1.6, 1.6, 1.6)
+func _ripped() -> bool:
+	return def != null and def.ultimate_id == "flex" and _alt_form()
 
 
-func _spawn_afterimage() -> void:
-	var ghost := Polygon2D.new()
-	ghost.polygon = PackedVector2Array([Vector2(-10, -110), Vector2(10, -110), Vector2(16, 8), Vector2(-16, 8)])
-	ghost.color = Color(def.accent, 0.22)
-	ghost.global_position = global_position
-	ghost.scale = scale
-	ghost.z_index = -1
-	var parent := get_parent()
-	if parent:
-		parent.add_child(ghost)
-		var tw := ghost.create_tween()
-		tw.tween_property(ghost, "modulate:a", 0.0, 0.18)
-		tw.tween_callback(ghost.queue_free)
+func _loop_fps() -> float:
+	match pose:
+		"run": return 16.0
+		"walk": return 12.0
+		"backdash": return 18.0
+		"victory": return 9.0
+		"block": return 8.0
+		"crouch": return 6.0
+		"idle": return 8.0
+	return 8.0
+
+
+func _attack_index(arr: Array, u: float) -> int:
+	var n: int = arr.size()
+	if n <= 1:
+		return 0
+	var su: float = _atk_startup / _atk_duration
+	var au: float = _atk_active / _atk_duration
+	var eu: float = su + au
+	if au > 0.01 and u >= su and u <= eu and pose in ["light", "clight", "jlight", "heavy", "cheavy", "jheavy", "special", "ultimate", "grab"]:
+		var strike_u: float = su + au * 0.42
+		return clampi(int(strike_u * float(n - 1)), 0, n - 1)
+	var mapped: float = u
+	match pose:
+		"light", "clight", "jlight":
+			mapped = _phase_map(u, 0.18, 0.32, 0.50)
+		"heavy", "cheavy", "jheavy":
+			mapped = _phase_map(u, 0.28, 0.30, 0.42)
+		"special":
+			mapped = _phase_map(u, 0.14, 0.36, 0.50)
+		"ultimate":
+			mapped = _phase_map(u, 0.20, 0.32, 0.48)
+		"grab":
+			mapped = _phase_map(u, 0.18, 0.38, 0.44)
+		"jump":
+			mapped = clampf(u, 0.0, 1.0)
+	return clampi(int(mapped * float(n - 1)), 0, n - 1)
+
+
+func _phase_map(u: float, wind: float, strike: float, recover: float) -> float:
+	var total: float = wind + strike + recover
+	wind /= total
+	strike /= total
+	recover /= total
+	if u < wind:
+		return (u / maxf(wind, 0.001)) * 0.34
+	if u < wind + strike:
+		var t: float = (u - wind) / maxf(strike, 0.001)
+		return lerpf(0.34, 0.72, smoothstep(0.0, 1.0, t))
+	var r: float = (u - wind - strike) / maxf(recover, 0.001)
+	return lerpf(0.72, 1.0, smoothstep(0.0, 1.0, r))
+
+
+func _tex(key: String, idx: int) -> Texture2D:
+	var arr: Array = _frames.get(key, [])
+	if arr.is_empty():
+		return ImageTexture.new()
+	return arr[clampi(idx, 0, arr.size() - 1)]
+
+
+func _ghost() -> void:
+	if def == null or _sprite.texture == null:
+		return
+	var g := Sprite2D.new()
+	g.texture = _sprite.texture
+	g.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	g.centered = false
+	g.global_position = _sprite.global_position
+	g.scale = _sprite.scale
+	g.flip_h = _sprite.flip_h
+	g.rotation = _sprite.rotation
+	var alpha: float = 0.46 if pose == "backdash" else 0.30
+	g.modulate = Color(def.accent, alpha)
+	g.z_index = -1
+	var p := get_parent()
+	if p:
+		p.add_child(g)
+		var tw := g.create_tween()
+		tw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		tw.tween_property(g, "modulate:a", 0.0, 0.12 if pose == "backdash" else 0.16)
+		tw.parallel().tween_property(g, "global_position:x", g.global_position.x - facing * 14.0, 0.14)
+		tw.tween_callback(g.queue_free)
+
+
+func dust() -> void:
+	_puff()
+
+
+func _puff() -> void:
+	var p := get_parent()
+	if p == null:
+		return
+	for i in 6:
+		var img := Pix.image(4, 3, Color(0, 0, 0, 0))
+		Pix.disc(img, 1, 1, 1, Color(0.62, 0.52, 0.28, 0.7))
+		var s := Sprite2D.new()
+		s.texture = Pix.tex(img)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		s.scale = Vector2(3, 3)
+		s.centered = true
+		s.position = Vector2((i - 2.5) * 9, 2)
+		s.z_index = -1
+		p.add_child(s)
+		var tw := s.create_tween()
+		tw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		tw.tween_property(s, "position", s.position + Vector2((i - 2.5) * 16, -10), 0.20)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.20)
+		tw.tween_callback(s.queue_free)

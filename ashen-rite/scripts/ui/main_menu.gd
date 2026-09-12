@@ -4,68 +4,86 @@ extends Control
 signal chosen(id: String)
 
 var _index := 0
-const ITEMS := ["PLAY", "CHARACTER SELECT", "OPTIONS", "CONTROLS", "QUIT"]
-var _labels: Array[Label] = []
+const ITEMS := ["PLAY", "ARCADE", "SURVIVAL", "TIME ATTACK", "TRAINING", "GALLERY", "CHARACTER SELECT", "OPTIONS", "CONTROLS", "QUIT"]
+var _entries: Array[Dictionary] = []
+var _chris: Sprite2D
+var _giorgis: Sprite2D
+var _chris_frames: Array = []
+var _giorgis_frames: Array = []
+var _preview_t := 0.0
+var _title: PixelLabel
 
 
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
-	var bg := ColorRect.new()
-	bg.color = Color(0.04, 0.02, 0.06)
-	bg.set_anchors_preset(PRESET_FULL_RECT)
-	add_child(bg)
-	_atmosphere()
-	var title := Label.new()
-	title.text = "ASHEN RITE"
-	title.position = Vector2(0, 90)
-	title.size = Vector2(1280, 90)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(title, 72, Color(0.92, 0.2, 0.28))
-	add_child(title)
-	var sub := Label.new()
-	sub.text = "A RITE WRITTEN IN SPARKS"
-	sub.position = Vector2(0, 170)
-	sub.size = Vector2(1280, 30)
-	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(sub, 18, Color(0.85, 0.72, 0.4))
-	add_child(sub)
+	PixelUI.full_bg(self)
+	_title = PixelUI.add_title(self, "GIORGIS FIGHTING", 52, Color(0.95, 0.2, 0.3))
+	PixelUI.label_at(self, "CHRIS  ·  GIORGIS", Vector2(0, 118), 2, Color(0.88, 0.72, 0.38), 0, 1280).set_centered(1280)
+
+	PixelUI.add_panel(self, Vector2(48, 148), Vector2(560, 520), PixelUI.GOLD)
 	for i in ITEMS.size():
-		var l := Label.new()
-		l.position = Vector2(0, 280 + i * 52)
-		l.size = Vector2(1280, 44)
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		UIKit.style_label(l, 32)
-		add_child(l)
-		_labels.append(l)
-	var foot := Label.new()
-	foot.text = "Enter / J confirm   W/S move   Esc quit"
-	foot.position = Vector2(0, 660)
-	foot.size = Vector2(1280, 30)
-	foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(foot, 16, Color(0.6, 0.58, 0.56))
-	add_child(foot)
+		var e: Dictionary = PixelUI.add_menu_row(self, 156.0 + i * 34.0, 488, 64.0)
+		e["row"].size.y = 32
+		_entries.append(e)
+
+	PixelUI.add_panel(self, Vector2(720, 168), Vector2(512, 480), Color(0.55, 0.12, 0.18))
+	var frame_lbl := PixelUI.label_at(self, "FIGHTER PREVIEW", Vector2(720, 176), 2, Color(0.85, 0.72, 0.42), 0, 512)
+	frame_lbl.set_centered(512)
+	frame_lbl.position.x = 720
+
+	var grass := TextureRect.new()
+	grass.texture = PixelUI.stage_strip()
+	grass.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	grass.position = Vector2(744, 500)
+	grass.scale = Vector2(3.9, 3.6)
+	add_child(grass)
+
+	var vs := TextureRect.new()
+	vs.texture = PixelUI.vs_emblem()
+	vs.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	vs.position = Vector2(952, 292)
+	vs.scale = Vector2(3, 3)
+	add_child(vs)
+
+	_chris = _make_preview(CharacterCatalog.get_def("chris_xrisakis"), Vector2(860, 470), false)
+	_giorgis = _make_preview(CharacterCatalog.get_def("hoodrich_stacks"), Vector2(1090, 470), true)
+	_chris_frames = PixelFighterBake.bake(CharacterCatalog.get_def("chris_xrisakis")).get("walk", [])
+	_giorgis_frames = PixelFighterBake.bake(CharacterCatalog.get_def("hoodrich_stacks")).get("walk", [])
+	PixelUI.label_at(self, "CHRIS", Vector2(780, 560), 2, Color(0.95, 0.78, 0.35), 0, 160).set_centered(160)
+	PixelUI.label_at(self, "GIORGIS", Vector2(1010, 560), 2, Color(0.62, 0.82, 0.95), 0, 160).set_centered(160)
+
+	PixelUI.add_footer(self, "ENTER / CROSS OK   W/S / DPAD MOVE   ESC / CIRCLE BACK")
 	_refresh()
 	AudioDirector.play_music("menu")
 
 
-func _atmosphere() -> void:
-	var p := CPUParticles2D.new()
-	p.position = Vector2(640, 720)
-	p.emitting = true
-	p.amount = 50
-	p.lifetime = 5
-	p.direction = Vector2(0, -1)
-	p.spread = 30
-	p.gravity = Vector2(0, -20)
-	p.initial_velocity_min = 20
-	p.initial_velocity_max = 80
-	p.color = Color(0.8, 0.2, 0.25, 0.4)
-	add_child(p)
+func _make_preview(def: CharacterDef, pos: Vector2, flip: bool) -> Sprite2D:
+	var spr := Sprite2D.new()
+	var frames: Dictionary = PixelFighterBake.bake(def)
+	spr.texture = frames["idle"][0]
+	spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	spr.centered = true
+	spr.scale = Vector2(-3.4 if flip else 3.4, 3.4)
+	spr.position = pos
+	add_child(spr)
+	return spr
 
 
-func _process(_d: float) -> void:
+func _process(delta: float) -> void:
 	if not visible:
 		return
+	_preview_t += delta
+	if _chris and not _chris_frames.is_empty():
+		_chris.texture = _chris_frames[int(_preview_t * 14.0) % _chris_frames.size()]
+		_chris.position.y = 470.0 + sin(_preview_t * 2.2) * 4.0
+	if _giorgis and not _giorgis_frames.is_empty():
+		_giorgis.texture = _giorgis_frames[int(_preview_t * 14.0) % _giorgis_frames.size()]
+		_giorgis.position.y = 470.0 + sin(_preview_t * 2.2 + 1.1) * 4.0
+	if _title:
+		_title.modulate = Color(1.0, 0.94 + sin(_preview_t * 2.4) * 0.06, 0.92)
+	for i in _entries.size():
+		var on: bool = i == _index
+		_entries[i]["row"].modulate = Color(1.12, 1.08, 0.92) if on else Color(1, 1, 1)
 	if Input.is_action_just_pressed(ControlMap.MENU.down):
 		_index = (_index + 1) % ITEMS.size()
 		AudioDirector.play("ui")
@@ -80,6 +98,5 @@ func _process(_d: float) -> void:
 
 
 func _refresh() -> void:
-	for i in _labels.size():
-		_labels[i].text = UIKit.make_button_label(ITEMS[i], i == _index)
-		_labels[i].add_theme_color_override("font_color", Color(1, 0.85, 0.4) if i == _index else Color(0.8, 0.78, 0.76))
+	for i in _entries.size():
+		PixelUI.set_menu_row(_entries[i], ITEMS[i], i == _index, 2)

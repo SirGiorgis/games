@@ -4,31 +4,18 @@ extends Control
 signal closed
 
 var _index := 0
-var _lines: Array[Label] = []
-const KEYS := ["difficulty", "cpu", "arena", "music", "sfx", "shake", "back"]
+var _entries: Array[Dictionary] = []
+const KEYS := ["difficulty", "cpu", "dummy", "arena", "music", "sfx", "shake", "hitboxes", "back"]
 
 
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
-	var bg := ColorRect.new()
-	bg.color = Color(0.04, 0.02, 0.06)
-	bg.set_anchors_preset(PRESET_FULL_RECT)
-	add_child(bg)
-	var title := Label.new()
-	title.text = "OPTIONS"
-	title.position = Vector2(0, 80)
-	title.size = Vector2(1280, 60)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UIKit.style_label(title, 48, Color(0.92, 0.22, 0.28))
-	add_child(title)
+	PixelUI.full_bg(self)
+	PixelUI.add_panel(self, Vector2(240, 36), Vector2(800, 640), PixelUI.GOLD)
+	PixelUI.add_title(self, "OPTIONS", 64, Color(0.95, 0.22, 0.28))
 	for i in KEYS.size():
-		var l := Label.new()
-		l.position = Vector2(0, 200 + i * 50)
-		l.size = Vector2(1280, 40)
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		UIKit.style_label(l, 26)
-		add_child(l)
-		_lines.append(l)
+		_entries.append(PixelUI.add_menu_row(self, 128.0 + i * 44.0, 600))
+	PixelUI.add_footer(self, "A/D / LS ADJUST  CROSS OK  CIRCLE BACK")
 	_refresh()
 
 
@@ -50,12 +37,6 @@ func _process(_d: float) -> void:
 	elif Input.is_action_just_pressed(ControlMap.MENU.confirm):
 		if KEYS[_index] == "back":
 			closed.emit()
-		elif KEYS[_index] == "cpu":
-			GameState.p2_is_cpu = not GameState.p2_is_cpu
-			_refresh()
-		elif KEYS[_index] == "arena":
-			GameState.random_arena = not GameState.random_arena
-			_refresh()
 		else:
 			_nudge(1)
 	elif Input.is_action_just_pressed(ControlMap.MENU.back):
@@ -69,6 +50,12 @@ func _nudge(dir: int) -> void:
 			GameState.cycle_difficulty(dir)
 		"cpu":
 			GameState.p2_is_cpu = not GameState.p2_is_cpu
+		"dummy":
+			var modes := ["cpu", "block", "stand", "crouch", "jump", "mash"]
+			var di := modes.find(GameState.dummy_mode)
+			if di < 0:
+				di = 0
+			GameState.dummy_mode = modes[posmod(di + dir, modes.size())]
 		"arena":
 			var ids := ArenaWorld.all_ids()
 			if GameState.random_arena:
@@ -91,6 +78,8 @@ func _nudge(dir: int) -> void:
 			GameState.sfx_volume = clampf(GameState.sfx_volume + dir * 0.1, 0.0, 1.0)
 		"shake":
 			GameState.shake_strength = clampf(GameState.shake_strength + dir * 0.2, 0.0, 2.0)
+		"hitboxes":
+			GameState.show_hitboxes = not GameState.show_hitboxes
 		"back":
 			closed.emit()
 	_refresh()
@@ -99,14 +88,15 @@ func _nudge(dir: int) -> void:
 func _refresh() -> void:
 	var arena := "RANDOM" if GameState.random_arena else ArenaWorld.display_name(GameState.arena_id)
 	var vals := [
-		"AI DIFFICULTY   < %s >" % GameState.difficulty_name(),
-		"PLAYER 2        < %s >" % ("CPU" if GameState.p2_is_cpu else "HUMAN"),
-		"ARENA           < %s >" % arena,
-		"MUSIC           < %d%% >" % int(GameState.music_volume * 100),
-		"SFX             < %d%% >" % int(GameState.sfx_volume * 100),
-		"SCREEN SHAKE    < %.1f >" % GameState.shake_strength,
+		"AI  < %s >" % GameState.difficulty_name(),
+		"P2  < %s >" % ("CPU" if GameState.p2_is_cpu else "HUMAN"),
+		"DUMMY  < %s >" % GameState.dummy_mode.to_upper(),
+		"ARENA  < %s >" % arena,
+		"MUSIC  < %d >" % int(GameState.music_volume * 100),
+		"SFX  < %d >" % int(GameState.sfx_volume * 100),
+		"SHAKE  < %.1f >" % GameState.shake_strength,
+		"HITBOXES  < %s >" % ("ON" if GameState.show_hitboxes else "OFF"),
 		"BACK",
 	]
-	for i in _lines.size():
-		_lines[i].text = UIKit.make_button_label(vals[i], i == _index)
-		_lines[i].add_theme_color_override("font_color", Color(1, 0.85, 0.4) if i == _index else Color(0.8, 0.78, 0.76))
+	for i in _entries.size():
+		PixelUI.set_menu_row(_entries[i], vals[i], i == _index, 2)
