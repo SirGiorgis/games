@@ -344,6 +344,10 @@ func _ghost() -> void:
 		tw.tween_callback(g.queue_free)
 
 
+func dust() -> void:
+	_puff()
+
+
 func _puff() -> void:
 	var p := get_parent()
 	if p == null:

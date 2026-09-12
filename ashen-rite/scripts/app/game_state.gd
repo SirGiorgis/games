@@ -17,6 +17,9 @@ var p2_rounds: int = 0
 var rounds_to_win: int = 2
 var last_winner: int = -1
 var last_was_timeout: bool = false
+var last_was_perfect: bool = false
+var last_was_double: bool = false
+var last_was_dramatic: bool = false
 var match_active: bool = false
 
 var master_volume: float = 0.85
@@ -34,6 +37,9 @@ func reset_match_score() -> void:
 	p2_rounds = 0
 	last_winner = -1
 	last_was_timeout = false
+	last_was_perfect = false
+	last_was_double = false
+	last_was_dramatic = false
 	match_active = true
 
 

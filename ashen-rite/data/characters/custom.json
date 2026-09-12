@@ -28,5 +28,7 @@
   "ultimate_id": "storm",
   "ultimate_name": "Tempest Breaker",
   "ultimate_desc": "Forged from the supplied description.",
+	"win_quote": "FORGED IN THE RITE.",
+	"intro_quote": "MAKE ME.",
   "reference_image": "res://data/characters/refs/custom.png"
 }

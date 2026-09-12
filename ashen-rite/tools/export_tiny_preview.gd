@@ -100,8 +100,10 @@ func _hud(dst: Image, chris: CharacterDef, giorgis: CharacterDef) -> void:
 	gem2.resize(gem2.get_width() * 3, gem2.get_height() * 3, Image.INTERPOLATE_NEAREST)
 	dst.blend_rect(gem2, Rect2i(0, 0, gem2.get_width(), gem2.get_height()), Vector2i(324, 14))
 
-	var combo: Image = PixelFont.make("3 HIT", Color(1, 0.86, 0.28), 4).get_image()
+	var combo: Image = PixelFont.make("3 HIT  184  70%", Color(1, 0.86, 0.28), 4).get_image()
 	dst.blend_rect(combo, Rect2i(0, 0, combo.get_width(), combo.get_height()), Vector2i(640 - combo.get_width() / 2, 176))
+	var mx: Image = PixelFont.make("MAX", Color(0.45, 0.9, 1.0), 2).get_image()
+	dst.blend_rect(mx, Rect2i(0, 0, mx.get_width(), mx.get_height()), Vector2i(380, 668))
 
 	var sp1: Image = PixelUI.meter_bar(56, 6, Color(0.88, 0.34, 0.64), 0.7).get_image()
 	sp1.resize(sp1.get_width() * 4, sp1.get_height() * 4, Image.INTERPOLATE_NEAREST)

@@ -64,6 +64,24 @@ func _process(delta: float) -> void:
 	if me == null or me.opponent == null or me.round_over:
 		_clear()
 		return
+	var dist := me.distance_to_opponent()
+	var opp := me.opponent
+	if me.state == Fighter.State.HIT and not me.on_ground and me.hitstun <= 0.16:
+		_intent.up = true
+		_intent.light = true
+		return
+	if opp.state == Fighter.State.GRAB and dist < 100.0:
+		_intent.grab = true
+		_retreat()
+		return
+	if me.state == Fighter.State.GETUP:
+		_intent.light = true
+		if _rng.randf() < 0.35:
+			_intent.heavy = true
+		return
+	if me.state == Fighter.State.BLOCK and me.hitstun > 0.0 and me.special_meter >= 25.0 and _rng.randf() < 0.22:
+		_intent.special = true
+		return
 	_think_cd -= delta
 	if _think_cd > 0.0:
 		return
@@ -72,9 +90,12 @@ func _process(delta: float) -> void:
 	if _rng.randf() < _mistake:
 		_wander()
 		return
-	var dist := me.distance_to_opponent()
-	var opp := me.opponent
+	dist = me.distance_to_opponent()
 	var opp_attacking := opp.state in [Fighter.State.LIGHT, Fighter.State.HEAVY, Fighter.State.SPECIAL, Fighter.State.ULTIMATE, Fighter.State.GRAB]
+	if opp.state == Fighter.State.GRAB and dist < 90.0:
+		_intent.grab = true
+		_retreat()
+		return
 	if opp_attacking and dist < 150.0 and _rng.randf() < _block_bias:
 		_retreat()
 		_intent.block = true
@@ -125,7 +146,9 @@ func _process(delta: float) -> void:
 
 
 func _combo() -> void:
-	if me.combo_hits >= 2 and me.special_meter >= 50.0:
+	if me.ultimate_meter >= 100.0 and me.combo_hits >= 2:
+		_intent.ultimate = true
+	elif me.combo_hits >= 2 and me.special_meter >= 50.0:
 		_intent.special = true
 	elif me.combo_hits >= 1:
 		_intent.heavy = true

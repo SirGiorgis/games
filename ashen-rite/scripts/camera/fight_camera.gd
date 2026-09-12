@@ -7,6 +7,7 @@ var _shake := 0.0
 var _look_x := 640.0
 var _punch := 0.0
 var _t := 0.0
+var _ko := 0.0
 
 
 func bind(a: Fighter, b: Fighter) -> void:
@@ -31,6 +32,12 @@ func punch(amount: float = 0.028) -> void:
 	_punch = max(_punch, amount)
 
 
+func ko_zoom() -> void:
+	_ko = 1.0
+	_punch = max(_punch, 0.09)
+	_shake = max(_shake, 1.2 * GameState.shake_strength)
+
+
 func _process(delta: float) -> void:
 	if p1 == null or p2 == null:
 		return
@@ -41,9 +48,10 @@ func _process(delta: float) -> void:
 	_look_x = lerpf(_look_x, target, 1.0 - exp(-delta * 6.4))
 	_shake = max(0.0, _shake - delta * 8.4)
 	_punch = max(0.0, _punch - delta * 5.6)
+	_ko = max(0.0, _ko - delta * 0.55)
 	var mag: float = _shake * _shake
 	var falloff: float = exp(-_shake * 1.4)
 	offset = Vector2(cos(_t * 41.0), sin(_t * 53.0)) * mag * 8.0 * falloff
 	global_position = Vector2(_look_x, 360.0)
-	var z: float = 1.0 + _punch
+	var z: float = 1.0 + _punch + _ko * 0.14
 	zoom = Vector2(z, z)

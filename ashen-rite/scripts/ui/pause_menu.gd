@@ -10,6 +10,7 @@ const ITEMS := ["RESUME", "RESTART MATCH", "CONTROLS", "QUIT TO MENU"]
 var _entries: Array[Dictionary] = []
 var _hint: PixelLabel
 var _active := false
+var _lock := 0.0
 
 
 func _ready() -> void:
@@ -36,16 +37,25 @@ func _ready() -> void:
 	hide()
 
 
+func hide_menu() -> void:
+	_active = false
+	hide()
+
+
 func show_menu() -> void:
 	_active = true
 	_index = 0
+	_lock = 0.18
 	_hint.set_pix("", 2, Color(0.72, 0.68, 0.64))
 	show()
 	_refresh()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not _active or not visible:
+		return
+	_lock = max(0.0, _lock - delta)
+	if _lock > 0.0:
 		return
 	for i in _entries.size():
 		_entries[i]["row"].modulate = Color(1.12, 1.08, 0.9) if i == _index else Color.WHITE
@@ -59,7 +69,7 @@ func _process(_delta: float) -> void:
 		_refresh()
 	elif Input.is_action_just_pressed(ControlMap.MENU.confirm):
 		_pick()
-	elif Input.is_action_just_pressed(ControlMap.MENU.back):
+	elif Input.is_action_just_pressed(ControlMap.MENU.back) or Input.is_action_just_pressed(ControlMap.P1.pause):
 		_active = false
 		resumed.emit()
 

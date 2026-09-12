@@ -10,6 +10,7 @@ var _entries: Array[Dictionary] = []
 const ITEMS := ["REMATCH", "CHARACTER SELECT", "MAIN MENU"]
 var _title: PixelLabel
 var _sub: PixelLabel
+var _quote: PixelLabel
 var _p1_spr: Sprite2D
 var _p2_spr: Sprite2D
 var _p1_walk: Array = []
@@ -22,8 +23,10 @@ func _ready() -> void:
 	PixelUI.full_bg(self)
 	PixelUI.add_panel(self, Vector2(220, 72), Vector2(840, 560), PixelUI.GOLD)
 	_title = PixelUI.add_title(self, "VICTORY", 120, Color(0.95, 0.82, 0.32))
-	_sub = PixelUI.label_at(self, "", Vector2(0, 200), 2, Color(0.85, 0.8, 0.75), 0, 1280)
+	_sub = PixelUI.label_at(self, "", Vector2(0, 196), 2, Color(0.85, 0.8, 0.75), 0, 1280)
 	_sub.set_centered(1280)
+	_quote = PixelUI.label_at(self, "", Vector2(0, 236), 2, Color(1, 0.86, 0.42), 0, 1280)
+	_quote.set_centered(1280)
 
 	var grass := TextureRect.new()
 	grass.texture = PixelUI.stage_strip()
@@ -69,6 +72,14 @@ func present() -> void:
 	var b := CharacterCatalog.get_def(GameState.p2_character_id).name
 	_sub.set_pix("%s   %d  —  %d   %s" % [a, GameState.p1_rounds, GameState.p2_rounds, b], 2, Color(0.85, 0.8, 0.75))
 	_sub.set_centered(1280)
+	var winner := CharacterCatalog.get_def(GameState.p1_character_id if p1_win else GameState.p2_character_id)
+	var q: String = winner.win_quote
+	if GameState.last_was_perfect:
+		q = "PERFECT - " + q
+	elif GameState.last_was_dramatic:
+		q = "DRAMATIC - " + q
+	_quote.set_pix(q, 2, Color(1, 0.86, 0.42))
+	_quote.set_centered(1280)
 	AudioDirector.play_music("menu")
 	var p1_frames: Dictionary = PixelFighterBake.bake(CharacterCatalog.get_def(GameState.p1_character_id))
 	var p2_frames: Dictionary = PixelFighterBake.bake(CharacterCatalog.get_def(GameState.p2_character_id))

@@ -30,5 +30,7 @@
   "ultimate_id": "storm",
   "ultimate_name": "House Call",
   "ultimate_desc": "A final flurry that hits like the name on the title screen.",
+	"win_quote": "SAY THE NAME.",
+	"intro_quote": "THE HOUSE IS HERE.",
   "reference_image": "res://data/characters/refs/hoodrich_stacks.jpg"
 }

@@ -6,6 +6,9 @@ signal meters_changed(special: float, ultimate: float)
 signal defeated(fighter: Fighter)
 signal hit_landed(fighter: Fighter, attack: Dictionary, counter: bool)
 signal combo_changed(count: int)
+signal super_started
+signal announced(text: String)
+signal clash_happened(pos: Vector2)
 
 enum State { IDLE, WALK, RUN, BACKDASH, PREJUMP, JUMP, LAND, CROUCH, LIGHT, HEAVY, SPECIAL, ULTIMATE, BLOCK, GRAB, HIT, KNOCKDOWN, GETUP, VICTORY, DEFEAT }
 
@@ -49,6 +52,7 @@ var on_ground: bool = false
 var freeze_frames: float = 0.0
 var invuln: float = 0.0
 var combo_hits: int = 0
+var combo_damage: float = 0.0
 var combo_decay: float = 0.0
 var current_attack: Dictionary = {}
 var round_over: bool = false
@@ -68,6 +72,9 @@ var _atk_buf: String = ""
 var _atk_buf_t: float = 0.0
 var _jbuf: float = 0.0
 var _coyote: float = 0.0
+var _guard_age: float = 99.0
+var _taunt_t: float = 0.0
+var _wall_used: bool = false
 
 var visual: FighterVisual
 var hurtbox: Area2D
@@ -112,6 +119,14 @@ func setup(id: int, character: CharacterDef, cpu: bool, start_pos: Vector2) -> v
 	hs.position = Vector2(0, -vis_h * 0.27 * def.height_scale)
 	hurtbox.add_child(hs)
 	add_child(hurtbox)
+	var hdbg := ColorRect.new()
+	hdbg.name = "HurtDebug"
+	hdbg.color = Color(0.2, 0.85, 0.3, 0.28)
+	hdbg.size = hrect.size
+	hdbg.position = hs.position - hrect.size * 0.5
+	hdbg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hdbg.visible = false
+	hurtbox.add_child(hdbg)
 
 	hitbox = Hitbox.new()
 	hitbox.owner_fighter = self
@@ -143,6 +158,7 @@ func reset_round(start_pos: Vector2) -> void:
 	can_act = false
 	invuln = 0.4
 	combo_hits = 0
+	combo_damage = 0.0
 	last_chain.clear()
 	hitbox.disarm()
 	air_done = false
@@ -153,6 +169,9 @@ func reset_round(start_pos: Vector2) -> void:
 	_atk_buf_t = 0.0
 	_jbuf = 0.0
 	_coyote = 0.12
+	_guard_age = 99.0
+	_taunt_t = 0.0
+	_wall_used = false
 	rotation = 0
 	visual.rotation = 0
 	visual.set_pose_name("idle")
@@ -189,8 +208,12 @@ func _physics_process(delta: float) -> void:
 	chain_window = max(0.0, chain_window - delta)
 	if combo_decay <= 0.0 and combo_hits != 0:
 		combo_hits = 0
+		combo_damage = 0.0
 		last_chain.clear()
 		combo_changed.emit(0)
+	_taunt_t = max(0.0, _taunt_t - delta)
+	if on_ground and state != State.HIT:
+		_wall_used = false
 
 	on_ground = is_on_floor()
 	if on_ground:
@@ -214,6 +237,8 @@ func _physics_process(delta: float) -> void:
 	_was_air = not on_ground
 	_separate_from_opponent()
 	_keep_in_bounds()
+	_wall_bounce()
+	_debug_boxes()
 
 
 func _gather_command() -> Dictionary:
@@ -251,13 +276,30 @@ func _gather_command() -> Dictionary:
 
 
 func _think(cmd: Dictionary, delta: float) -> void:
-	guarding = on_ground and (cmd.back or cmd.block) and not _busy_attack()
+	var want_guard: bool = on_ground and (cmd.back or cmd.block) and not _busy_attack()
+	if want_guard and not guarding:
+		_guard_age = 0.0
+	else:
+		_guard_age += delta
+	guarding = want_guard
 	crouch_guarding = guarding and (cmd.down or state == State.CROUCH)
 
 	if state == State.BLOCK and hitstun > 0.0:
 		hitstun -= delta
 		_accel_x(0.0, 2400.0, delta)
 		_queue_inputs(cmd)
+		if cmd.special and special_meter >= 25.0 and opponent:
+			special_meter -= 25.0
+			hitstun = 0.02
+			opponent.velocity.x = float(facing) * 420.0
+			opponent.freeze_frames = max(opponent.freeze_frames, 0.08)
+			meters_changed.emit(special_meter, ultimate_meter)
+			announced.emit("PUSHBLOCK")
+			AudioDirector.play("whoosh", 0.7, 0.7)
+			if visual:
+				visual.dust()
+			state = State.IDLE
+			return
 		if hitstun <= 0.0 and _flush_buffer():
 			return
 		return
@@ -266,6 +308,10 @@ func _think(cmd: Dictionary, delta: float) -> void:
 		if on_ground:
 			_accel_x(0.0, 1600.0, delta)
 		_queue_inputs(cmd)
+		if not on_ground and health > 0.0 and hitstun <= 0.14:
+			if cmd.up or cmd.light or cmd.heavy or _jbuf > 0.0:
+				_air_tech()
+				return
 		if hitstun <= 0.0:
 			if _flush_buffer():
 				return
@@ -282,6 +328,7 @@ func _think(cmd: Dictionary, delta: float) -> void:
 			invuln = 0.20
 		return
 	if state == State.GETUP or state == State.LAND:
+		var was_getup: bool = state == State.GETUP
 		_land_t -= delta
 		_accel_x(0.0, FRICTION, delta)
 		_queue_inputs(cmd)
@@ -290,6 +337,10 @@ func _think(cmd: Dictionary, delta: float) -> void:
 			return
 		if _land_t <= 0.0:
 			if _flush_buffer():
+				if was_getup:
+					invuln = max(invuln, 0.12)
+					announced.emit("REVERSAL")
+					AudioDirector.play("tech", 0.85, 0.65)
 				return
 			if _jbuf > 0.0:
 				_begin_jump(cmd)
@@ -336,10 +387,22 @@ func _think(cmd: Dictionary, delta: float) -> void:
 			else:
 				state = State.CROUCH if cmd.down else State.IDLE
 		elif last_attack_was_hit and attack_timer > attack_active_until:
+			if (cmd.ultimate or cmd.qcf2) and ultimate_meter >= MAX_ULTIMATE:
+				_buf.consume_motion()
+				announced.emit("SUPER CANCEL")
+				_start_attack("ultimate")
+				if opponent:
+					opponent.freeze_frames = max(opponent.freeze_frames, 0.28)
+				freeze_frames = max(freeze_frames, 0.12)
+				return
 			if _try_dash_cancel(cmd):
 				return
 			if not _try_jump_cancel(cmd):
 				_try_chain(cmd)
+		return
+
+	if _taunt_t > 0.0:
+		_accel_x(0.0, FRICTION, delta)
 		return
 
 	var want_super: bool = cmd.ultimate or (cmd.qcf2 and (cmd.light or cmd.heavy or cmd.special))
@@ -354,6 +417,10 @@ func _think(cmd: Dictionary, delta: float) -> void:
 	if want_special:
 		_buf.consume_motion()
 		_start_attack("special")
+		return
+
+	if cmd.grab and cmd.down and on_ground and _taunt_t <= 0.0:
+		_taunt()
 		return
 
 	if cmd.grab and on_ground:
@@ -380,6 +447,9 @@ func _think(cmd: Dictionary, delta: float) -> void:
 		_dash_t = 0.18
 		invuln = 0.11
 		velocity.x = float(facing) * -460.0
+		AudioDirector.play("dash", 0.85, 0.6)
+		if visual:
+			visual.dust()
 		return
 
 	if not on_ground:
@@ -411,6 +481,9 @@ func _think(cmd: Dictionary, delta: float) -> void:
 	if cmd.run or (state == State.RUN and cmd.fwd):
 		if state != State.RUN:
 			velocity.x = float(facing) * def.speed * 1.12
+			AudioDirector.play("dash", 1.05, 0.55)
+			if visual:
+				visual.dust()
 		state = State.RUN
 		_accel_x(float(facing) * def.speed * RUN_MUL, ACCEL * 1.35, delta)
 		return
@@ -467,6 +540,7 @@ func _on_landed() -> void:
 	velocity.x *= 0.62
 	if visual:
 		visual.punch_impact(0.45)
+	AudioDirector.play("land", 1.0, 0.45)
 	if _busy_attack() and str(current_attack.get("kind", "")).begins_with("j"):
 		hitbox.disarm()
 		state = State.LAND
@@ -507,15 +581,23 @@ func _try_chain(cmd: Dictionary) -> void:
 		next = _normal_kind("heavy", cmd)
 	elif (cmd.special or cmd.qcf) and special_meter >= 50.0:
 		next = "special"
+	elif (cmd.ultimate or cmd.qcf2) and ultimate_meter >= MAX_ULTIMATE:
+		next = "ultimate"
 	if next.is_empty():
 		return
 	var k: String = str(current_attack.get("kind", ""))
 	var allowed := false
 	if k in ["light", "clight", "jlight"]:
-		allowed = next in ["light", "clight", "heavy", "cheavy", "special"]
+		allowed = next in ["light", "clight", "heavy", "cheavy", "special", "ultimate"]
 	elif k in ["heavy", "cheavy", "jheavy"]:
-		allowed = next in ["special"]
+		allowed = next in ["special", "ultimate"]
+	elif k == "special":
+		allowed = next in ["ultimate"] if ultimate_meter >= MAX_ULTIMATE else false
 	if allowed:
+		if next == "special":
+			_buf.consume_motion()
+		if next == "ultimate":
+			announced.emit("SUPER CANCEL")
 		_start_attack(next)
 
 
@@ -552,6 +634,7 @@ func _start_attack(kind: String) -> void:
 			ultimate_meter = 0.0
 			AudioDirector.play("ultimate")
 			_spawn_projectile_if_any()
+			super_started.emit()
 		"grab":
 			state = State.GRAB
 			AudioDirector.play("grab")
@@ -585,13 +668,43 @@ func _on_hitbox_landed(area: Area2D, attack: Dictionary) -> void:
 		other = other.get_parent()
 	if other == null or other == self:
 		return
-	(other as Fighter).receive_hit(self, attack)
+	var foe := other as Fighter
+	if foe.hitbox and foe.hitbox.active and foe._busy_attack() and _busy_attack():
+		_clash(foe)
+		return
+	foe.receive_hit(self, attack)
+
+
+func _clash(foe: Fighter) -> void:
+	hitbox.disarm()
+	foe.hitbox.disarm()
+	freeze_frames = max(freeze_frames, 0.14)
+	foe.freeze_frames = max(foe.freeze_frames, 0.14)
+	velocity.x = float(facing) * -200.0
+	foe.velocity.x = float(foe.facing) * -200.0
+	if visual:
+		visual.punch_impact(0.9)
+	if foe.visual:
+		foe.visual.punch_impact(0.9)
+	AudioDirector.play("clash", 1.0, 0.8)
+	clash_happened.emit((global_position + foe.global_position) * 0.5 + Vector2(0, -70))
 
 
 func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 	if invuln > 0.0 or state == State.DEFEAT:
 		return
 	var grabbing: bool = attack.get("kind", "") == "grab"
+	if grabbing and (_atk_buf == "grab" or state == State.GRAB):
+		_throw_tech(attacker)
+		return
+	if state == State.ULTIMATE and not grabbing:
+		var chip: float = float(attack.damage) * attacker.def.attack / max(def.defense, 0.2) * 0.28
+		health = max(1.0, health - chip)
+		visual.pulse_hit()
+		freeze_frames = max(freeze_frames, 0.05)
+		health_changed.emit(health, max_health)
+		attacker.last_attack_was_hit = true
+		return
 	var gkind: String = str(attack.get("guard", "mid"))
 	var can_guard: bool = guarding and on_ground and not grabbing and state != State.PREJUMP
 	if can_guard and gkind == "low" and not crouch_guarding:
@@ -601,12 +714,13 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 	var blocked := can_guard or ((state == State.BLOCK or state == State.BACKDASH) and not grabbing)
 	var dmg: float = float(attack.damage) * attacker.def.attack / max(def.defense, 0.2)
 	if blocked:
-		dmg *= 0.08
-		AudioDirector.play("block", 1.0, 0.8)
-		special_meter = min(MAX_SPECIAL, special_meter + 3.0)
+		var just: bool = _guard_age <= 0.10
+		dmg *= 0.05 if just else 0.08
+		AudioDirector.play("block", 1.2 if just else 1.0, 0.85 if just else 0.8)
+		special_meter = min(MAX_SPECIAL, special_meter + (5.0 if just else 3.0))
 		attacker.special_meter = min(MAX_SPECIAL, attacker.special_meter + 2.0)
-		velocity.x = attacker.facing * 220.0
-		hitstun = float(attack.get("blockstun", 0.16))
+		velocity.x = attacker.facing * (180.0 if just else 220.0)
+		hitstun = float(attack.get("blockstun", 0.16)) * (0.52 if just else 1.0)
 		state = State.BLOCK
 		if health > 1.0:
 			health = max(1.0, health - dmg)
@@ -614,12 +728,18 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 		visual.pulse_hit()
 		meters_changed.emit(special_meter, ultimate_meter)
 		attacker.meters_changed.emit(attacker.special_meter, attacker.ultimate_meter)
+		if just:
+			announced.emit("JUST GUARD")
+			AudioDirector.play("parry", 1.0, 0.6)
 		return
 
+	var counter := _busy_attack()
 	var crit := false
 	if attack.get("kind", "") == "heavy" and randf() < 0.18:
 		crit = true
 		dmg *= 1.35
+	if counter:
+		dmg *= 1.18
 	var scale := CombatRules.combo_scale(attacker.combo_hits)
 	dmg *= scale
 	health = max(0.0, health - dmg)
@@ -628,33 +748,107 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 	if not on_ground:
 		kb *= 0.85
 		launch = minf(launch, -120.0)
+	if counter:
+		kb *= 1.12
+		launch *= 1.15
 	velocity = Vector2(attacker.facing * kb, launch)
-	hitstun = float(attack.hitstun)
+	hitstun = float(attack.hitstun) * (1.28 if counter else 1.0)
 	var hard_kd: bool = bool(attack.get("knockdown", false)) or health <= 0.0
 	state = State.KNOCKDOWN if hard_kd else State.HIT
 	visual.pulse_hit()
 	if attacker.visual:
-		var heavyish: bool = str(attack.get("kind", "")) in ["heavy", "cheavy", "jheavy", "special", "ultimate"] or crit
+		var heavyish: bool = str(attack.get("kind", "")) in ["heavy", "cheavy", "jheavy", "special", "ultimate"] or crit or counter
 		attacker.visual.punch_impact(1.2 if heavyish else 0.75)
 	attacker.last_attack_was_hit = true
+	if attacker.combo_hits == 0:
+		attacker.combo_damage = 0.0
 	attacker.combo_hits += 1
+	attacker.combo_damage += dmg
 	attacker.combo_decay = 1.25
 	attacker.combo_changed.emit(attacker.combo_hits)
+	var was_ult: float = attacker.ultimate_meter
 	attacker.special_meter = min(MAX_SPECIAL, attacker.special_meter + float(attack.meter))
 	attacker.ultimate_meter = min(MAX_ULTIMATE, attacker.ultimate_meter + float(attack.meter) * 0.65)
+	if was_ult < MAX_ULTIMATE and attacker.ultimate_meter >= MAX_ULTIMATE:
+		AudioDirector.play("meter", 1.0, 0.7)
 	special_meter = min(MAX_SPECIAL, special_meter + 3.0)
 	ultimate_meter = min(MAX_ULTIMATE, ultimate_meter + 2.2)
 	var snd := "hit_h" if attack.get("kind", "") in ["heavy", "special", "ultimate"] else "hit_l"
 	AudioDirector.play(snd, randf_range(0.92, 1.08))
-	freeze_frames = float(attack.hitstop)
+	freeze_frames = float(attack.hitstop) * (1.25 if counter else 1.0)
 	attacker.freeze_frames = float(attack.hitstop) * 0.85
 	health_changed.emit(health, max_health)
 	meters_changed.emit(special_meter, ultimate_meter)
 	attacker.meters_changed.emit(attacker.special_meter, attacker.ultimate_meter)
 	attack["dealt"] = dmg
-	hit_landed.emit(self, attack, crit)
+	attack["counter"] = counter
+	hit_landed.emit(self, attack, crit or counter)
 	if health <= 0.0:
 		defeated.emit(self)
+
+
+func _throw_tech(attacker: Fighter) -> void:
+	_atk_buf = ""
+	_atk_buf_t = 0.0
+	attacker._atk_buf = ""
+	attacker.hitbox.disarm()
+	hitbox.disarm()
+	state = State.IDLE
+	attacker.state = State.IDLE
+	velocity.x = float(facing) * -240.0
+	attacker.velocity.x = float(attacker.facing) * -240.0
+	freeze_frames = 0.12
+	attacker.freeze_frames = 0.12
+	invuln = 0.08
+	attacker.invuln = 0.08
+	AudioDirector.play("tech", 1.0, 0.7)
+	announced.emit("TECH")
+	if visual:
+		visual.punch_impact(0.5)
+	if attacker.visual:
+		attacker.visual.punch_impact(0.5)
+
+
+func _air_tech() -> void:
+	state = State.JUMP
+	hitstun = 0.0
+	invuln = 0.16
+	air_done = false
+	_atk_buf = ""
+	_atk_buf_t = 0.0
+	velocity.y = -260.0
+	velocity.x *= 0.45
+	AudioDirector.play("tech", 1.15, 0.55)
+	announced.emit("AIR TECH")
+	if visual:
+		visual.punch_impact(0.4)
+
+
+func _wall_bounce() -> void:
+	if state != State.HIT or on_ground or _wall_used:
+		return
+	if (position.x <= 92.0 and velocity.x < -90.0) or (position.x >= 1188.0 and velocity.x > 90.0):
+		velocity.x *= -0.62
+		velocity.y = minf(velocity.y, -200.0)
+		_wall_used = true
+		if visual:
+			visual.punch_impact(0.85)
+		AudioDirector.play("hit_h", 1.25, 0.45)
+		announced.emit("WALL BOUNCE")
+
+
+func _debug_boxes() -> void:
+	var show: bool = GameState.show_hitboxes
+	var hd := hurtbox.get_node_or_null("HurtDebug") as ColorRect
+	if hd:
+		hd.visible = show
+		if show:
+			var hs := hurtbox.get_child(0) as CollisionShape2D
+			var r := hs.shape as RectangleShape2D
+			hd.size = r.size
+			hd.position = hs.position - r.size * 0.5
+	if hitbox and hitbox._dbg:
+		hitbox._dbg.visible = show and hitbox.active
 
 
 func _face_opponent() -> void:
@@ -673,6 +867,9 @@ func _face_opponent() -> void:
 
 func _sync_visual() -> void:
 	visual.move_speed = absf(velocity.x)
+	if _taunt_t > 0.0:
+		visual.set_pose_name("victory")
+		return
 	if _busy_attack():
 		visual.set_pose_name(str(current_attack.get("kind", "light")))
 	else:
@@ -732,6 +929,17 @@ func _sync_visual() -> void:
 	else:
 		(hs.shape as RectangleShape2D).size.y = vis_h * 0.48 * def.height_scale
 		hs.position.y = -vis_h * 0.27 * def.height_scale
+
+
+func _taunt() -> void:
+	_taunt_t = 0.48
+	special_meter = min(MAX_SPECIAL, special_meter + 10.0)
+	ultimate_meter = min(MAX_ULTIMATE, ultimate_meter + 6.0)
+	meters_changed.emit(special_meter, ultimate_meter)
+	AudioDirector.play("ui_confirm", 0.7, 0.45)
+	if visual:
+		visual.set_pose_name("victory")
+		visual.punch_impact(0.35)
 
 
 func _integrate(_delta: float) -> void:

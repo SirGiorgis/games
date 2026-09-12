@@ -13,7 +13,7 @@ func _ready() -> void:
 	music_player = AudioStreamPlayer.new()
 	music_player.bus = "Master"
 	add_child(music_player)
-	for i in 12:
+	for i in 16:
 		var p := AudioStreamPlayer.new()
 		p.bus = "Master"
 		add_child(p)
@@ -62,6 +62,15 @@ func _build_library() -> void:
 	_library["defeat"] = _sweep(300, 70, 0.7, 0.55)
 	_library["round"] = _blip(660, 0.18, 0.35, 0.5)
 	_library["fight"] = _blip(330, 0.22, 0.4, 1.8)
+	_library["clash"] = _hit(70, 0.12, 0.7)
+	_library["land"] = _noise(0.07, 0.22, 900)
+	_library["dash"] = _noise(0.09, 0.2, 1400)
+	_library["meter"] = _blip(990, 0.16, 0.32, 1.6)
+	_library["tick"] = _blip(740, 0.08, 0.28, 0.85)
+	_library["tech"] = _blip(280, 0.1, 0.4, 1.8)
+	_library["cheer"] = _fanfare()
+	_library["parry"] = _blip(1240, 0.09, 0.38, 1.7)
+	_library["super_call"] = _sweep(90, 1600, 0.42, 0.72)
 	_music_menu = _music(false)
 	_music_fight = _music(true)
 

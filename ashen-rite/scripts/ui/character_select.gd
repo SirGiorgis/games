@@ -13,6 +13,7 @@ var _names: Array[PixelLabel] = []
 var _info: PixelLabel
 var _stats: PixelLabel
 var _cpu_label: PixelLabel
+var _arena_lbl: PixelLabel
 var _p1_preview: Sprite2D
 var _p2_preview: Sprite2D
 var _p1_walk: Array = []
@@ -93,8 +94,9 @@ func _ready() -> void:
 	_info = PixelUI.label_at(self, "", Vector2(432, 592), 2, Color(0.92, 0.9, 0.86), 38)
 	_stats = PixelUI.label_at(self, "", Vector2(432, 636), 1, Color(0.78, 0.74, 0.68), 38)
 	_cpu_label = PixelUI.label_at(self, "", Vector2(880, 572), 2, Color(0.65, 0.82, 0.95), 36)
+	_arena_lbl = PixelUI.label_at(self, "", Vector2(420, 548), 2, Color(0.88, 0.78, 0.42), 36)
 
-	PixelUI.add_footer(self, "A/D SELECT  W/S P1 OR CPU  J CONFIRM  R RANDOM  F FORGE  C CPU  ESC BACK")
+	PixelUI.add_footer(self, "A/D SELECT  J CONFIRM  R RANDOM  C CPU  T ARENA  F FORGE  ESC BACK")
 	_apply_indices_from_state()
 	for id in _ids:
 		_cached_frames(id)
@@ -166,6 +168,10 @@ func _process(delta: float) -> void:
 	if _edge(KEY_C):
 		GameState.p2_is_cpu = not GameState.p2_is_cpu
 		_refresh()
+	if _edge(KEY_T):
+		_cycle_arena()
+		AudioDirector.play("ui")
+		_refresh()
 
 
 func _edge(key: Key) -> bool:
@@ -183,6 +189,23 @@ func _move(dir: int) -> void:
 		_p2_index = posmod(_p2_index + dir, _ids.size())
 	_commit()
 	_refresh()
+
+
+func _cycle_arena() -> void:
+	var ids := ArenaWorld.all_ids()
+	if GameState.random_arena:
+		GameState.random_arena = false
+		GameState.arena_id = ids[0]
+		return
+	var i := 0
+	for k in ids.size():
+		if ids[k] == GameState.arena_id:
+			i = k
+	i += 1
+	if i >= ids.size():
+		GameState.random_arena = true
+	else:
+		GameState.arena_id = ids[i]
 
 
 func _commit() -> void:
@@ -218,8 +241,9 @@ func _refresh() -> void:
 	var focus_def := p1_def if _focus == 0 else p2_def
 	var who := "PLAYER 1" if _focus == 0 else "CPU / P2"
 	_info.set_pix("%s — %s  %s" % [who, focus_def.name, focus_def.title], 2, Color(0.92, 0.9, 0.86), 38)
-	_stats.set_pix("HP %d  SPD %d  JMP %d  ATK %.2f  DEF %.2f" % [
-		int(focus_def.health), int(focus_def.speed), int(focus_def.jump), focus_def.attack, focus_def.defense
+	_stats.set_pix("%s    HP %d  SPD %d  ATK %.2f" % [
+		focus_def.intro_quote if focus_def.intro_quote != "" else focus_def.special_name.to_upper(),
+		int(focus_def.health), int(focus_def.speed), focus_def.attack
 	], 1, Color(0.78, 0.74, 0.68), 38)
 	_cpu_label.set_pix("%s  ·  %s  ·  %s / %s" % [
 		p2_def.name,
@@ -227,6 +251,9 @@ func _refresh() -> void:
 		focus_def.special_name,
 		focus_def.ultimate_name
 	], 2, Color(0.65, 0.82, 0.95), 36)
+	if _arena_lbl:
+		var an: String = "RANDOM" if GameState.random_arena else ArenaWorld.display_name(GameState.arena_id)
+		_arena_lbl.set_pix("STAGE  %s" % an, 2, Color(0.88, 0.78, 0.42), 36)
 
 	var p1_frames: Dictionary = _cached_frames(_ids[_p1_index])
 	var p2_frames: Dictionary = _cached_frames(_ids[_p2_index])

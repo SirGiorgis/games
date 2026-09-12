@@ -28,5 +28,7 @@
   "ultimate_id": "quake",
   "ultimate_name": "Titanfall",
   "ultimate_desc": "A full-lane quake that cannot be jumped on reaction.",
+	"win_quote": "THE WALL HOLDS.",
+	"intro_quote": "COME BREAK IT.",
   "reference_image": "res://data/characters/refs/rook.png"
 }

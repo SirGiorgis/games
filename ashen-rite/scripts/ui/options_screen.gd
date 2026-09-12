@@ -5,16 +5,16 @@ signal closed
 
 var _index := 0
 var _entries: Array[Dictionary] = []
-const KEYS := ["difficulty", "cpu", "arena", "music", "sfx", "shake", "back"]
+const KEYS := ["difficulty", "cpu", "arena", "music", "sfx", "shake", "hitboxes", "back"]
 
 
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 	PixelUI.full_bg(self)
-	PixelUI.add_panel(self, Vector2(280, 56), Vector2(720, 580), PixelUI.GOLD)
-	PixelUI.add_title(self, "OPTIONS", 88, Color(0.95, 0.22, 0.28))
+	PixelUI.add_panel(self, Vector2(240, 36), Vector2(800, 640), PixelUI.GOLD)
+	PixelUI.add_title(self, "OPTIONS", 64, Color(0.95, 0.22, 0.28))
 	for i in KEYS.size():
-		_entries.append(PixelUI.add_menu_row(self, 168.0 + i * 48.0, 560))
+		_entries.append(PixelUI.add_menu_row(self, 140.0 + i * 46.0, 600))
 	PixelUI.add_footer(self, "A/D ADJUST  ENTER CONFIRM  ESC BACK")
 	_refresh()
 
@@ -72,6 +72,8 @@ func _nudge(dir: int) -> void:
 			GameState.sfx_volume = clampf(GameState.sfx_volume + dir * 0.1, 0.0, 1.0)
 		"shake":
 			GameState.shake_strength = clampf(GameState.shake_strength + dir * 0.2, 0.0, 2.0)
+		"hitboxes":
+			GameState.show_hitboxes = not GameState.show_hitboxes
 		"back":
 			closed.emit()
 	_refresh()
@@ -86,6 +88,7 @@ func _refresh() -> void:
 		"MUSIC  < %d >" % int(GameState.music_volume * 100),
 		"SFX  < %d >" % int(GameState.sfx_volume * 100),
 		"SHAKE  < %.1f >" % GameState.shake_strength,
+		"HITBOXES  < %s >" % ("ON" if GameState.show_hitboxes else "OFF"),
 		"BACK",
 	]
 	for i in _entries.size():

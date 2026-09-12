@@ -30,5 +30,7 @@
   "ultimate_id": "storm",
   "ultimate_name": "Injury Time",
   "ultimate_desc": "One last surge that hits like a stoppage-time winner.",
+	"win_quote": "LANE'S OPEN.",
+	"intro_quote": "THREAD THE LANE.",
   "reference_image": "res://data/characters/refs/chris.png"
 }

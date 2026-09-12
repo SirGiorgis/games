@@ -28,5 +28,7 @@
   "ultimate_id": "void",
   "ultimate_name": "Nightfall",
   "ultimate_desc": "Floods the lane with void edges.",
+	"win_quote": "TOO SLOW.",
+	"intro_quote": "ALREADY BEHIND YOU.",
   "reference_image": "res://data/characters/refs/nyx.png"
 }

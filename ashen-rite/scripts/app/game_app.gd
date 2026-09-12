@@ -1,7 +1,10 @@
 extends Node
 ## Builds every screen in code so the project runs from a single bootstrap scene.
 
+const SplashScr := preload("res://scripts/ui/splash_screen.gd")
+
 var _host: Control
+var _splash: Control
 var _menu: MainMenu
 var _select: CharacterSelect
 var _options: OptionsScreen
@@ -20,10 +23,12 @@ func _ready() -> void:
 	canvas.layer = 8
 	add_child(canvas)
 	canvas.add_child(_host)
-	_show_menu()
+	_show_splash()
 
 
 func _clear_match() -> void:
+	Engine.time_scale = 1.0
+	get_tree().paused = false
 	if _match:
 		_match.queue_free()
 		_match = null
@@ -34,9 +39,22 @@ func _hide_ui() -> void:
 		c.visible = false
 
 
+func _show_splash() -> void:
+	_clear_match()
+	_hide_ui()
+	if _splash:
+		_splash.queue_free()
+	_splash = SplashScr.new()
+	_host.add_child(_splash)
+	_splash.finished.connect(_show_menu)
+
+
 func _show_menu() -> void:
 	_clear_match()
 	_hide_ui()
+	if _splash:
+		_splash.queue_free()
+		_splash = null
 	if _menu == null:
 		_menu = MainMenu.new()
 		_host.add_child(_menu)

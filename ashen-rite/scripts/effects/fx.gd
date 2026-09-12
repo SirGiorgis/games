@@ -16,6 +16,12 @@ func _ready() -> void:
 	_overlay.add_child(_flash)
 
 
+func super_flash(color: Color = Color.WHITE, dur: float = 0.35) -> void:
+	_flash.color = Color(color, 0.72)
+	var tw := _flash.create_tween()
+	tw.tween_property(_flash, "color:a", 0.0, dur)
+
+
 func spark(pos: Vector2, color: Color, strong: bool) -> void:
 	_ring(pos, color, strong)
 	var n := 16 if strong else 9
@@ -63,6 +69,22 @@ func spark(pos: Vector2, color: Color, strong: bool) -> void:
 	_flash.color = Color(color, 0.18 if strong else 0.07)
 	var ft := _flash.create_tween()
 	ft.tween_property(_flash, "color:a", 0.0, 0.10)
+
+
+func shade(dur: float = 0.45) -> void:
+	_flash.color = Color(0.04, 0.02, 0.10, 0.48)
+	var tw := _flash.create_tween()
+	tw.tween_property(_flash, "color:a", 0.0, dur)
+
+
+func shockwave(pos: Vector2) -> void:
+	_ring(pos, Color(1, 0.92, 0.7), true)
+	_ring(pos + Vector2(0, -8), Color(0.7, 0.85, 1.0), true)
+
+
+func clash_burst(pos: Vector2) -> void:
+	spark(pos, Color(1.0, 0.85, 0.4), true)
+	shockwave(pos)
 
 
 func popup(pos: Vector2, text: String, color: Color) -> void:

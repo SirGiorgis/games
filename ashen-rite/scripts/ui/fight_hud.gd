@@ -9,6 +9,8 @@ var _p1_ult: TextureRect
 var _p2_ult: TextureRect
 var _timer: PixelLabel
 var _combo: PixelLabel
+var _max1: PixelLabel
+var _max2: PixelLabel
 var _p1_rounds: Array[TextureRect] = []
 var _p2_rounds: Array[TextureRect] = []
 var _p1: Fighter
@@ -131,12 +133,17 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	_p2_ult = _meter_tex(root, Vector2(912, 668), 88, 7, Color(0.96, 0.80, 0.26))
 	PixelUI.label_at(root, "SPECIAL", Vector2(16, 652), 1, Color(0.92, 0.90, 0.84))
 	PixelUI.label_at(root, "SPECIAL", Vector2(912, 652), 1, Color(0.92, 0.90, 0.84))
+	_max1 = PixelUI.label_at(root, "MAX", Vector2(380, 668), 2, Color(0.45, 0.9, 1.0))
+	_max1.visible = false
+	_max2 = PixelUI.label_at(root, "MAX", Vector2(860, 668), 2, Color(1.0, 0.88, 0.35))
+	_max2.visible = false
 
 	var hint := Color(0.96, 0.96, 0.92)
 	_hints.append(PixelUI.label_at(root, "J LIGHT   K HEAVY   L SPECIAL   U BLOCK", Vector2(0, 700), 1, hint, 0, 1280))
 	_hints[0].set_centered(1280)
 
 	PixelUI.label_at(root, arena_name.to_upper(), Vector2(0, 132), 1, Color(0.18, 0.22, 0.14), 0, 1280).set_centered(1280)
+	PixelUI.label_at(root, GameState.difficulty_name() if GameState.p2_is_cpu else "VS HUMAN", Vector2(0, 148), 1, Color(0.22, 0.26, 0.18, 0.85), 0, 1280).set_centered(1280)
 	_combo = PixelUI.label_at(root, "", Vector2(0, 176), 4, Color(1, 0.86, 0.28), 0, 1280)
 	_combo.set_centered(1280)
 	_combo.visible = false
@@ -202,6 +209,15 @@ func _process(delta: float) -> void:
 			_p2_ult.modulate = Color.WHITE.lerp(Color(1.3, 1.22, 0.75), 0.5 + 0.5 * sin(_t * 7.0))
 		else:
 			_p2_ult.modulate = Color.WHITE
+	if _max1:
+		_max1.visible = _ult_show1 >= 0.99
+		if _max1.visible:
+			_max1.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 8.0))
+	if _max2:
+		_max2.visible = _ult_show2 >= 0.99
+		if _max2.visible:
+			_max2.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 8.0))
+	_refresh_combo()
 
 
 func _tick_bar(delta: float, left: bool) -> void:
@@ -236,11 +252,7 @@ func _tick_bar(delta: float, left: bool) -> void:
 
 
 func _callsign(def: CharacterDef) -> String:
-	var n: String = def.name.strip_edges()
-	var sp: int = n.find(" ")
-	if sp > 0:
-		return n.substr(0, sp).to_upper()
-	return n.to_upper()
+	return def.callsign()
 
 
 func _bar_tex(root: Control, pos: Vector2, w: int, h: int, col: Color) -> TextureRect:
@@ -314,11 +326,30 @@ func set_rounds(a: int, b: int) -> void:
 
 func set_combo(_side: int, n: int) -> void:
 	if n >= 2:
-		_combo.set_pix("%d HIT" % n, 4, Color(1, 0.86, 0.28))
-		_combo.set_centered(1280)
 		_combo.visible = true
 		_combo_punch = 1.0
+		_refresh_combo()
 	else:
 		_combo.visible = false
 		_combo.modulate = Color.WHITE
 		_combo.scale = Vector2.ONE
+
+
+func _refresh_combo() -> void:
+	if _combo == null or _p1 == null or _p2 == null:
+		return
+	var n: int = maxi(_p1.combo_hits, _p2.combo_hits)
+	if n < 2:
+		if _combo.visible and _combo_punch <= 0.0:
+			_combo.visible = false
+		return
+	var dmg: float = _p1.combo_damage if _p1.combo_hits >= _p2.combo_hits else _p2.combo_damage
+	var sc: int = int(round(CombatRules.combo_scale(n) * 100.0))
+	var col := Color(1, 0.86, 0.28)
+	if n >= 8:
+		col = Color(1.0, 0.45, 0.22)
+	elif n >= 5:
+		col = Color(1.0, 0.72, 0.28)
+	_combo.set_pix("%d HIT  %d  %d%%" % [n, int(round(dmg)), sc], 4, col)
+	_combo.set_centered(1280)
+	_combo.visible = true

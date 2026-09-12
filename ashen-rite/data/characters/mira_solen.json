@@ -28,5 +28,7 @@
   "ultimate_id": "nova",
   "ultimate_name": "Ashen Sun",
   "ultimate_desc": "Detonates a close-range solar burst.",
+	"win_quote": "BURN WITH ME.",
+	"intro_quote": "DON'T BLINK.",
   "reference_image": "res://data/characters/refs/mira.png"
 }

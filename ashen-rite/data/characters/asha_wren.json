@@ -28,5 +28,7 @@
   "ultimate_id": "nova",
   "ultimate_name": "Glacier Verdict",
   "ultimate_desc": "Seals the opponent in a collapsing prism.",
+	"win_quote": "ICE OUT.",
+	"intro_quote": "STAY FROZEN.",
   "reference_image": "res://data/characters/refs/asha.png"
 }

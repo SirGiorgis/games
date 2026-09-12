@@ -42,10 +42,14 @@ Or write a description (see `data/descriptions/example.txt`), put a photo at `da
 
 ## Combat notes
 
-- Best of 3 (first to 2 rounds).
-- Special meter fills from hitting and getting hit. Ultimate fills more slowly.
-- Combos: Light → Light → Heavy → Special. Combo counter appears at 2+ hits.
-- CPU difficulties: Easy / Normal / Hard / Expert in Options.
+- Best of 3 (first to 2 rounds). Final Round when both are one win away.
+- Special meter fills from hitting and getting hit. Ultimate fills more slowly. MAX flashes when super is ready.
+- Combos: Light → Light → Heavy → Special → Super. Combo counter shows hits, damage, and scaling.
+- Jump-cancel lights/heavies on hit. Super-cancel specials on hit.
+- Throw tech (press Throw as they grab). Air tech near the end of air hitstun.
+- Just Guard (block at the last moment). Pushblock (Special during blockstun, 25 meter).
+- Getup attack is a reversal. Super has armor against strikes. Clash if both hitboxes meet.
+- CPU difficulties: Easy / Normal / Hard / Expert in Options. Hitboxes toggle is there too.
 
 ## Arenas
 
