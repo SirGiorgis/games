@@ -14,6 +14,7 @@ var one_shot_u: float = -1.0
 var flash: float = 0.0
 var impact: float = 0.0
 var trail_timer: float = 0.0
+var _land_puff := false
 
 var _sprite: Sprite2D
 var _frames: Dictionary = {}
@@ -63,6 +64,8 @@ func set_pose_name(p: String) -> void:
 		_hold_pose = false
 		if p in ONE_SHOT:
 			one_shot_u = 0.0
+		if p == "land":
+			_land_puff = false
 
 
 func pulse_hit() -> void:
@@ -122,6 +125,9 @@ func _process(delta: float) -> void:
 		trail_timer = 0.10 if pose == "backdash" else 0.14
 		_ghost()
 	trail_timer = max(0.0, trail_timer - delta)
+	if pose == "land" and not _land_puff:
+		_land_puff = true
+		_puff()
 
 
 func _base_x() -> float:
@@ -296,3 +302,24 @@ func _ghost() -> void:
 		tw.tween_property(g, "modulate:a", 0.0, 0.14 if pose == "backdash" else 0.18)
 		tw.parallel().tween_property(g, "global_position:x", g.global_position.x - facing * 12.0, 0.14)
 		tw.tween_callback(g.queue_free)
+
+
+func _puff() -> void:
+	var p := get_parent()
+	if p == null:
+		return
+	for i in 5:
+		var img := Pix.image(4, 3, Color(0, 0, 0, 0))
+		Pix.disc(img, 1, 1, 1, Color(0.62, 0.52, 0.28, 0.7))
+		var s := Sprite2D.new()
+		s.texture = Pix.tex(img)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		s.scale = Vector2(3, 3)
+		s.centered = true
+		s.position = Vector2((i - 2) * 10, 2)
+		s.z_index = -1
+		p.add_child(s)
+		var tw := s.create_tween()
+		tw.tween_property(s, "position", s.position + Vector2((i - 2) * 14, -8), 0.22)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.22)
+		tw.tween_callback(s.queue_free)

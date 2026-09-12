@@ -1,9 +1,9 @@
 {
   "id": "hoodrich_stacks",
-  "name": "Stacks",
-  "title": "Hood Rich",
-  "description": "Grey sweatshirt street fighter with a silver hoop and fast hands. Fights smooth and direct — from nothing to something.",
-  "source_description": "Male fighter, athletic, short dark hair, grey HoodRich sweatshirt, silver hoop earring, silver chain, olive skin, aggressive rushdown.",
+  "name": "Giorgis",
+  "title": "The Grey",
+  "description": "Grey-hoodie brawler with a silver hoop and planted hands. He fights smooth and direct — named for the house.",
+  "source_description": "Male fighter, athletic, short dark hair, grey hoodie, silver hoop earring, silver chain, olive skin, aggressive rushdown.",
   "personality": "aggressive",
   "ai_profile": "rushdown",
   "gender": "male",
@@ -20,7 +20,7 @@
   "defense": 0.94,
   "skin": "#c8926e",
   "hair": "#1a1410",
-  "outfit": "#3a3a40",
+  "outfit": "#7a7a82",
   "trim": "#e8e8ec",
   "accent": "#5a9fd4",
   "eyes": "#2a1810",
@@ -28,7 +28,7 @@
   "special_name": "Block Step",
   "special_desc": "Slides through the lane and catches you on the exit.",
   "ultimate_id": "storm",
-  "ultimate_name": "Nothing to Something",
-  "ultimate_desc": "A final flurry that hits like EST. 2014 energy.",
+  "ultimate_name": "House Call",
+  "ultimate_desc": "A final flurry that hits like the name on the title screen.",
   "reference_image": "res://data/characters/refs/hoodrich_stacks.jpg"
 }

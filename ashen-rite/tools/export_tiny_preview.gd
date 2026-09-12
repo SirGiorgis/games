@@ -1,5 +1,5 @@
 extends SceneTree
-## Headless Tiny Fight-style preview: arena + Chris vs Stacks + HUD mock.
+## Headless Tiny Fight-style preview: arena + Chris vs Giorgis + HUD mock.
 
 
 func _init() -> void:
@@ -12,11 +12,11 @@ func _init() -> void:
 	field.blit_rect(arena, Rect2i(0, 0, 1280, 720), Vector2i.ZERO)
 
 	var chris := _def("chris_xrisakis")
-	var stacks := _def("hoodrich_stacks")
+	var giorgis := _def("hoodrich_stacks")
 	_stamp_fighter(field, chris, "idle", 0, 500, 620, false)
-	_stamp_fighter(field, stacks, "idle", 0, 760, 620, true)
+	_stamp_fighter(field, giorgis, "idle", 0, 760, 620, true)
 	_stamp_fighter(field, chris, "light", 5, 200, 620, false)
-	_stamp_fighter(field, stacks, "heavy", 7, 1080, 620, true)
+	_stamp_fighter(field, giorgis, "heavy", 7, 1080, 620, true)
 
 	_hud(field)
 	var out := "res://.godot/tiny_preview"
@@ -24,7 +24,7 @@ func _init() -> void:
 	field.save_png(ProjectSettings.globalize_path("%s/fight.png" % out))
 
 	_export_strips(chris, "chris_xrisakis")
-	_export_strips(stacks, "hoodrich_stacks")
+	_export_strips(giorgis, "hoodrich_stacks")
 	print("tiny preview -> %s" % out)
 	quit()
 
@@ -49,17 +49,25 @@ func _stamp_fighter(dst: Image, def: CharacterDef, pose: String, frame: int, fee
 
 
 func _hud(dst: Image) -> void:
-	var hp1: Image = PixelUI.tiny_hp(132, 9, Color(0.28, 0.82, 0.22), 1.0).get_image()
-	var hp2: Image = PixelUI.tiny_hp(132, 9, Color(0.86, 0.18, 0.22), 0.72, true).get_image()
+	var n1: Image = PixelFont.make("CHRIS", Color(0.98, 0.98, 0.95), 1).get_image()
+	var n2: Image = PixelFont.make("GIORGIS", Color(0.98, 0.98, 0.95), 1).get_image()
+	var pill: Image = PixelUI.name_pill(72, 11, Color(0.05, 0.05, 0.06)).get_image()
+	pill.resize(pill.get_width() * 4, pill.get_height() * 4, Image.INTERPOLATE_NEAREST)
+	dst.blend_rect(pill, Rect2i(0, 0, pill.get_width(), pill.get_height()), Vector2i(16, 6))
+	dst.blend_rect(pill, Rect2i(0, 0, pill.get_width(), pill.get_height()), Vector2i(976, 6))
+	dst.blend_rect(n1, Rect2i(0, 0, n1.get_width(), n1.get_height()), Vector2i(24, 10))
+	dst.blend_rect(n2, Rect2i(0, 0, n2.get_width(), n2.get_height()), Vector2i(1280 - 24 - n2.get_width(), 10))
+	var hp1: Image = PixelUI.tiny_hp(140, 10, Color(0.28, 0.82, 0.22), 1.0).get_image()
+	var hp2: Image = PixelUI.tiny_hp(140, 10, Color(0.86, 0.18, 0.22), 0.72, true).get_image()
 	hp1.resize(hp1.get_width() * 4, hp1.get_height() * 4, Image.INTERPOLATE_NEAREST)
 	hp2.resize(hp2.get_width() * 4, hp2.get_height() * 4, Image.INTERPOLATE_NEAREST)
-	dst.blend_rect(hp1, Rect2i(0, 0, hp1.get_width(), hp1.get_height()), Vector2i(16, 24))
-	dst.blend_rect(hp2, Rect2i(0, 0, hp2.get_width(), hp2.get_height()), Vector2i(736, 24))
+	dst.blend_rect(hp1, Rect2i(0, 0, hp1.get_width(), hp1.get_height()), Vector2i(16, 46))
+	dst.blend_rect(hp2, Rect2i(0, 0, hp2.get_width(), hp2.get_height()), Vector2i(704, 46))
 	var tbox: Image = PixelUI.timer_box().get_image()
 	tbox.resize(tbox.get_width() * 4, tbox.get_height() * 4, Image.INTERPOLATE_NEAREST)
-	dst.blend_rect(tbox, Rect2i(0, 0, tbox.get_width(), tbox.get_height()), Vector2i(596, 8))
+	dst.blend_rect(tbox, Rect2i(0, 0, tbox.get_width(), tbox.get_height()), Vector2i(592, 4))
 	var num: Image = PixelFont.make("99", Color(1, 1, 1), 3).get_image()
-	dst.blend_rect(num, Rect2i(0, 0, num.get_width(), num.get_height()), Vector2i(640 - num.get_width() / 2, 28))
+	dst.blend_rect(num, Rect2i(0, 0, num.get_width(), num.get_height()), Vector2i(640 - num.get_width() / 2, 34))
 
 
 func _export_strips(def: CharacterDef, id: String) -> void:

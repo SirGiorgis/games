@@ -53,62 +53,103 @@ static func _floor(img: Image, id: String) -> void:
 
 
 static func _meadow(img: Image) -> void:
-	for y in 88:
-		var t: float = float(y) / 88.0
-		Pix.hline(img, 0, y, W, Color(0.52, 0.74, 0.90).lerp(Color(0.78, 0.88, 0.94), t))
-	# Solid mid-ground so peaks never leave a fake horizon sea
-	Pix.rect(img, 0, 76, W, 60, Color(0.36, 0.50, 0.30))
-	_peak(img, 200, 96, 78, Color(0.44, 0.52, 0.46), Color(0.90, 0.91, 0.86))
-	_peak(img, 132, 100, 54, Color(0.38, 0.50, 0.40), Color(0.62, 0.70, 0.50))
-	_peak(img, 248, 102, 40, Color(0.42, 0.54, 0.44), Color(0.72, 0.76, 0.62))
+	for y in 92:
+		var t: float = float(y) / 92.0
+		Pix.hline(img, 0, y, W, Color(0.48, 0.72, 0.90).lerp(Color(0.82, 0.90, 0.96), t))
+	# Sun + clouds
+	Pix.disc(img, 42, 22, 11, Color(0.98, 0.92, 0.55))
+	Pix.disc(img, 42, 22, 7, Color(1.0, 0.97, 0.78))
+	_cloud(img, 78, 18, 8)
+	_cloud(img, 118, 12, 6)
+	_cloud(img, 250, 16, 9)
+	_cloud(img, 290, 24, 5)
+	# Fill ridge so peaks never leave a fake horizon sea
+	Pix.rect(img, 0, 78, W, 62, Color(0.34, 0.48, 0.28))
+	_peak(img, 200, 112, 52, Color(0.44, 0.52, 0.46), Color(0.90, 0.91, 0.86))
+	_peak(img, 128, 114, 40, Color(0.36, 0.48, 0.38), Color(0.62, 0.70, 0.52))
+	_peak(img, 252, 116, 32, Color(0.40, 0.52, 0.42), Color(0.72, 0.76, 0.62))
+	_peak(img, 72, 118, 24, Color(0.42, 0.54, 0.40), Color(0.68, 0.72, 0.56))
 	# Rolling hills
 	for x in W:
-		var hy: int = 98 + int(sin(float(x) * 0.03) * 8.0) + int(sin(float(x) * 0.11 + 0.6) * 4.0)
-		Pix.rect(img, x, hy, 1, maxi(1, 136 - hy), Color(0.34, 0.52, 0.28))
-		Pix.put(img, x, hy, Color(0.46, 0.62, 0.34))
+		var hy: int = 96 + int(sin(float(x) * 0.028) * 9.0) + int(sin(float(x) * 0.11 + 0.6) * 5.0)
+		Pix.rect(img, x, hy, 1, maxi(1, 136 - hy), Color(0.32, 0.50, 0.26))
+		Pix.put(img, x, hy, Color(0.48, 0.64, 0.34))
 	for x in W:
-		var hy2: int = 120 + int(sin(float(x) * 0.045 + 1.4) * 5.0)
-		Pix.rect(img, x, hy2, 1, maxi(1, 140 - hy2), Color(0.40, 0.56, 0.26))
-	_tree(img, 14, 128, 11)
-	_tree(img, 168, 126, 9)
-	_tree(img, 300, 130, 10)
-	_cottage(img, 28, 118, 18, 12)
-	_cottage(img, 52, 116, 16, 11)
-	_cottage(img, 76, 120, 15, 10)
-	_cottage(img, 214, 118, 20, 12)
-	# Pond
-	Pix.oval(img, 278, 128, 22, 6, Color(0.38, 0.60, 0.70))
-	Pix.hline(img, 266, 127, 24, Color(0.55, 0.74, 0.82))
+		var hy2: int = 118 + int(sin(float(x) * 0.045 + 1.4) * 6.0) + int(sin(float(x) * 0.19) * 2.0)
+		Pix.rect(img, x, hy2, 1, maxi(1, 142 - hy2), Color(0.38, 0.54, 0.24))
+	# Tree line
+	_tree(img, 8, 126, 10)
+	_tree(img, 22, 130, 7)
+	_tree(img, 148, 124, 8)
+	_tree(img, 164, 128, 11)
+	_tree(img, 186, 126, 6)
+	_tree(img, 292, 128, 9)
+	_tree(img, 308, 132, 7)
+	_cottage(img, 30, 116, 18, 12)
+	_cottage(img, 54, 114, 16, 11)
+	_cottage(img, 78, 118, 15, 10)
+	_cottage(img, 210, 116, 20, 12)
+	_cottage(img, 236, 120, 14, 9)
+	# Pond with lilies
+	Pix.oval(img, 276, 130, 24, 7, Color(0.34, 0.56, 0.66))
+	Pix.hline(img, 262, 128, 28, Color(0.58, 0.76, 0.84))
+	Pix.put(img, 268, 130, Color(0.42, 0.62, 0.32))
+	Pix.put(img, 282, 131, Color(0.46, 0.66, 0.34))
+	Pix.put(img, 274, 132, Color(0.85, 0.82, 0.40))
 	# Grass field — dither, not stripes
-	Pix.dither_fill(img, 0, 136, W, H - 136, Color(0.50, 0.62, 0.28), Color(0.44, 0.56, 0.24))
+	Pix.dither_fill(img, 0, 136, W, H - 136, Color(0.52, 0.64, 0.28), Color(0.44, 0.56, 0.22))
 	for y in range(150, H):
 		var t2: float = float(y - 150) / 30.0
-		var g: Color = Color(0.46, 0.58, 0.24).lerp(Color(0.34, 0.46, 0.18), t2)
+		var g: Color = Color(0.46, 0.58, 0.24).lerp(Color(0.32, 0.44, 0.16), t2)
 		for x in range(0, W, 2):
 			Pix.put(img, x + (y & 1), y, g)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 2014
-	for i in 160:
+	for i in 220:
 		var gx: int = rng.randi_range(1, W - 2)
 		var gy: int = rng.randi_range(138, 176)
-		var tuft: Color = Color(0.28, 0.42, 0.14) if i % 3 == 0 else Color(0.62, 0.72, 0.32)
+		var tuft: Color = Color(0.26, 0.40, 0.12) if i % 3 == 0 else Color(0.64, 0.74, 0.32)
 		Pix.put(img, gx, gy, tuft)
 		if i % 4 == 0:
 			Pix.put(img, gx, gy - 1, tuft.lightened(0.08))
+	# Flowers
+	for i in 28:
+		var fx: int = rng.randi_range(8, W - 8)
+		var fy: int = rng.randi_range(142, 172)
+		var bloom: Color = Color(0.92, 0.42, 0.48) if i % 3 == 0 else (Color(0.95, 0.88, 0.35) if i % 3 == 1 else Color(0.90, 0.90, 0.95))
+		Pix.put(img, fx, fy - 1, bloom)
+		Pix.put(img, fx, fy, Color(0.28, 0.46, 0.16))
 	# Dirt fight lane
-	for i in 18:
-		var dx: int = 48 + i * 12 + rng.randi_range(-2, 2)
+	for i in 22:
+		var dx: int = 40 + i * 11 + rng.randi_range(-2, 2)
 		var dy: int = 154 + rng.randi_range(-2, 2)
-		Pix.oval(img, dx, dy, 7, 3, Color(0.50, 0.40, 0.22, 0.55))
+		Pix.oval(img, dx, dy, 8, 3, Color(0.52, 0.40, 0.22, 0.58))
 	# Fence
-	for i in 7:
-		var px: int = 8 + i * 12
-		Pix.rect(img, px, 142, 2, 14, Color(0.40, 0.28, 0.16))
-	Pix.hline(img, 8, 146, 82, Color(0.36, 0.26, 0.14))
-	Pix.hline(img, 8, 152, 82, Color(0.32, 0.22, 0.12))
+	for i in 9:
+		var px: int = 6 + i * 11
+		Pix.rect(img, px, 140, 2, 16, Color(0.42, 0.28, 0.16))
+	Pix.hline(img, 6, 144, 98, Color(0.38, 0.26, 0.14))
+	Pix.hline(img, 6, 151, 98, Color(0.34, 0.22, 0.12))
 	# Rocks
 	Pix.rect(img, 118, 160, 6, 4, Color(0.42, 0.40, 0.34))
+	Pix.put(img, 119, 160, Color(0.55, 0.52, 0.44))
 	Pix.rect(img, 246, 158, 5, 3, Color(0.40, 0.38, 0.32))
+	# Distant birds
+	Pix.put(img, 160, 28, Color(0.18, 0.16, 0.14, 0.7))
+	Pix.put(img, 161, 27, Color(0.18, 0.16, 0.14, 0.7))
+	Pix.put(img, 162, 28, Color(0.18, 0.16, 0.14, 0.7))
+	Pix.put(img, 188, 22, Color(0.18, 0.16, 0.14, 0.55))
+	Pix.put(img, 189, 21, Color(0.18, 0.16, 0.14, 0.55))
+
+
+static func _cloud(img: Image, cx: int, cy: int, r: int) -> void:
+	var puff := Color(0.96, 0.97, 0.98, 0.92)
+	var shade := Color(0.86, 0.90, 0.94, 0.75)
+	Pix.disc(img, cx, cy, r, puff)
+	Pix.disc(img, cx + r, cy + 1, r - 1, puff)
+	Pix.disc(img, cx - r + 1, cy + 1, r - 2, puff)
+	Pix.disc(img, cx + 2, cy - 2, r - 2, Color(1, 1, 1, 0.85))
+	Pix.disc(img, cx + r - 1, cy + 2, r - 2, shade)
 
 
 static func _peak(img: Image, cx: int, base_y: int, half: int, rock: Color, snow: Color) -> void:
@@ -126,9 +167,11 @@ static func _peak(img: Image, cx: int, base_y: int, half: int, rock: Color, snow
 
 
 static func _tree(img: Image, x: int, y: int, r: int) -> void:
-	Pix.rect(img, x - 1, y, 3, 8, Color(0.32, 0.22, 0.12))
-	Pix.disc(img, x, y - 2, r, Color(0.22, 0.40, 0.18))
-	Pix.disc(img, x - 2, y - 4, r - 3, Color(0.30, 0.50, 0.22))
+	Pix.rect(img, x - 1, y, 3, 10, Color(0.32, 0.22, 0.12))
+	Pix.disc(img, x, y - 2, r, Color(0.20, 0.38, 0.16))
+	Pix.disc(img, x - 3, y - 4, maxi(2, r - 3), Color(0.28, 0.48, 0.20))
+	Pix.disc(img, x + 3, y - 3, maxi(2, r - 4), Color(0.24, 0.44, 0.18))
+	Pix.disc(img, x, y - r + 1, maxi(2, r - 4), Color(0.34, 0.54, 0.24))
 
 
 static func _cottage(img: Image, x: int, y: int, w: int, h: int) -> void:

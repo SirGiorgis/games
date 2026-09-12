@@ -10,7 +10,7 @@ Open the `ashen-rite` folder in Godot 4.7 and press **Play**. Nothing else to co
 2. Import `ashen-rite/project.godot`.
 3. Press Play. Main scene is already set.
 
-Lead fighter: **Chris Xrisakis**. Default opponent: **Stacks**. Default arena: **Green Hill Field**.
+Lead fighter: **Chris Xrisakis**. Default opponent: **Giorgis**. Default arena: **Green Hill Field**.
 
 ## Controls (Player 1)
 

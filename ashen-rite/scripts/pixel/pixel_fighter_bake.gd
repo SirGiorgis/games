@@ -8,7 +8,7 @@ const PhotoSprite := preload("res://scripts/pixel/photo_fighter_sprite.gd")
 
 const W := 48
 const H := 56
-const SCALE := 2
+const SCALE := 3
 const MODEL_W := 160
 const MODEL_H := 160
 const MODEL_SCALE := 3

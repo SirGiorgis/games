@@ -176,10 +176,12 @@ static func round_gem(on: bool) -> ImageTexture:
 
 
 static func timer_box() -> ImageTexture:
-	var img := Pix.image(22, 22, Color(0, 0, 0, 0))
-	Pix.disc(img, 11, 11, 10, Color(0.06, 0.05, 0.05))
-	Pix.disc(img, 11, 11, 8, Color(0.16, 0.14, 0.14))
-	Pix.disc(img, 11, 11, 7, Color(0.08, 0.07, 0.07))
+	var img := Pix.image(24, 24, Color(0, 0, 0, 0))
+	Pix.disc(img, 12, 12, 12, Color(0.92, 0.78, 0.22))
+	Pix.disc(img, 12, 12, 11, Color(0.55, 0.38, 0.10))
+	Pix.disc(img, 12, 12, 10, Color(0.06, 0.05, 0.05))
+	Pix.disc(img, 12, 12, 8, Color(0.16, 0.14, 0.14))
+	Pix.disc(img, 12, 12, 7, Color(0.08, 0.07, 0.07))
 	return Pix.tex(img)
 
 
@@ -197,8 +199,13 @@ static func tiny_hp(w: int, h: int, fill: Color, t: float, from_right: bool = fa
 	if fw > 0:
 		var x0: int = 2 + (inner - fw if from_right else 0)
 		Pix.rect(img, x0, 2, fw, h - 4, fill)
-		Pix.hline(img, x0, 2, fw, fill.lightened(0.28))
-		Pix.hline(img, x0, h - 3, fw, fill.darkened(0.18))
+		Pix.hline(img, x0, 2, fw, fill.lightened(0.32))
+		Pix.hline(img, x0, 3, fw, Color(1.0, 0.92, 0.35, 0.35))
+		Pix.hline(img, x0, h - 3, fw, fill.darkened(0.22))
+		var tick: int = 8
+		while tick < fw:
+			Pix.vline(img, x0 + tick, 3, h - 6, fill.darkened(0.16))
+			tick += 8
 	return Pix.tex(img)
 
 

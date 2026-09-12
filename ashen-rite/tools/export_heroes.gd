@@ -1,5 +1,5 @@
 extends SceneTree
-## Export Chris + Stacks preview strips for visual checks.
+## Export Chris + Giorgis preview strips for visual checks.
 
 
 const IDS := ["chris_xrisakis", "hoodrich_stacks"]

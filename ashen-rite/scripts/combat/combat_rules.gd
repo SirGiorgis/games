@@ -5,17 +5,17 @@ extends RefCounted
 static func make_attack(kind: String, def: CharacterDef) -> Dictionary:
 	match kind:
 		"light":
-			return _atk("light", 42.0, 110.0, -30.0, 0.30, 0.045, 0.05, 0.06, 0.28, Vector2(28, 16), 32.0, -42.0, false, def, "mid", 55.0)
+			return _atk("light", 42.0, 110.0, -30.0, 0.30, 0.045, 0.05, 0.06, 0.28, Vector2(34, 20), 42.0, -58.0, false, def, "mid", 55.0)
 		"clight":
-			return _atk("clight", 38.0, 90.0, -16.0, 0.28, 0.04, 0.05, 0.07, 0.30, Vector2(30, 14), 34.0, -20.0, false, def, "mid", 40.0)
+			return _atk("clight", 38.0, 90.0, -16.0, 0.28, 0.04, 0.05, 0.07, 0.30, Vector2(36, 16), 44.0, -28.0, false, def, "mid", 40.0)
 		"jlight":
-			return _atk("jlight", 40.0, 80.0, 50.0, 0.26, 0.04, 0.04, 0.10, 0.32, Vector2(26, 18), 28.0, -38.0, false, def, "high", 0.0)
+			return _atk("jlight", 40.0, 80.0, 50.0, 0.26, 0.04, 0.04, 0.10, 0.32, Vector2(32, 22), 36.0, -52.0, false, def, "high", 0.0)
 		"heavy":
-			return _atk("heavy", 92.0, 240.0, -180.0, 0.42, 0.09, 0.10, 0.10, 0.48, Vector2(36, 20), 38.0, -40.0, false, def, "mid", 90.0)
+			return _atk("heavy", 92.0, 240.0, -180.0, 0.42, 0.09, 0.10, 0.10, 0.48, Vector2(44, 24), 50.0, -56.0, false, def, "mid", 90.0)
 		"cheavy":
-			return _atk("cheavy", 84.0, 200.0, -20.0, 0.46, 0.08, 0.09, 0.12, 0.54, Vector2(40, 16), 40.0, -16.0, true, def, "low", 70.0)
+			return _atk("cheavy", 84.0, 200.0, -20.0, 0.46, 0.08, 0.09, 0.12, 0.54, Vector2(48, 18), 50.0, -22.0, true, def, "low", 70.0)
 		"jheavy":
-			return _atk("jheavy", 88.0, 200.0, 90.0, 0.36, 0.08, 0.07, 0.12, 0.42, Vector2(34, 22), 34.0, -34.0, false, def, "high", 0.0)
+			return _atk("jheavy", 88.0, 200.0, 90.0, 0.36, 0.08, 0.07, 0.12, 0.42, Vector2(40, 26), 42.0, -48.0, false, def, "high", 0.0)
 		"special":
 			return _special(def)
 		"ultimate":
@@ -50,7 +50,7 @@ static func _atk(kind: String, dmg: float, kb: float, launch: float, stun: float
 
 
 static func _special(def: CharacterDef) -> Dictionary:
-	var base := _atk("special", 105.0, 240.0, -240.0, 0.44, 0.09, 0.11, 0.12, 0.50, Vector2(48, 24), 48.0, -40.0, false, def)
+	var base := _atk("special", 105.0, 240.0, -240.0, 0.44, 0.09, 0.11, 0.12, 0.50, Vector2(56, 28), 56.0, -56.0, false, def)
 	base.meter = 4.0
 	match def.special_id:
 		"bolt":
@@ -78,7 +78,7 @@ static func _special(def: CharacterDef) -> Dictionary:
 
 
 static func _ultimate(def: CharacterDef) -> Dictionary:
-	var u := _atk("ultimate", 220.0, 420.0, -380.0, 0.75, 0.14, 0.18, 0.18, 0.72, Vector2(90, 48), 52.0, -38.0, true, def)
+	var u := _atk("ultimate", 220.0, 420.0, -380.0, 0.75, 0.14, 0.18, 0.18, 0.72, Vector2(96, 52), 58.0, -52.0, true, def)
 	u.meter = 0.0
 	u.projectile = "ult"
 	u.proj_speed = 400.0

@@ -74,12 +74,13 @@ func setup(id: int, character: CharacterDef, cpu: bool, start_pos: Vector2) -> v
 	floor_snap_length = 12.0
 	floor_max_angle = 0.8
 
+	var vis_h: float = float(PixelFighterBake.H * PixelFighterBake.SCALE)
 	var body := CollisionShape2D.new()
 	var cap := CapsuleShape2D.new()
-	cap.radius = 12.0 * def.width_scale
-	cap.height = 52.0 * def.height_scale
+	cap.radius = vis_h * 0.085 * def.width_scale
+	cap.height = vis_h * 0.44 * def.height_scale
 	body.shape = cap
-	body.position = Vector2(0, -28 * def.height_scale)
+	body.position = Vector2(0, -vis_h * 0.26 * def.height_scale)
 	add_child(body)
 
 	hurtbox = Area2D.new()
@@ -90,9 +91,9 @@ func setup(id: int, character: CharacterDef, cpu: bool, start_pos: Vector2) -> v
 	hurtbox.set_meta("fighter_id", fighter_id)
 	var hs := CollisionShape2D.new()
 	var hrect := RectangleShape2D.new()
-	hrect.size = Vector2(24 * def.width_scale, 56 * def.height_scale)
+	hrect.size = Vector2(vis_h * 0.16 * def.width_scale, vis_h * 0.48 * def.height_scale)
 	hs.shape = hrect
-	hs.position = Vector2(0, -30 * def.height_scale)
+	hs.position = Vector2(0, -vis_h * 0.27 * def.height_scale)
 	hurtbox.add_child(hs)
 	add_child(hurtbox)
 
@@ -474,7 +475,7 @@ func _spawn_projectile_if_any() -> void:
 		return
 	var p := Projectile.new()
 	p.setup(self, kind, def.accent)
-	p.position = global_position + Vector2(22 * facing, -36)
+	p.position = global_position + Vector2(28 * facing, -58)
 	p.velocity = Vector2(current_attack.get("proj_speed", 520.0) * facing, 0)
 	get_parent().add_child(p)
 
@@ -612,13 +613,14 @@ func _sync_visual() -> void:
 				visual.set_pose_name("defeat")
 			_:
 				visual.set_pose_name("idle")
+	var vis_h: float = float(PixelFighterBake.H * PixelFighterBake.SCALE)
 	var hs := hurtbox.get_child(0) as CollisionShape2D
 	if state == State.CROUCH:
-		(hs.shape as RectangleShape2D).size.y = 34 * def.height_scale
-		hs.position.y = -18 * def.height_scale
+		(hs.shape as RectangleShape2D).size.y = vis_h * 0.28 * def.height_scale
+		hs.position.y = -vis_h * 0.16 * def.height_scale
 	else:
-		(hs.shape as RectangleShape2D).size.y = 56 * def.height_scale
-		hs.position.y = -30 * def.height_scale
+		(hs.shape as RectangleShape2D).size.y = vis_h * 0.48 * def.height_scale
+		hs.position.y = -vis_h * 0.27 * def.height_scale
 
 
 func _integrate(_delta: float) -> void:
@@ -629,8 +631,9 @@ func _separate_from_opponent() -> void:
 	if opponent == null:
 		return
 	var dx := opponent.global_position.x - global_position.x
-	if absf(dx) < 28.0 and absf(opponent.global_position.y - global_position.y) < 52.0:
-		var push: float = (28.0 - absf(dx)) * 0.5
+	var vis_h: float = float(PixelFighterBake.H * PixelFighterBake.SCALE)
+	if absf(dx) < vis_h * 0.22 and absf(opponent.global_position.y - global_position.y) < vis_h * 0.40:
+		var push: float = (vis_h * 0.22 - absf(dx)) * 0.5
 		var s := signf(dx)
 		if s == 0.0:
 			s = 1.0 if fighter_id == 0 else -1.0

@@ -15,7 +15,7 @@ func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 	PixelUI.full_bg(self)
 	PixelUI.add_title(self, "GIORGIS FIGHTING", 52, Color(0.95, 0.2, 0.3))
-	PixelUI.label_at(self, "CHRIS XRISAKIS  ·  BEST OF 3", Vector2(0, 118), 2, Color(0.88, 0.72, 0.38), 0, 1280).set_centered(1280)
+	PixelUI.label_at(self, "CHRIS  ·  GIORGIS", Vector2(0, 118), 2, Color(0.88, 0.72, 0.38), 0, 1280).set_centered(1280)
 
 	PixelUI.add_panel(self, Vector2(48, 168), Vector2(560, 480), PixelUI.GOLD)
 	for i in ITEMS.size():
@@ -27,14 +27,14 @@ func _ready() -> void:
 	frame_lbl.position.x = 720
 
 	_preview = Sprite2D.new()
-	var def := CharacterCatalog.get_def(GameState.p1_character_id)
+	var def := CharacterCatalog.get_def("hoodrich_stacks")
 	var frames: Dictionary = PixelFighterBake.bake(def)
 	_preview.texture = frames["idle"][0]
 	_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_preview.centered = true
-	var sc: float = 5.0
+	var sc: float = 4.0
 	_preview.scale = Vector2(sc, sc)
-	_preview.position = Vector2(976, 400)
+	_preview.position = Vector2(976, 410)
 	_preview_frames = frames["walk"]
 	add_child(_preview)
 
