@@ -1,6 +1,8 @@
 class_name Fighter
 extends CharacterBody2D
 
+const CottonScr := preload("res://scripts/combat/cotton_pickup.gd")
+
 signal health_changed(current: float, maximum: float)
 signal meters_changed(special: float, ultimate: float)
 signal defeated(fighter: Fighter)
@@ -829,7 +831,7 @@ func _spawn_cotton_if_any() -> void:
 			break
 		if absf(x - mine) < 90.0:
 			continue
-		var c := CottonPickup.new()
+		var c = CottonScr.new()
 		c.setup(self, x + randf_range(-18.0, 18.0))
 		get_parent().add_child(c)
 		placed += 1

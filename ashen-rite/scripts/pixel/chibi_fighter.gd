@@ -622,14 +622,14 @@ static func _hair_mako(img: Image, cx: int, cy: int, pal: Dictionary) -> void:
 
 
 static func _hair_buzz(img: Image, cx: int, cy: int, pal: Dictionary) -> void:
-	# Tight fade. Ears stay out. No logo, no cap.
-	Pix.oval(img, cx, cy - 4, 7, 4, pal.hair)
-	Pix.rect(img, cx - 7, cy - 7, 15, 4, pal.hair_dk)
-	Pix.hline(img, cx - 4, cy - 8, 9, pal.hair)
-	Pix.hline(img, cx - 6, cy - 3, 3, pal.hair_dk)
-	Pix.hline(img, cx + 4, cy - 3, 3, pal.hair)
-	Pix.put(img, cx - 1, cy - 6, pal.hair_hi)
-	Pix.put(img, cx + 2, cy - 5, pal.hair_hi)
+	# Tight stubble on the crown. Scalp stays visible. No cap, no logo.
+	Pix.hline(img, cx - 5, cy - 7, 11, pal.hair_dk)
+	Pix.hline(img, cx - 6, cy - 6, 13, pal.hair)
+	Pix.hline(img, cx - 4, cy - 5, 9, pal.hair_dk)
+	Pix.put(img, cx - 7, cy - 5, pal.hair_dk)
+	Pix.put(img, cx + 7, cy - 5, pal.hair)
+	Pix.put(img, cx - 1, cy - 7, pal.hair_hi)
+	Pix.put(img, cx + 2, cy - 6, pal.hair_hi)
 
 
 static func _cotton_toss(img: Image, cx: int, hip_y: int, f: int) -> void:
