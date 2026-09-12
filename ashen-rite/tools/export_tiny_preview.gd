@@ -1,5 +1,5 @@
 extends SceneTree
-## Headless Tiny Fight-style preview: arena + Chris vs Giorgis + HUD mock.
+## Headless Tiny Fight-style preview: arena + roster + HUD mock.
 
 
 func _init() -> void:
@@ -14,16 +14,21 @@ func _init() -> void:
 	var chris := _def("chris_xrisakis")
 	var giorgis := _def("hoodrich_stacks")
 	var mako := _def("mako")
-	_stamp_fighter(field, chris, "idle", 0, 420, 620, false)
-	_stamp_fighter(field, mako, "idle", 0, 640, 620, false)
-	_stamp_fighter(field, giorgis, "idle", 0, 860, 620, true)
-	_stamp_fighter(field, chris, "ultimate", 8, 180, 620, false)
-	_stamp_fighter(field, giorgis, "ultimate", 7, 1100, 620, true)
+	var fogas := _def("fogas")
+	_stamp_fighter(field, chris, "idle", 0, 260, 620, false)
+	_stamp_fighter(field, mako, "idle", 0, 480, 620, false)
+	_stamp_fighter(field, fogas, "ultimate", 8, 740, 620, false)
+	_stamp_fighter(field, giorgis, "idle", 0, 1000, 620, true)
 
 	var car: Image = Pix.car()
 	car.resize(car.get_width() * 4, car.get_height() * 4, Image.INTERPOLATE_NEAREST)
-	field.blend_rect(car, Rect2i(0, 0, car.get_width(), car.get_height()), Vector2i(250, 560))
-	field.blend_rect(car, Rect2i(0, 0, car.get_width(), car.get_height()), Vector2i(310, 548))
+	field.blend_rect(car, Rect2i(0, 0, car.get_width(), car.get_height()), Vector2i(210, 560))
+	field.blend_rect(car, Rect2i(0, 0, car.get_width(), car.get_height()), Vector2i(270, 548))
+
+	var gas: Image = Pix.gas()
+	gas.resize(gas.get_width() * 5, gas.get_height() * 5, Image.INTERPOLATE_NEAREST)
+	field.blend_rect(gas, Rect2i(0, 0, gas.get_width(), gas.get_height()), Vector2i(620, 530))
+	field.blend_rect(gas, Rect2i(0, 0, gas.get_width(), gas.get_height()), Vector2i(680, 548))
 
 	_hud(field, chris, giorgis)
 	var out := "res://.godot/tiny_preview"
@@ -32,6 +37,7 @@ func _init() -> void:
 
 	_export_strips(chris, "chris_xrisakis")
 	_export_strips(giorgis, "hoodrich_stacks")
+	_export_strips(fogas, "fogas")
 	print("tiny preview -> %s" % out)
 	quit()
 
@@ -46,8 +52,12 @@ func _stamp_fighter(dst: Image, def: CharacterDef, pose: String, frame: int, fee
 	var arr: Array = frames.get(pose, frames["idle"])
 	var tex: ImageTexture = arr[clampi(frame, 0, arr.size() - 1)]
 	var src: Image = tex.get_image()
-	var sc: int = PixelFighterBake.SCALE
-	src.resize(src.get_width() * sc, src.get_height() * sc, Image.INTERPOLATE_NEAREST)
+	var sc: float = float(PixelFighterBake.SCALE)
+	src.resize(
+		maxi(1, int(round(float(src.get_width()) * sc * def.width_scale))),
+		maxi(1, int(round(float(src.get_height()) * sc * def.height_scale))),
+		Image.INTERPOLATE_NEAREST
+	)
 	if flip:
 		src.flip_x()
 	var ox: int = feet_x - src.get_width() / 2
@@ -115,6 +125,8 @@ func _hud(dst: Image, chris: CharacterDef, giorgis: CharacterDef) -> void:
 	dst.blend_rect(hpnum, Rect2i(0, 0, hpnum.get_width(), hpnum.get_height()), Vector2i(24, 64))
 	var rage: Image = PixelFont.make("RAGE", Color(1.0, 0.35, 0.28), 1).get_image()
 	dst.blend_rect(rage, Rect2i(0, 0, rage.get_width(), rage.get_height()), Vector2i(990, 84))
+	var poison: Image = PixelFont.make("POISON", Color(0.55, 0.92, 0.32), 1).get_image()
+	dst.blend_rect(poison, Rect2i(0, 0, poison.get_width(), poison.get_height()), Vector2i(860, 84))
 	var mx: Image = PixelFont.make("MAX", Color(0.45, 0.9, 1.0), 2).get_image()
 	dst.blend_rect(mx, Rect2i(0, 0, mx.get_width(), mx.get_height()), Vector2i(380, 668))
 
@@ -130,7 +142,7 @@ func _export_strips(def: CharacterDef, id: String) -> void:
 	var frames: Dictionary = PixelFighterBake.bake(def)
 	var dir := "res://.godot/%s_preview" % id
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
-	for key in ["idle", "walk", "run", "light", "heavy", "jump"]:
+	for key in ["idle", "walk", "run", "light", "heavy", "jump", "ultimate"]:
 		if not frames.has(key):
 			continue
 		var arr: Array = frames[key]

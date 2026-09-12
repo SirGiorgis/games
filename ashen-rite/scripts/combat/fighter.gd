@@ -85,6 +85,8 @@ var last_advantage: float = 0.0
 var last_move: String = ""
 var attack_mul: float = 1.0
 var attack_mul_t: float = 0.0
+var poison_t: float = 0.0
+var poison_dps: float = 0.0
 
 var visual: FighterVisual
 var hurtbox: Area2D
@@ -190,6 +192,8 @@ func reset_round(start_pos: Vector2) -> void:
 	last_move = ""
 	attack_mul = 1.0
 	attack_mul_t = 0.0
+	poison_t = 0.0
+	poison_dps = 0.0
 	rotation = 0
 	visual.rotation = 0
 	visual.set_pose_name("idle")
@@ -236,6 +240,7 @@ func _physics_process(delta: float) -> void:
 		attack_mul_t = max(0.0, attack_mul_t - delta)
 		if attack_mul_t <= 0.0:
 			attack_mul = 1.0
+	_tick_poison(delta)
 	if on_ground and state != State.HIT:
 		_wall_used = false
 
@@ -781,6 +786,8 @@ func _spawn_projectile_if_any() -> void:
 		var col: Color = def.accent
 		if kind == "car":
 			col = Color(0.78, 0.08, 0.10)
+		elif kind == "gas":
+			col = Color(0.48, 0.78, 0.32)
 		p.setup(self, kind, col)
 		p.pierce = bool(current_attack.get("pierce", false))
 		p.freeze = bool(current_attack.get("freeze", false))
@@ -790,6 +797,9 @@ func _spawn_projectile_if_any() -> void:
 		if kind == "car":
 			yoff = -18.0 - float(i) * 11.0
 			xoff = 40.0 + float(i) * 18.0
+		elif kind == "gas":
+			yoff = -22.0
+			xoff = 16.0
 		p.position = global_position + Vector2(xoff * float(facing), yoff)
 		var vy: float = 0.0
 		if n > 1 and kind != "car":
@@ -903,6 +913,7 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 		if just:
 			announced.emit("JUST GUARD")
 			AudioDirector.play("parry", 1.0, 0.6)
+		_apply_poison(attack, 0.5)
 		return
 
 	var counter := _busy_attack()
@@ -920,9 +931,12 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 	health = max(0.0, health - dmg)
 	var kb: float = float(attack.knockback)
 	var launch: float = float(attack.launch)
+	var is_stun: bool = bool(attack.get("stun", false))
+	var keep_stun: float = hitstun if state == State.HIT else 0.0
 	if not on_ground:
 		kb *= 0.85
-		launch = minf(launch, -120.0)
+		if not is_stun:
+			launch = minf(launch, -120.0)
 	if counter:
 		kb *= 1.12
 		launch *= 1.15
@@ -931,8 +945,11 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 		launch = minf(launch, -160.0)
 		hitstun = maxf(float(attack.hitstun) * 1.35, 0.42)
 	else:
-		hitstun = float(attack.hitstun) * (1.28 if counter else 1.0)
-	velocity = Vector2(attacker.facing * kb, launch)
+		hitstun = maxf(keep_stun, float(attack.hitstun) * (1.28 if counter else 1.0))
+	var vy: float = launch
+	if not on_ground and absf(launch) < 8.0:
+		vy = velocity.y
+	velocity = Vector2(attacker.facing * kb, vy)
 	var hard_kd: bool = bool(attack.get("knockdown", false)) or health <= 0.0 or broke
 	state = State.KNOCKDOWN if hard_kd else State.HIT
 	visual.pulse_hit()
@@ -964,6 +981,10 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 	if bool(attack.get("ex", false)):
 		freeze_frames = max(freeze_frames, 0.16)
 		attacker.freeze_frames = max(attacker.freeze_frames, 0.10)
+	if is_stun:
+		freeze_frames = max(freeze_frames, 0.16)
+		attacker.freeze_frames = max(attacker.freeze_frames, 0.10)
+		announced.emit("STUN")
 	health_changed.emit(health, max_health)
 	meters_changed.emit(special_meter, ultimate_meter)
 	attacker.meters_changed.emit(attacker.special_meter, attacker.ultimate_meter)
@@ -973,6 +994,7 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 	attack["counter"] = counter
 	attack["punish"] = punish
 	hit_landed.emit(self, attack, crit or counter)
+	_apply_poison(attack, 1.0)
 	if health <= 0.0:
 		defeated.emit(self)
 
@@ -983,6 +1005,31 @@ func raging() -> bool:
 
 func buffed() -> bool:
 	return attack_mul_t > 0.0 and attack_mul > 1.0
+
+
+func poisoned() -> bool:
+	return poison_t > 0.0
+
+
+func _apply_poison(attack: Dictionary, mul: float) -> void:
+	if not bool(attack.get("poison", false)):
+		return
+	poison_t = maxf(poison_t, float(attack.get("poison_t", 4.0)) * mul)
+	poison_dps = maxf(poison_dps, float(attack.get("poison_dps", 18.0)) * mul)
+
+
+func _tick_poison(delta: float) -> void:
+	if poison_t <= 0.0 or round_over or health <= 0.0:
+		if poison_t <= 0.0:
+			poison_dps = 0.0
+		return
+	poison_t = max(0.0, poison_t - delta)
+	health = max(0.0, health - poison_dps * delta)
+	health_changed.emit(health, max_health)
+	if poison_t <= 0.0:
+		poison_dps = 0.0
+	if health <= 0.0:
+		defeated.emit(self)
 
 
 func _try_burst(cmd: Dictionary) -> bool:

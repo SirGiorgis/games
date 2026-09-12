@@ -47,8 +47,8 @@ func build(d: CharacterDef) -> void:
 	var tw: int = _sprite.texture.get_width()
 	var th: int = _sprite.texture.get_height()
 	var sc: int = PixelFighterBake.SCALE
-	_base_scale = Vector2(sc, sc)
-	_sprite.position = Vector2(-tw * sc / 2, -th * sc)
+	_base_scale = Vector2(float(sc) * def.width_scale, float(sc) * def.height_scale)
+	_sprite.position = Vector2(-tw * _base_scale.x / 2.0, -th * _base_scale.y)
 	_sprite.scale = _base_scale
 	add_child(_sprite)
 	var sh := Sprite2D.new()
@@ -58,7 +58,7 @@ func build(d: CharacterDef) -> void:
 	sh.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	sh.centered = true
 	sh.position = Vector2(0, 4)
-	sh.scale = Vector2(sc, sc)
+	sh.scale = Vector2(float(sc) * maxf(def.width_scale, 1.0), float(sc))
 	sh.z_index = -2
 	add_child(sh)
 
@@ -163,7 +163,9 @@ func _apply_juice() -> void:
 	_sprite.rotation = _pose_tilt() * facing
 	_sprite.modulate = Color.WHITE.lerp(Color(1.75, 1.68, 1.52), flash)
 	var host = get_parent()
-	if host and host.has_method("buffed") and host.buffed() and flash < 0.2:
+	if host and host.has_method("poisoned") and host.poisoned() and flash < 0.2:
+		_sprite.modulate = Color.WHITE.lerp(Color(0.58, 1.18, 0.42), 0.52 + 0.22 * sin(_time * 10.0))
+	elif host and host.has_method("buffed") and host.buffed() and flash < 0.2:
 		_sprite.modulate = Color.WHITE.lerp(Color(0.72, 1.18, 0.98), 0.48 + 0.22 * sin(_time * 8.0))
 	elif host and host.has_method("raging") and host.raging() and flash < 0.2:
 		_sprite.modulate = Color.WHITE.lerp(Color(1.35, 0.72, 0.68), 0.45 + 0.25 * sin(_time * 9.0))

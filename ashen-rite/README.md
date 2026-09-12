@@ -54,9 +54,9 @@ Change bindings in `scripts/input/control_map.gd` (keyboard + gamepad hooks).
 
 ## Roster
 
-**Chris Xrisakis**, **Giorgis**, and **Mako**. Default match is Chris vs Giorgis.
+**Chris Xrisakis**, **Giorgis**, **Mako**, and **Fogas**. Default match is Chris vs Giorgis.
 
-Mako is a shirtless close-range brawler (Body Check / Dempsey Roll). Each of the three has a unique super: Chris sends original open-wheel cars (Grid Strike), Giorgis drinks Straight Vodka for heal + ATK, Mako weaves the Dempsey Roll. Each has a theme in the gallery.
+Fogas is a slower, tankier heavyweight (Gut Check / Gut Blast). His super is a gas blast: instant hit that stuns, then poison. Mako is a shirtless close-range brawler (Body Check / Dempsey Roll). Chris sends original open-wheel cars (Grid Strike). Giorgis drinks Straight Vodka for heal + ATK. Each has a theme in the gallery.
 
 ## Add a character
 
@@ -91,7 +91,7 @@ Each stage has its own song. Character select plays that fighter's theme.
 
 ## Soundtrack
 
-28 unique songs in `assets/audio/music/` (one per menu, mode, stage, and fighter). Rebuild with:
+29 unique songs in `assets/audio/music/` (one per menu, mode, stage, and fighter). Rebuild with:
 
 `python3 tools/bake_soundtrack.py`
 

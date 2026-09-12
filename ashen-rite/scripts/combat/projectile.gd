@@ -11,6 +11,7 @@ var freeze: bool = false
 var _spr: Sprite2D
 var _trail := 0.0
 var _hit_ids: Dictionary = {}
+var _rehit := 0.0
 
 
 func setup(source: Fighter, k: String, color: Color) -> void:
@@ -32,6 +33,8 @@ func setup(source: Fighter, k: String, color: Color) -> void:
 		c.radius = 18.0
 	elif k == "car":
 		c.radius = 20.0
+	elif k == "gas":
+		c.radius = 26.0
 	cs.shape = c
 	add_child(cs)
 	area_entered.connect(_on_area)
@@ -70,12 +73,14 @@ static func art_for(k: String, color: Color) -> Image:
 			Pix.hline(img, 2, 6, 8, Color(0.85, 0.95, 1.0, 0.8))
 		"car":
 			img = Pix.car(color)
+		"gas":
+			img = Pix.gas(color)
 		_:
 			img = Pix.image(12, 8, Color(0, 0, 0, 0))
 			Pix.rect(img, 1, 2, 10, 4, color)
 			Pix.rect(img, 8, 1, 4, 6, color.lightened(0.25))
 			Pix.put(img, 2, 3, Color.WHITE)
-	if k != "car":
+	if k != "car" and k != "gas":
 		Pix.outline(img, Color(0.05, 0.04, 0.06))
 	return img
 
@@ -90,10 +95,18 @@ func _physics_process(delta: float) -> void:
 			_spr.rotation = 0.0
 			_spr.flip_h = velocity.x < 0.0
 			_spr.scale = Vector2(5.0, 5.0)
+		elif kind == "gas":
+			_spr.rotation = 0.0
+			_spr.scale = Vector2(5.2 + sin(life * 9.0) * 0.45, 5.0 + cos(life * 7.0) * 0.35)
 		else:
 			var spin: float = 10.0 if kind == "void" else 8.0
 			_spr.rotation += delta * spin * signf(velocity.x if velocity.x != 0.0 else 1.0)
 			_spr.scale = Vector2(4.0 + sin(life * 18.0) * 0.35, 4.0)
+	if kind == "gas":
+		_rehit -= delta
+		if _rehit <= 0.0:
+			_hit_ids.clear()
+			_rehit = 0.40
 	_trail -= delta
 	if _trail <= 0.0:
 		_trail = 0.045
@@ -136,6 +149,16 @@ func _on_area(area: Area2D) -> void:
 		var atk: Dictionary
 		if kind == "ult" or kind == "car" or kind == "void":
 			atk = CombatRules.make_attack("ultimate", owner_fighter.def)
+		elif kind == "gas":
+			atk = CombatRules.make_attack("ultimate", owner_fighter.def)
+			atk.damage = 8.0 * owner_fighter.def.attack
+			atk.hitstun = 0.08
+			atk.blockstun = 0.04
+			atk.knockback = 12.0
+			atk.launch = 0.0
+			atk.knockdown = false
+			atk.stun = false
+			atk.poison = true
 		else:
 			atk = CombatRules.make_attack("special", owner_fighter.def)
 			atk.damage *= 0.85

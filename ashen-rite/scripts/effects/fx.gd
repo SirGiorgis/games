@@ -144,6 +144,25 @@ func burst_ring(pos: Vector2) -> void:
 	spark(pos, Color(0.95, 0.85, 1.0), true)
 
 
+func fart_cloud(pos: Vector2) -> void:
+	shockwave(pos)
+	for i in 16:
+		var img: Image = Pix.gas()
+		var s := Sprite2D.new()
+		s.texture = Pix.tex(img)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		s.scale = Vector2(3, 3)
+		s.centered = true
+		s.global_position = pos + Vector2(randf_range(-28, 36), randf_range(-18, 16))
+		s.modulate = Color(0.7, 1.0, 0.45, 0.85)
+		add_child(s)
+		var tw := s.create_tween()
+		tw.tween_property(s, "position:y", s.position.y - randf_range(10, 28), 0.45)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.45)
+		tw.parallel().tween_property(s, "scale", s.scale * 1.6, 0.45)
+		tw.tween_callback(s.queue_free)
+
+
 func vodka_glug(pos: Vector2) -> void:
 	shockwave(pos + Vector2(0, -8))
 	for i in 12:

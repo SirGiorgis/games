@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import sys
 import struct
 import wave
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -50,6 +51,7 @@ TRACKS = [
     ("theme:chris_xrisakis", "THREAD THE LANE", 142, 0, 4),
     ("theme:hoodrich_stacks", "SAY THE NAME", 138, 7, 5),
     ("theme:mako", "STILL STANDING", 128, 2, 9),
+    ("theme:fogas", "STILL SMILING", 96, 5, 3),
 ]
 
 
@@ -172,20 +174,32 @@ def render_one(item: tuple) -> tuple[str, str, str, int]:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
+    wanted = [a for a in sys.argv[1:] if not a.startswith("-")]
+    items = TRACKS
+    if wanted:
+        items = [t for t in TRACKS if t[0] in wanted]
+        if not items:
+            raise SystemExit("no matching tracks: %s" % ", ".join(wanted))
     catalog = {"map": {}, "tracks": []}
+    cat_path = OUT / "catalog.json"
+    if wanted and cat_path.exists():
+        catalog = json.loads(cat_path.read_text())
+        catalog.setdefault("map", {})
+        catalog.setdefault("tracks", [])
     workers = min(8, os.cpu_count() or 4)
     done = 0
     with ProcessPoolExecutor(max_workers=workers) as pool:
-        futs = {pool.submit(render_one, item): item[0] for item in TRACKS}
+        futs = {pool.submit(render_one, item): item[0] for item in items}
         for fut in as_completed(futs):
             key, fname, title, sec = fut.result()
             catalog["map"][key] = fname
+            catalog["tracks"] = [t for t in catalog["tracks"] if t.get("id") != key]
             catalog["tracks"].append({"id": key, "file": fname, "title": title, "seconds": sec})
             done += 1
-            print(f"[{done}/{len(TRACKS)}] {key} -> {fname}", flush=True)
+            print(f"[{done}/{len(items)}] {key} -> {fname}", flush=True)
     catalog["tracks"].sort(key=lambda x: x["id"])
-    (OUT / "catalog.json").write_text(json.dumps(catalog, indent=2))
-    total = sum((OUT / t["file"]).stat().st_size for t in catalog["tracks"])
+    cat_path.write_text(json.dumps(catalog, indent=2) + "\n")
+    total = sum((OUT / t["file"]).stat().st_size for t in catalog["tracks"] if (OUT / t["file"]).exists())
     print(f"catalog {len(catalog['tracks'])} tracks, {total / (1024**3):.3f} GiB")
 
 

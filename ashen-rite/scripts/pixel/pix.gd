@@ -155,6 +155,18 @@ static func car(color: Color = Color(0.78, 0.08, 0.10)) -> Image:
 	return img
 
 
+static func gas(color: Color = Color(0.48, 0.78, 0.32)) -> Image:
+	var img := image(18, 14, Color(0, 0, 0, 0))
+	var g1: Color = color
+	var g2: Color = Color(0.58, 0.62, 0.22)
+	disc(img, 8, 7, 6, Color(g1, 0.72))
+	disc(img, 5, 6, 4, Color(g2, 0.55))
+	disc(img, 12, 8, 4, Color(g1.lightened(0.12), 0.6))
+	disc(img, 9, 4, 3, Color(0.72, 0.88, 0.40, 0.5))
+	put(img, 8, 7, Color(0.85, 0.95, 0.55, 0.7))
+	return img
+
+
 static func scaled_tex(img: Image, scale: int) -> ImageTexture:
 	var big := img.duplicate()
 	big.resize(img.get_width() * scale, img.get_height() * scale, Image.INTERPOLATE_NEAREST)

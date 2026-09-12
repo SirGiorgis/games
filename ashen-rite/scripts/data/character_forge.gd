@@ -65,7 +65,7 @@ static func forge(description: String, photo_path: String = "", id_override: Str
 
 	d.build = "athletic"
 	d.width_scale = 1.0
-	if _has_any(text, ["heavy", "muscular", "tank", "broad", "stocky"]):
+	if _has_any(text, ["heavy", "muscular", "tank", "broad", "stocky", "chubby", "fat"]):
 		d.build = "heavy"
 		d.width_scale = 1.18
 		d.health = 1150

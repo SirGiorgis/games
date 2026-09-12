@@ -66,6 +66,10 @@ static func _atk(kind: String, dmg: float, kb: float, launch: float, stun: float
 		"heal": 0.0,
 		"atk_boost": 1.0,
 		"atk_boost_t": 0.0,
+		"poison": false,
+		"poison_t": 0.0,
+		"poison_dps": 0.0,
+		"stun": false,
 	}
 
 
@@ -126,6 +130,13 @@ static func _special(def: CharacterDef) -> Dictionary:
 				base.damage = 118.0 * def.attack
 				base.armor = 1
 				base.size = Vector2(96, 28)
+			elif def.id == "fogas":
+				base.damage = 128.0 * def.attack
+				base.armor = 2
+				base.size = Vector2(110, 32)
+				base.startup = 0.14
+				base.duration = 0.62
+				base.knockback = 210.0
 		"blast":
 			base.projectile = "ice"
 			base.proj_count = 1
@@ -233,6 +244,30 @@ static func _ultimate(def: CharacterDef) -> Dictionary:
 			u.atk_boost = 1.38
 			u.atk_boost_t = 10.0
 			u.knockdown = false
+		"fart":
+			u.projectile = "gas"
+			u.proj_count = 1
+			u.proj_speed = 110.0
+			u.proj_life = 1.55
+			u.pierce = true
+			u.damage = 110.0 * def.attack
+			u.knockback = 50.0
+			u.launch = 0.0
+			u.hitstun = 1.05
+			u.blockstun = 0.42
+			u.size = Vector2(118, 52)
+			u.reach = 28.0
+			u.y = -30.0
+			u.startup = 0.16
+			u.active = 0.16
+			u.duration = 0.72
+			u.invuln = 0.18
+			u.armor = 2
+			u.knockdown = false
+			u.poison = true
+			u.poison_t = 5.0
+			u.poison_dps = 26.0
+			u.stun = true
 		_:
 			u.projectile = "ult"
 			u.proj_count = 1

@@ -48,6 +48,8 @@ var _rage1: PixelLabel
 var _rage2: PixelLabel
 var _buff1: PixelLabel
 var _buff2: PixelLabel
+var _poison1: PixelLabel
+var _poison2: PixelLabel
 var _train: PixelLabel
 var _mode: PixelLabel
 var _p1_port: TextureRect
@@ -149,6 +151,10 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	_buff1.visible = false
 	_buff2 = PixelUI.label_at(root, "VODKA", Vector2(930, 84), 1, Color(0.62, 0.95, 0.88))
 	_buff2.visible = false
+	_poison1 = PixelUI.label_at(root, "POISON", Vector2(360, 84), 1, Color(0.55, 0.92, 0.32))
+	_poison1.visible = false
+	_poison2 = PixelUI.label_at(root, "POISON", Vector2(860, 84), 1, Color(0.55, 0.92, 0.32))
+	_poison2.visible = false
 	_ex1 = PixelUI.label_at(root, "EX", Vector2(248, 104), 1, Color(1.0, 0.55, 0.85))
 	_ex1.visible = false
 	_ex2 = PixelUI.label_at(root, "EX", Vector2(990, 104), 1, Color(1.0, 0.55, 0.85))
@@ -292,6 +298,14 @@ func _process(delta: float) -> void:
 		_buff2.visible = _p2.buffed()
 		if _buff2.visible:
 			_buff2.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 9.0))
+	if _poison1:
+		_poison1.visible = _p1.poisoned()
+		if _poison1.visible:
+			_poison1.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 10.0))
+	if _poison2:
+		_poison2.visible = _p2.poisoned()
+		if _poison2.visible:
+			_poison2.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 10.0))
 	if _p1_port:
 		_p1_port.modulate = Color(1.25, 0.82, 0.78) if _p1.raging() else Color.WHITE
 	if _p2_port:

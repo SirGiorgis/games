@@ -9,7 +9,7 @@ func _init() -> void:
 
 	var title := PixelFont.make("GIORGIS FIGHTING", Color(0.95, 0.22, 0.28), 4).get_image()
 	_blit(field, title, 640 - title.get_width() / 2, 16)
-	var sub := PixelFont.make("CHRIS  GIORGIS  MAKO", Color(0.95, 0.82, 0.35), 2).get_image()
+	var sub := PixelFont.make("CHRIS  GIORGIS  MAKO  FOGAS", Color(0.95, 0.82, 0.35), 2).get_image()
 	_blit(field, sub, 640 - sub.get_width() / 2, 64)
 
 	var stages := [
@@ -26,11 +26,11 @@ func _init() -> void:
 		_blit(field, tex, 28 + col * 180, 96 + row * 108)
 
 	var ids := [
-		"chris_xrisakis", "hoodrich_stacks", "mako",
+		"chris_xrisakis", "hoodrich_stacks", "mako", "fogas",
 	]
 	for i in ids.size():
 		var def := _def(ids[i])
-		var feet_x: int = 280 + i * 360
+		var feet_x: int = 160 + i * 320
 		var feet_y: int = 560
 		_stamp_fighter(field, def, "ultimate", 8, feet_x, feet_y, i % 2 == 1)
 		var nm: Image = PixelFont.make(def.callsign(), def.accent, 1).get_image()
@@ -38,7 +38,7 @@ func _init() -> void:
 		var ult: Image = PixelFont.make(def.ultimate_name.to_upper(), Color(0.95, 0.82, 0.35), 1).get_image()
 		_blit(field, ult, feet_x - ult.get_width() / 2, feet_y + 24)
 
-	var foot := PixelFont.make("CHRIS  GIORGIS  MAKO", Color(0.85, 0.78, 0.62), 2).get_image()
+	var foot := PixelFont.make("CHRIS  GIORGIS  MAKO  FOGAS", Color(0.85, 0.78, 0.62), 2).get_image()
 	_blit(field, foot, 640 - foot.get_width() / 2, 688)
 
 	var out := "res://.godot/gig_preview"
@@ -58,8 +58,12 @@ func _stamp_fighter(dst: Image, def: CharacterDef, pose: String, frame: int, fee
 	var arr: Array = frames.get(pose, frames["idle"])
 	var tex: ImageTexture = arr[clampi(frame, 0, arr.size() - 1)]
 	var src: Image = tex.get_image()
-	var sc: int = maxi(PixelFighterBake.SCALE - 1, 3)
-	src.resize(src.get_width() * sc, src.get_height() * sc, Image.INTERPOLATE_NEAREST)
+	var sc: float = float(maxi(PixelFighterBake.SCALE - 1, 3))
+	src.resize(
+		maxi(1, int(round(float(src.get_width()) * sc * def.width_scale))),
+		maxi(1, int(round(float(src.get_height()) * sc * def.height_scale))),
+		Image.INTERPOLATE_NEAREST
+	)
 	if flip:
 		src.flip_x()
 	var ox: int = feet_x - src.get_width() / 2

@@ -278,10 +278,8 @@ func _refresh() -> void:
 	_p2_walk = p2_frames.get("walk", p2_frames["idle"])
 	_p1_preview.texture = _p1_walk[0]
 	_p2_preview.texture = _p2_walk[0]
-	var sc1: float = 3.0
-	var sc2: float = 3.0
-	_p1_preview.scale = Vector2(sc1, sc1)
-	_p2_preview.scale = Vector2(-sc2, sc2)
+	_p1_preview.scale = Vector2(3.0 * p1_def.width_scale, 3.0 * p1_def.height_scale)
+	_p2_preview.scale = Vector2(-3.0 * p2_def.width_scale, 3.0 * p2_def.height_scale)
 
 
 func _pips(v: float, lo: float, hi: float) -> String:

@@ -1,5 +1,5 @@
 extends SceneTree
-## Headless proof of the three unique supers.
+## Headless proof of the four unique supers.
 
 
 func _init() -> void:
@@ -22,32 +22,42 @@ func _init() -> void:
 	var chris := _def("chris_xrisakis")
 	var mako := _def("mako")
 	var giorgis := _def("hoodrich_stacks")
+	var fogas := _def("fogas")
 
-	_panel(field, 40, 110, 380, 560)
-	_panel(field, 450, 110, 380, 560)
-	_panel(field, 860, 110, 380, 560)
+	_panel(field, 16, 110, 300, 560)
+	_panel(field, 332, 110, 300, 560)
+	_panel(field, 648, 110, 300, 560)
+	_panel(field, 964, 110, 300, 560)
 
-	_stamp_fighter(field, chris, "ultimate", 8, 230, 430, false)
+	_stamp_fighter(field, chris, "ultimate", 8, 166, 400, false)
 	var car: Image = Pix.car()
-	car.resize(car.get_width() * 4, car.get_height() * 4, Image.INTERPOLATE_NEAREST)
-	field.blend_rect(car, Rect2i(0, 0, car.get_width(), car.get_height()), Vector2i(268, 392))
-	field.blend_rect(car, Rect2i(0, 0, car.get_width(), car.get_height()), Vector2i(338, 368))
-	field.blend_rect(car, Rect2i(0, 0, car.get_width(), car.get_height()), Vector2i(308, 416))
-	_label(field, "CHRIS", Color(0.96, 0.22, 0.28), 230, 448)
-	_label(field, chris.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 230, 478)
-	_wrap(field, "Original open-wheel pack. Rosso livery, CX mark. No team badges.", Color(0.88, 0.86, 0.80), 70, 520, 32)
+	car.resize(car.get_width() * 3, car.get_height() * 3, Image.INTERPOLATE_NEAREST)
+	field.blend_rect(car, Rect2i(0, 0, car.get_width(), car.get_height()), Vector2i(188, 368))
+	field.blend_rect(car, Rect2i(0, 0, car.get_width(), car.get_height()), Vector2i(238, 348))
+	_label(field, "CHRIS", Color(0.96, 0.22, 0.28), 166, 428)
+	_label(field, chris.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 166, 456)
+	_wrap(field, "Original open-wheel pack. Rosso livery, CX mark. No team badges.", Color(0.88, 0.86, 0.80), 36, 500, 28)
 
-	_stamp_fighter(field, mako, "ultimate", 4, 640, 430, false)
-	_label(field, "MAKO", Color(0.88, 0.62, 0.38), 640, 448)
-	_label(field, mako.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 640, 478)
-	_wrap(field, "Weaving hook storm. Armor on the way in.", Color(0.88, 0.86, 0.80), 480, 520, 32)
+	_stamp_fighter(field, mako, "ultimate", 4, 482, 400, false)
+	_label(field, "MAKO", Color(0.88, 0.62, 0.38), 482, 428)
+	_label(field, mako.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 482, 456)
+	_wrap(field, "Weaving hook storm. Armor on the way in.", Color(0.88, 0.86, 0.80), 352, 500, 28)
 
-	_stamp_fighter(field, giorgis, "ultimate", 8, 1050, 430, false)
-	_label(field, "GIORGIS", Color(0.55, 0.82, 0.95), 1050, 448)
-	_label(field, giorgis.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 1050, 478)
-	_wrap(field, "Drinks. Heals 28% HP. ATK x1.38 for 10s.", Color(0.88, 0.86, 0.80), 890, 520, 32)
+	_stamp_fighter(field, giorgis, "ultimate", 8, 798, 400, false)
+	_label(field, "GIORGIS", Color(0.55, 0.82, 0.95), 798, 428)
+	_label(field, giorgis.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 798, 456)
+	_wrap(field, "Drinks. Heals 28% HP. ATK x1.38 for 10s.", Color(0.88, 0.86, 0.80), 668, 500, 28)
 
-	var foot := PixelFont.make("GRID STRIKE   DEMPSEY ROLL   STRAIGHT VODKA", Color(0.85, 0.78, 0.62), 2).get_image()
+	_stamp_fighter(field, fogas, "ultimate", 8, 1114, 400, false)
+	var gas: Image = Pix.gas()
+	gas.resize(gas.get_width() * 4, gas.get_height() * 4, Image.INTERPOLATE_NEAREST)
+	field.blend_rect(gas, Rect2i(0, 0, gas.get_width(), gas.get_height()), Vector2i(1048, 360))
+	field.blend_rect(gas, Rect2i(0, 0, gas.get_width(), gas.get_height()), Vector2i(1120, 380))
+	_label(field, "FOGAS", Color(0.92, 0.86, 0.70), 1114, 428)
+	_label(field, fogas.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 1114, 456)
+	_wrap(field, "Gas blast. Instant stun hit, then lingering poison.", Color(0.88, 0.86, 0.80), 984, 500, 28)
+
+	var foot := PixelFont.make("GRID STRIKE  DEMPSEY ROLL  STRAIGHT VODKA  GUT BLAST", Color(0.85, 0.78, 0.62), 2).get_image()
 	_blit(field, foot, 640 - foot.get_width() / 2, 688)
 
 	var out := "res://.godot/super_preview"
@@ -67,8 +77,12 @@ func _stamp_fighter(dst: Image, def: CharacterDef, pose: String, frame: int, fee
 	var arr: Array = frames.get(pose, frames["idle"])
 	var tex: ImageTexture = arr[clampi(frame, 0, arr.size() - 1)]
 	var src: Image = tex.get_image()
-	var sc: int = PixelFighterBake.SCALE + 1
-	src.resize(src.get_width() * sc, src.get_height() * sc, Image.INTERPOLATE_NEAREST)
+	var sc: float = float(PixelFighterBake.SCALE)
+	src.resize(
+		maxi(1, int(round(float(src.get_width()) * sc * def.width_scale))),
+		maxi(1, int(round(float(src.get_height()) * sc * def.height_scale))),
+		Image.INTERPOLATE_NEAREST
+	)
 	if flip:
 		src.flip_x()
 	var ox: int = feet_x - src.get_width() / 2

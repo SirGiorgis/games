@@ -389,6 +389,8 @@ func _on_hit(f: Fighter, attack: Dictionary, crit: bool) -> void:
 		_flash_call("PUNISH")
 	elif bool(attack.get("counter", false)):
 		_flash_call("COUNTER")
+	elif bool(attack.get("stun", false)):
+		_flash_call("STUN")
 	elif crit:
 		_flash_call("CRITICAL")
 
@@ -415,6 +417,9 @@ func _on_super(f: Fighter) -> void:
 		"vodka":
 			flash_col = Color(0.72, 0.95, 0.86)
 			fx.vodka_glug(f.global_position + Vector2(0, -78))
+		"fart":
+			flash_col = Color(0.55, 0.88, 0.32)
+			fx.fart_cloud(f.global_position + Vector2(float(f.facing) * 24.0, -28))
 	fx.super_flash(flash_col, 0.42)
 	fx.shade(0.55)
 	fx.shockwave(f.global_position + Vector2(0, -70))

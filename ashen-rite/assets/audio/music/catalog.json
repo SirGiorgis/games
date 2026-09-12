@@ -27,7 +27,8 @@
     "stage:void_garden": "stage_void_garden.wav",
     "theme:chris_xrisakis": "theme_chris_xrisakis.wav",
     "theme:hoodrich_stacks": "theme_hoodrich_stacks.wav",
-    "theme:mako": "theme_mako.wav"
+    "theme:mako": "theme_mako.wav",
+    "theme:fogas": "theme_fogas.wav"
   },
   "tracks": [
     {
@@ -172,6 +173,12 @@
       "id": "theme:chris_xrisakis",
       "file": "theme_chris_xrisakis.wav",
       "title": "THREAD THE LANE",
+      "seconds": 72
+    },
+    {
+      "id": "theme:fogas",
+      "file": "theme_fogas.wav",
+      "title": "STILL SMILING",
       "seconds": 72
     },
     {
