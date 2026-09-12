@@ -23,8 +23,12 @@ Lead fighter: **Chris Xrisakis**. Default opponent: **Giorgis**. Default arena: 
 | K | Heavy attack |
 | L | Special (50 meter; EX when the pink meter is full) |
 | U | Block |
+| Forward + U | Parry (tap at impact) |
+| Run + J / K | Dash attack |
+| L + U while hit | Burst (50 meter, escape a combo) |
 | I | Grab (beats block) |
 | O | Ultimate (full meter) |
+| Getup + back | Roll |
 | Esc / P | Pause |
 
 Player 2 (optional human): arrows + Z/X/C/V/B/N or numpad 1–6.
@@ -42,16 +46,17 @@ Or write a description (see `data/descriptions/example.txt`), put a photo at `da
 
 ## Combat notes
 
-- Best of 3 (first to 2 rounds). Final Round when both are one win away.
+- Versus is best of 3. **Arcade** is a first-to-1 ladder through the roster.
 - Special meter (pink METER) fills from hitting and getting hit. Full meter = **EX special**. Super (bottom) fills more slowly.
-- Combos: Light → Light → Heavy → Special → Super. Combo counter shows hits, damage, and scaling.
+- Combos: Light → Light → Heavy → Special → Super. HUD shows hits, damage, scaling, and a rank.
 - Jump-cancel lights/heavies on hit. Super-cancel specials on hit.
-- Each fighter's special and super actually play differently (teleport, quake, freeze, multi-fireballs).
-- Training mode: infinite timer, meter refill, dummy stand/block in Options.
+- Each fighter's special and super actually play differently (teleport, quake, freeze, multi-fireballs). Nyx can air dash.
+- **Rage** below 22% HP: extra damage and a red glow. **Guard** fills when you block; a full bar is a guard break.
+- Training: infinite timer, meter refill, R reset, F dummy cycle (CPU / block / stand / crouch / jump / mash), on-screen advantage.
 - Attract demo starts if you wait on the title splash.
 - Throw tech (press Throw as they grab). Air tech near the end of air hitstun.
 - Just Guard (block at the last moment). Pushblock (Special during blockstun, 25 meter).
-- Getup attack is a reversal. Super has armor against strikes. Clash if both hitboxes meet.
+- Getup attack is a reversal. Super and dash attacks have armor. Clash if both hitboxes meet.
 - CPU difficulties: Easy / Normal / Hard / Expert in Options. Hitboxes toggle is there too.
 
 ## Arenas

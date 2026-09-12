@@ -97,6 +97,8 @@ func _ready() -> void:
 	_arena_lbl = PixelUI.label_at(self, "", Vector2(420, 548), 2, Color(0.88, 0.78, 0.42), 36)
 
 	PixelUI.add_footer(self, "A/D SELECT  J THEN STAGE  R RANDOM  C CPU  T ARENA  F FORGE  ESC BACK")
+	if GameState.arcade:
+		PixelUI.label_at(self, "ARCADE LADDER", Vector2(0, 12), 2, Color(1, 0.82, 0.32), 0, 1280).set_centered(1280)
 	_apply_indices_from_state()
 	for id in _ids:
 		_cached_frames(id)
@@ -241,11 +243,13 @@ func _refresh() -> void:
 	var focus_def := p1_def if _focus == 0 else p2_def
 	var who := "PLAYER 1" if _focus == 0 else "CPU / P2"
 	_info.set_pix("%s — %s  %s" % [who, focus_def.name, focus_def.title], 2, Color(0.92, 0.9, 0.86), 38)
-	_stats.set_pix("%s    HP %d  SPD %d  ATK %.2f" % [
-		focus_def.intro_quote if focus_def.intro_quote != "" else focus_def.special_name.to_upper(),
-		int(focus_def.health), int(focus_def.speed), focus_def.attack
-	], 1, Color(0.78, 0.74, 0.68), 38)
-	_cpu_label.set_pix("%s  ·  %s  ·  %s / %s" % [
+	_stats.set_pix("HP %s  SPD %s  ATK %s  DEF %s" % [
+		_pips(focus_def.health, 700.0, 1200.0),
+		_pips(focus_def.speed, 240.0, 380.0),
+		_pips(focus_def.attack, 0.85, 1.15),
+		_pips(focus_def.defense, 0.75, 1.15)
+	], 1, Color(0.78, 0.74, 0.68), 42)
+	_cpu_label.set_pix("%s  ·  %s  ·  L %s  O %s" % [
 		p2_def.name,
 		"CPU " + GameState.difficulty_name() if GameState.p2_is_cpu else "HUMAN",
 		focus_def.special_name,
@@ -265,3 +269,11 @@ func _refresh() -> void:
 	var sc2: float = 3.0
 	_p1_preview.scale = Vector2(sc1, sc1)
 	_p2_preview.scale = Vector2(-sc2, sc2)
+
+
+func _pips(v: float, lo: float, hi: float) -> String:
+	var n := clampi(int(round((v - lo) / maxf(hi - lo, 0.01) * 8.0)), 1, 8)
+	var s := ""
+	for i in 8:
+		s += "I" if i < n else "."
+	return s

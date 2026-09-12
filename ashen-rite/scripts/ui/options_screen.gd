@@ -51,7 +51,7 @@ func _nudge(dir: int) -> void:
 		"cpu":
 			GameState.p2_is_cpu = not GameState.p2_is_cpu
 		"dummy":
-			var modes := ["cpu", "block", "stand"]
+			var modes := ["cpu", "block", "stand", "crouch", "jump", "mash"]
 			var di := modes.find(GameState.dummy_mode)
 			if di < 0:
 				di = 0

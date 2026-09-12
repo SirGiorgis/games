@@ -18,6 +18,7 @@ func _ready() -> void:
 	PixelUI.full_bg(self)
 	PixelUI.add_title(self, "GIORGIS FIGHTING", 88, Color(0.95, 0.18, 0.28))
 	PixelUI.label_at(self, "ARCADE BRAWL", Vector2(0, 164), 2, Color(0.92, 0.74, 0.32), 0, 1280).set_centered(1280)
+	PixelUI.label_at(self, "CHRIS VS GIORGIS", Vector2(0, 196), 2, Color(0.85, 0.7, 0.4), 0, 1280).set_centered(1280)
 
 	var grass := TextureRect.new()
 	grass.texture = PixelUI.stage_strip()
@@ -43,7 +44,7 @@ func _ready() -> void:
 
 	_press = PixelUI.label_at(self, "PRESS ENTER", Vector2(0, 600), 3, Color(1, 0.92, 0.45), 0, 1280)
 	_press.set_centered(1280)
-	PixelUI.add_footer(self, "ENTER START   WAIT FOR DEMO")
+	PixelUI.add_footer(self, "ENTER START   WAIT FOR DEMO   ARCADE ON MENU")
 	AudioDirector.play_music("menu")
 
 

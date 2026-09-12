@@ -23,7 +23,11 @@ U         BLOCK
 I         THROW
 O         SUPER
 S+I       TAUNT
-ESC / P   PAUSE""", Vector2(64, 184), 2, Color(0.92, 0.9, 0.86), 28)
+ESC / P   PAUSE
+FWD+U     PARRY
+RUN+J/K   DASH ATTACK
+L+U HIT   BURST
+GETUP+A   ROLL""", Vector2(64, 184), 2, Color(0.92, 0.9, 0.86), 26)
 
 	PixelUI.add_panel(self, Vector2(640, 120), Vector2(600, 520), Color(0.35, 0.75, 1.0))
 	PixelUI.label_at(self, "PLAYER 2 / CPU", Vector2(640, 132), 3, Color(0.55, 0.85, 1.0), 0, 600).set_centered(600)
@@ -46,7 +50,11 @@ JUST GUARD  BLOCK LATE
 PUSHBLOCK   L WHILE BLOCKSTUN
 GETUP ATTACK IS A REVERSAL
 MAX METER   EX SPECIAL
-O SUPER     UNIQUE PER FIGHTER""", Vector2(664, 184), 2, Color(0.88, 0.9, 0.94), 22)
+O SUPER     UNIQUE PER FIGHTER
+FWD+BLOCK   PARRY
+L+U ON HIT  BURST
+LOW HP      RAGE
+BLOCK TOO   GUARD BREAK""", Vector2(664, 184), 2, Color(0.88, 0.9, 0.94), 20)
 
 	PixelUI.add_footer(self, "ESC / ENTER  BACK")
 

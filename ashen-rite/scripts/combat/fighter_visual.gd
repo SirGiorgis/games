@@ -162,6 +162,9 @@ func _apply_juice() -> void:
 	_sprite.position.x = _base_x() + _pose_shift() - float(facing) * recoil * 11.0
 	_sprite.rotation = _pose_tilt() * facing
 	_sprite.modulate = Color.WHITE.lerp(Color(1.75, 1.68, 1.52), flash)
+	var host = get_parent()
+	if host and host.has_method("raging") and host.raging() and flash < 0.2:
+		_sprite.modulate = Color.WHITE.lerp(Color(1.35, 0.72, 0.68), 0.45 + 0.25 * sin(_time * 9.0))
 
 
 func _base_x() -> float:

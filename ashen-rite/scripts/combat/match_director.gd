@@ -28,6 +28,7 @@ var _aid: String = "grass_field"
 var _pause_lock: float = 0.0
 var _first_hit: bool = true
 var _super_dip: float = 0.0
+var _key_was: Dictionary = {}
 
 
 func _ready() -> void:
@@ -137,6 +138,8 @@ func _begin_round() -> void:
 		_set_banner("TRAINING")
 	elif GameState.attract:
 		_set_banner("DEMO")
+	elif GameState.arcade:
+		_set_banner("BOUT %d" % (GameState.arcade_index + 1))
 	elif final_r:
 		_set_banner("FINAL ROUND")
 	else:
@@ -167,6 +170,8 @@ func _process(delta: float) -> void:
 		"vs":
 			phase_t += delta
 			var vs_need: float = 0.45 if (GameState.training or GameState.attract) else 1.85
+			if GameState.arcade:
+				vs_need = 1.05
 			if phase_t > vs_need or Input.is_action_just_pressed(ControlMap.MENU.confirm):
 				vs_layer.dismiss()
 				_begin_round()
@@ -190,6 +195,16 @@ func _process(delta: float) -> void:
 				hud.set_timer(99)
 				if p1 and not p1.is_cpu:
 					p1.training_tick(delta)
+				if _tap(KEY_R):
+					_begin_round()
+					return
+				if _tap(KEY_F):
+					var modes := ["cpu", "block", "stand", "crouch", "jump", "mash"]
+					var di := modes.find(GameState.dummy_mode)
+					if di < 0:
+						di = 0
+					GameState.dummy_mode = modes[posmod(di + 1, modes.size())]
+					_flash_call(GameState.dummy_mode.to_upper())
 			else:
 				time_left = max(0.0, time_left - delta)
 				var t: int = int(ceil(time_left))
@@ -355,9 +370,17 @@ func _on_hit(f: Fighter, attack: Dictionary, crit: bool) -> void:
 		elif bool(attack.get("counter", false)):
 			col = Color(1, 0.72, 0.28)
 		fx.popup(f.global_position + Vector2(randf_range(-12, 12), -40), str(dealt), col)
+		GameState.note_hit(p1.combo_hits if f == p2 else p2.combo_hits, float(dealt))
+	if bool(attack.get("freeze", false)):
+		fx.crystals(f.global_position + Vector2(0, -70))
+	if bool(attack.get("quake", false)):
+		fx.quake_dust(f.global_position)
+		cam.shake(1.1)
 	if _first_hit and phase == "fight":
 		_first_hit = false
 		_flash_call("FIRST HIT")
+	elif bool(attack.get("punish", false)):
+		_flash_call("PUNISH")
 	elif bool(attack.get("counter", false)):
 		_flash_call("COUNTER")
 	elif crit:
@@ -381,6 +404,7 @@ func _on_super(f: Fighter) -> void:
 	cam.punch(0.08)
 	cam.shake(0.85)
 	AudioDirector.play("super_call", 1.0, 0.8)
+	fx.letterbox(0.55)
 	if phase == "fight":
 		Engine.time_scale = 0.22
 		_super_dip = 0.12
@@ -389,6 +413,18 @@ func _on_super(f: Fighter) -> void:
 
 func _on_announced(text: String) -> void:
 	_flash_call(text)
+	if text == "BURST" and p1 and p2:
+		fx.burst_ring((p1.global_position + p2.global_position) * 0.5 + Vector2(0, -60))
+		cam.shake(0.7)
+	elif text == "PARRY" and p1:
+		fx.shockwave(p1.global_position + Vector2(0, -60))
+
+
+func _tap(key: Key) -> bool:
+	var down := Input.is_physical_key_pressed(key)
+	var was: bool = _key_was.get(key, false)
+	_key_was[key] = down
+	return down and not was
 
 
 func _on_clash(pos: Vector2) -> void:
@@ -445,11 +481,11 @@ func _set_banner(text: String) -> void:
 		col = Color(0.95, 0.78, 0.28)
 	elif text == "TIME" or text == "DOUBLE KO":
 		col = Color(0.75, 0.82, 1.0)
-	elif text == "CRITICAL" or text == "COUNTER" or text == "PERFECT" or text == "DRAMATIC FINISH":
+	elif text == "CRITICAL" or text == "COUNTER" or text == "PERFECT" or text == "DRAMATIC FINISH" or text == "PUNISH" or text == "GUARD BREAK":
 		col = Color(1, 0.55, 0.2)
-	elif text == "CLASH" or text == "TECH" or text == "AIR TECH" or text == "JUST GUARD":
+	elif text == "CLASH" or text == "TECH" or text == "AIR TECH" or text == "JUST GUARD" or text == "PARRY" or text == "BURST" or text == "ROLL" or text == "AIR DASH":
 		col = Color(0.55, 0.88, 1.0)
-	elif text == "REVERSAL" or text == "SUPER CANCEL" or text == "PUSHBLOCK" or text == "WALL BOUNCE":
+	elif text == "REVERSAL" or text == "SUPER CANCEL" or text == "PUSHBLOCK" or text == "WALL BOUNCE" or text == "ARMOR":
 		col = Color(1.0, 0.72, 0.28)
 	elif text == "EX" or text == "TRAINING" or text == "DEMO" or text == "RESET" or text == "FINAL ROUND" or text == "FIRST HIT":
 		col = Color(1.0, 0.86, 0.32)

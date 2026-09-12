@@ -76,6 +76,13 @@ var _guard_age: float = 99.0
 var _taunt_t: float = 0.0
 var _wall_used: bool = false
 var _hit_pass: int = 0
+var _fwd_guard: bool = false
+var _air_dash_used: bool = false
+var guard_meter: float = 0.0
+const MAX_GUARD := 100.0
+var input_log: Array[String] = []
+var last_advantage: float = 0.0
+var last_move: String = ""
 
 var visual: FighterVisual
 var hurtbox: Area2D
@@ -174,6 +181,11 @@ func reset_round(start_pos: Vector2) -> void:
 	_taunt_t = 0.0
 	_wall_used = false
 	_hit_pass = -1
+	_fwd_guard = false
+	_air_dash_used = false
+	guard_meter = 0.0
+	last_advantage = 0.0
+	last_move = ""
 	rotation = 0
 	visual.rotation = 0
 	visual.set_pose_name("idle")
@@ -213,6 +225,8 @@ func _physics_process(delta: float) -> void:
 		combo_damage = 0.0
 		last_chain.clear()
 		combo_changed.emit(0)
+	if not guarding:
+		guard_meter = maxf(0.0, guard_meter - 32.0 * delta)
 	_taunt_t = max(0.0, _taunt_t - delta)
 	if on_ground and state != State.HIT:
 		_wall_used = false
@@ -279,6 +293,8 @@ func _gather_command() -> Dictionary:
 
 
 func _think(cmd: Dictionary, delta: float) -> void:
+	_fwd_guard = bool(cmd.fwd)
+	_log_buttons(cmd)
 	var want_guard: bool = on_ground and (cmd.back or cmd.block) and not _busy_attack()
 	if want_guard and not guarding:
 		_guard_age = 0.0
@@ -291,6 +307,8 @@ func _think(cmd: Dictionary, delta: float) -> void:
 		hitstun -= delta
 		_accel_x(0.0, 2400.0, delta)
 		_queue_inputs(cmd)
+		if _try_burst(cmd):
+			return
 		if cmd.special and special_meter >= 25.0 and opponent:
 			special_meter -= 25.0
 			hitstun = 0.02
@@ -311,6 +329,8 @@ func _think(cmd: Dictionary, delta: float) -> void:
 		if on_ground:
 			_accel_x(0.0, 1600.0, delta)
 		_queue_inputs(cmd)
+		if _try_burst(cmd):
+			return
 		if not on_ground and health > 0.0 and hitstun <= 0.14:
 			if cmd.up or cmd.light or cmd.heavy or _jbuf > 0.0:
 				_air_tech()
@@ -335,6 +355,16 @@ func _think(cmd: Dictionary, delta: float) -> void:
 		_land_t -= delta
 		_accel_x(0.0, FRICTION, delta)
 		_queue_inputs(cmd)
+		if was_getup and (cmd.backdash or (cmd.back and not cmd.down and not cmd.fwd)):
+			state = State.BACKDASH
+			_dash_t = 0.20
+			invuln = 0.24
+			velocity.x = float(facing) * -440.0
+			announced.emit("ROLL")
+			AudioDirector.play("dash", 0.9, 0.65)
+			if visual:
+				visual.dust()
+			return
 		if state == State.LAND and _jbuf > 0.0 and _land_t <= 0.03:
 			_begin_jump(cmd)
 			return
@@ -444,6 +474,10 @@ func _think(cmd: Dictionary, delta: float) -> void:
 		_start_attack("grab")
 		return
 
+	if on_ground and state == State.RUN and (cmd.light or cmd.heavy):
+		_start_attack("dash_atk")
+		return
+
 	if cmd.heavy:
 		var hk := _normal_kind("heavy", cmd)
 		if not (hk.begins_with("j") and air_done):
@@ -472,6 +506,16 @@ func _think(cmd: Dictionary, delta: float) -> void:
 	if not on_ground:
 		if state != State.JUMP:
 			state = State.JUMP
+		if def.id == "nyx_hollow" and not _air_dash_used and (cmd.backdash or (cmd.fwd and cmd.special)):
+			_air_dash_used = true
+			invuln = max(invuln, 0.10)
+			velocity.x = float(facing) * (620.0 if cmd.fwd else -520.0)
+			velocity.y = minf(velocity.y, -40.0)
+			if visual:
+				visual.dust()
+				visual.punch_impact(0.55)
+			AudioDirector.play("whoosh", 1.45, 0.65)
+			announced.emit("AIR DASH")
 		var air_t: float = _jump_x
 		if cmd.fwd:
 			air_t = float(facing) * def.speed * 0.98
@@ -554,6 +598,7 @@ func _leave_ground() -> void:
 
 func _on_landed() -> void:
 	air_done = false
+	_air_dash_used = false
 	velocity.x *= 0.62
 	if visual:
 		visual.punch_impact(0.45)
@@ -583,7 +628,7 @@ func _try_jump_cancel(cmd: Dictionary) -> bool:
 	if not on_ground or not cmd.up:
 		return false
 	var k: String = str(current_attack.get("kind", ""))
-	if k not in ["light", "clight", "heavy", "cheavy"]:
+	if k not in ["light", "clight", "heavy", "cheavy", "dash_atk"]:
 		return false
 	hitbox.disarm()
 	_begin_jump(cmd)
@@ -606,7 +651,7 @@ func _try_chain(cmd: Dictionary) -> void:
 	var allowed := false
 	if k in ["light", "clight", "jlight"]:
 		allowed = next in ["light", "clight", "heavy", "cheavy", "special", "ultimate"]
-	elif k in ["heavy", "cheavy", "jheavy"]:
+	elif k in ["heavy", "cheavy", "jheavy", "dash_atk"]:
 		allowed = next in ["special", "ultimate"]
 	elif k == "special":
 		allowed = next in ["ultimate"] if ultimate_meter >= MAX_ULTIMATE else false
@@ -643,9 +688,12 @@ func _start_attack(kind: String) -> void:
 		"light", "clight", "jlight":
 			state = State.LIGHT
 			AudioDirector.play("whoosh", 1.35, 0.5)
-		"heavy", "cheavy", "jheavy":
+		"heavy", "cheavy", "jheavy", "dash_atk":
 			state = State.HEAVY
 			AudioDirector.play("whoosh", 0.85, 0.6)
+			if kind == "dash_atk":
+				_apply_special_motion(atk)
+				announced.emit("DASH")
 		"special":
 			state = State.SPECIAL
 			special_meter = 0.0 if ex else max(0.0, special_meter - 50.0)
@@ -764,17 +812,41 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 		health_changed.emit(health, max_health)
 		attacker.last_attack_was_hit = true
 		return
+	if int(current_attack.get("armor", 0)) > 0 and _busy_attack() and not grabbing:
+		var chip2: float = float(attack.damage) * 0.22
+		health = max(1.0, health - chip2)
+		visual.pulse_hit()
+		freeze_frames = max(freeze_frames, 0.04)
+		health_changed.emit(health, max_health)
+		attacker.last_attack_was_hit = true
+		announced.emit("ARMOR")
+		return
 	var gkind: String = str(attack.get("guard", "mid"))
 	var can_guard: bool = guarding and on_ground and not grabbing and state != State.PREJUMP
 	if can_guard and gkind == "low" and not crouch_guarding:
 		can_guard = false
 	if can_guard and gkind == "high" and crouch_guarding:
 		can_guard = false
+	if can_guard and _fwd_guard and _guard_age <= 0.12 and not grabbing:
+		_do_parry(attacker)
+		return
 	var blocked := can_guard or ((state == State.BLOCK or state == State.BACKDASH) and not grabbing)
 	var dmg: float = float(attack.damage) * attacker.def.attack / max(def.defense, 0.2)
+	if attacker.raging():
+		dmg *= 1.16
+	var broke := false
+	if blocked:
+		guard_meter = minf(MAX_GUARD, guard_meter + CombatRules.guard_gain(str(attack.get("kind", ""))))
+		if guard_meter >= MAX_GUARD:
+			blocked = false
+			broke = true
+			guard_meter = 0.0
+			announced.emit("GUARD BREAK")
+			AudioDirector.play("ko", 1.35, 0.45)
+			dmg *= 1.22
 	if blocked:
 		var just: bool = _guard_age <= 0.10
-		dmg *= 0.05 if just else 0.08
+		dmg *= CombatRules.chip_mul(str(attack.get("kind", "")), just)
 		AudioDirector.play("block", 1.2 if just else 1.0, 0.85 if just else 0.8)
 		special_meter = min(MAX_SPECIAL, special_meter + (5.0 if just else 3.0))
 		attacker.special_meter = min(MAX_SPECIAL, attacker.special_meter + 2.0)
@@ -787,18 +859,24 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 		visual.pulse_hit()
 		meters_changed.emit(special_meter, ultimate_meter)
 		attacker.meters_changed.emit(attacker.special_meter, attacker.ultimate_meter)
+		attacker.last_attack_was_hit = true
+		attacker.last_move = str(attack.get("kind", ""))
+		attacker.last_advantage = float(attack.get("blockstun", 0.16)) * (0.52 if just else 1.0) - maxf(attacker.attack_duration - attacker.attack_timer, 0.0)
 		if just:
 			announced.emit("JUST GUARD")
 			AudioDirector.play("parry", 1.0, 0.6)
 		return
 
 	var counter := _busy_attack()
+	var punish := counter and attack_timer > attack_active_until
 	var crit := false
 	if attack.get("kind", "") == "heavy" and randf() < 0.18:
 		crit = true
 		dmg *= 1.35
 	if counter:
 		dmg *= 1.18
+	if punish:
+		dmg *= 1.08
 	var scale := CombatRules.combo_scale(attacker.combo_hits)
 	dmg *= scale
 	health = max(0.0, health - dmg)
@@ -810,13 +888,18 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 	if counter:
 		kb *= 1.12
 		launch *= 1.15
+	launch *= CombatRules.juggle_scale(attacker.combo_hits)
+	if broke:
+		launch = minf(launch, -160.0)
+		hitstun = maxf(float(attack.hitstun) * 1.35, 0.42)
+	else:
+		hitstun = float(attack.hitstun) * (1.28 if counter else 1.0)
 	velocity = Vector2(attacker.facing * kb, launch)
-	hitstun = float(attack.hitstun) * (1.28 if counter else 1.0)
-	var hard_kd: bool = bool(attack.get("knockdown", false)) or health <= 0.0
+	var hard_kd: bool = bool(attack.get("knockdown", false)) or health <= 0.0 or broke
 	state = State.KNOCKDOWN if hard_kd else State.HIT
 	visual.pulse_hit()
 	if attacker.visual:
-		var heavyish: bool = str(attack.get("kind", "")) in ["heavy", "cheavy", "jheavy", "special", "ultimate"] or crit or counter
+		var heavyish: bool = str(attack.get("kind", "")) in ["heavy", "cheavy", "jheavy", "special", "ultimate", "dash_atk"] or crit or counter
 		attacker.visual.punch_impact(1.2 if heavyish else 0.75)
 	attacker.last_attack_was_hit = true
 	if attacker.combo_hits == 0:
@@ -832,7 +915,7 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 		AudioDirector.play("meter", 1.0, 0.7)
 	special_meter = min(MAX_SPECIAL, special_meter + 3.0)
 	ultimate_meter = min(MAX_ULTIMATE, ultimate_meter + 2.2)
-	var snd := "hit_h" if attack.get("kind", "") in ["heavy", "special", "ultimate"] else "hit_l"
+	var snd := "hit_h" if attack.get("kind", "") in ["heavy", "special", "ultimate", "dash_atk"] else "hit_l"
 	AudioDirector.play(snd, randf_range(0.92, 1.08))
 	freeze_frames = float(attack.hitstop) * (1.25 if counter else 1.0)
 	attacker.freeze_frames = float(attack.hitstop) * 0.85
@@ -840,14 +923,95 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 		freeze_frames = max(freeze_frames, 0.22)
 		if visual:
 			visual.flash = 1.0
+	if bool(attack.get("ex", false)):
+		freeze_frames = max(freeze_frames, 0.16)
+		attacker.freeze_frames = max(attacker.freeze_frames, 0.10)
 	health_changed.emit(health, max_health)
 	meters_changed.emit(special_meter, ultimate_meter)
 	attacker.meters_changed.emit(attacker.special_meter, attacker.ultimate_meter)
+	attacker.last_move = str(attack.get("kind", ""))
+	attacker.last_advantage = hitstun - maxf(attacker.attack_duration - attacker.attack_timer, 0.0)
 	attack["dealt"] = dmg
 	attack["counter"] = counter
+	attack["punish"] = punish
 	hit_landed.emit(self, attack, crit or counter)
 	if health <= 0.0:
 		defeated.emit(self)
+
+
+func raging() -> bool:
+	return health / maxf(max_health, 1.0) <= 0.22
+
+
+func _try_burst(cmd: Dictionary) -> bool:
+	if health <= 0.0 or round_over:
+		return false
+	if not cmd.special or not cmd.block or special_meter < 50.0:
+		return false
+	special_meter -= 50.0
+	hitstun = 0.0
+	invuln = 0.28
+	state = State.IDLE if on_ground else State.JUMP
+	velocity = Vector2(float(facing) * -380.0, -220.0 if not on_ground else -80.0)
+	if opponent:
+		opponent.velocity.x = float(facing) * 420.0
+		opponent.freeze_frames = max(opponent.freeze_frames, 0.16)
+	freeze_frames = max(freeze_frames, 0.10)
+	hitbox.disarm()
+	meters_changed.emit(special_meter, ultimate_meter)
+	announced.emit("BURST")
+	AudioDirector.play("ultimate", 1.25, 0.55)
+	if visual:
+		visual.punch_impact(1.0)
+		visual.dust()
+	return true
+
+
+func _do_parry(attacker: Fighter) -> void:
+	hitstun = 0.0
+	state = State.IDLE
+	invuln = 0.10
+	freeze_frames = 0.06
+	attacker.freeze_frames = max(attacker.freeze_frames, 0.30)
+	attacker.velocity.x = float(facing) * -260.0
+	special_meter = min(MAX_SPECIAL, special_meter + 16.0)
+	ultimate_meter = min(MAX_ULTIMATE, ultimate_meter + 8.0)
+	meters_changed.emit(special_meter, ultimate_meter)
+	attacker.last_attack_was_hit = false
+	attacker.last_move = "parry"
+	attacker.last_advantage = -0.30
+	announced.emit("PARRY")
+	AudioDirector.play("parry", 0.9, 0.85)
+	if visual:
+		visual.punch_impact(0.9)
+		visual.flash = 1.0
+	if attacker.visual:
+		attacker.visual.recoil = 1.0
+
+
+func _log_buttons(cmd: Dictionary) -> void:
+	var tag := ""
+	if cmd.light:
+		tag = "J"
+	elif cmd.heavy:
+		tag = "K"
+	elif cmd.special:
+		tag = "L"
+	elif cmd.grab:
+		tag = "I"
+	elif cmd.ultimate:
+		tag = "O"
+	elif cmd.backdash:
+		tag = "BD"
+	if tag.is_empty():
+		return
+	if cmd.down:
+		tag = "S+" + tag
+	elif cmd.up:
+		tag = "W+" + tag
+	input_log.append(tag)
+	if input_log.size() > 10:
+		input_log.pop_front()
 
 
 func _throw_tech(attacker: Fighter) -> void:
@@ -934,7 +1098,10 @@ func _sync_visual() -> void:
 		visual.set_pose_name("victory")
 		return
 	if _busy_attack():
-		visual.set_pose_name(str(current_attack.get("kind", "light")))
+		var posek: String = str(current_attack.get("kind", "light"))
+		if posek == "dash_atk":
+			posek = "heavy"
+		visual.set_pose_name(posek)
 	else:
 		match state:
 			State.WALK:

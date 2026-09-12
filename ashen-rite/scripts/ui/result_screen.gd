@@ -61,7 +61,14 @@ func _ready() -> void:
 func present() -> void:
 	_index = 0
 	var p1_win := GameState.p1_rounds >= GameState.rounds_to_win
-	if p1_win:
+	var arcade_clear: bool = GameState.arcade and p1_win and GameState.arcade_index >= GameState.arcade_queue.size()
+	if arcade_clear:
+		_title.set_pix("ARCADE CLEAR", 5, Color(0.95, 0.82, 0.32))
+		AudioDirector.play("victory")
+	elif GameState.arcade and not p1_win:
+		_title.set_pix("CONTINUE?", 5, Color(0.88, 0.22, 0.28))
+		AudioDirector.play("defeat")
+	elif p1_win:
 		_title.set_pix("VICTORY", 6, Color(0.95, 0.82, 0.32))
 		AudioDirector.play("victory")
 	else:
@@ -74,11 +81,15 @@ func present() -> void:
 	_sub.set_centered(1280)
 	var winner := CharacterCatalog.get_def(GameState.p1_character_id if p1_win else GameState.p2_character_id)
 	var q: String = winner.win_quote
-	if GameState.last_was_perfect:
+	if arcade_clear:
+		q = "SCORE %d   MAX %d HIT   %d DMG" % [GameState.arcade_score, GameState.match_max_combo, int(GameState.match_damage)]
+	elif GameState.last_was_perfect:
 		q = "PERFECT - " + q
 	elif GameState.last_was_dramatic:
 		q = "DRAMATIC - " + q
-	_quote.set_pix(q, 2, Color(1, 0.86, 0.42))
+	else:
+		q = "%s    MAX %d HIT  %d DMG" % [q, GameState.match_max_combo, int(GameState.match_damage)]
+	_quote.set_pix(q, 2, Color(1, 0.86, 0.42), 42)
 	_quote.set_centered(1280)
 	AudioDirector.play_music("menu")
 	var p1_frames: Dictionary = PixelFighterBake.bake(CharacterCatalog.get_def(GameState.p1_character_id))

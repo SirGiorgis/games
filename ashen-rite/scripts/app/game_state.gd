@@ -30,6 +30,13 @@ var show_hitboxes: bool = false
 var training: bool = false
 var attract: bool = false
 var dummy_mode: String = "cpu"
+var arcade: bool = false
+var arcade_index: int = 0
+var arcade_queue: PackedStringArray = PackedStringArray()
+var arcade_score: int = 0
+var match_max_combo: int = 0
+var match_damage: float = 0.0
+var match_hits: int = 0
 
 var custom_description: String = "Male fighter, tall, athletic build, black hair, black jacket, aggressive personality, lightning-based powers."
 var custom_photo_path: String = "res://data/characters/refs/custom.png"
@@ -44,6 +51,53 @@ func reset_match_score() -> void:
 	last_was_double = false
 	last_was_dramatic = false
 	match_active = true
+	match_max_combo = 0
+	match_damage = 0.0
+	match_hits = 0
+
+
+func begin_arcade(p1_id: String) -> void:
+	arcade = true
+	arcade_index = 0
+	arcade_score = 0
+	p1_character_id = p1_id
+	p2_is_cpu = true
+	training = false
+	attract = false
+	rounds_to_win = 1
+	arcade_queue = PackedStringArray()
+	var rival: String = "hoodrich_stacks" if p1_id != "hoodrich_stacks" else "chris_xrisakis"
+	for id in CharacterCatalog.ids():
+		if id == p1_id or id == "custom" or id == rival:
+			continue
+		arcade_queue.append(id)
+	arcade_queue.append(rival)
+	if arcade_queue.is_empty():
+		arcade_queue.append("hoodrich_stacks")
+	p2_character_id = arcade_queue[0]
+
+
+func next_arcade_bout() -> bool:
+	arcade_index += 1
+	if arcade_index >= arcade_queue.size():
+		return false
+	p2_character_id = arcade_queue[arcade_index]
+	reset_match_score()
+	return true
+
+
+func end_arcade() -> void:
+	arcade = false
+	rounds_to_win = 2
+
+
+func note_hit(combo: int, dmg: float) -> void:
+	match_hits += 1
+	match_damage += dmg
+	if combo > match_max_combo:
+		match_max_combo = combo
+	if arcade:
+		arcade_score += int(round(dmg)) + combo * 10
 
 
 func difficulty_name() -> String:

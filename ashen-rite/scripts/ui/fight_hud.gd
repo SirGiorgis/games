@@ -39,6 +39,17 @@ var _hp1_pos := Vector2(16, 56)
 var _hp2_pos := Vector2(712, 56)
 var _low1 := false
 var _low2 := false
+var _hp_n1: PixelLabel
+var _hp_n2: PixelLabel
+var _rank: PixelLabel
+var _g1: TextureRect
+var _g2: TextureRect
+var _rage1: PixelLabel
+var _rage2: PixelLabel
+var _train: PixelLabel
+var _mode: PixelLabel
+var _p1_port: TextureRect
+var _p2_port: TextureRect
 
 
 func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
@@ -74,6 +85,7 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	p1_port.position = Vector2(16, 8)
 	p1_port.scale = Vector2(4, 4)
 	root.add_child(p1_port)
+	_p1_port = p1_port
 
 	var p1_pill := TextureRect.new()
 	p1_pill.texture = PixelUI.name_pill(p1w, 11, Color(0.05, 0.05, 0.06), p1.def.accent)
@@ -89,6 +101,7 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	p2_port.position = Vector2(1280 - 16 - 88, 8)
 	p2_port.scale = Vector2(4, 4)
 	root.add_child(p2_port)
+	_p2_port = p2_port
 
 	var p2_pill := TextureRect.new()
 	p2_pill.texture = PixelUI.name_pill(p2w, 11, Color(0.05, 0.05, 0.06), p2.def.accent)
@@ -101,8 +114,11 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 
 	_hp1_pos = Vector2(16, 60)
 	_hp2_pos = Vector2(712, 60)
-	_p1_hp = _bar_tex(root, _hp1_pos, 138, 11, Color(0.30, 0.84, 0.24))
-	_p2_hp = _bar_tex(root, _hp2_pos, 138, 11, Color(0.90, 0.18, 0.22))
+	_p1_hp = _bar_tex(root, _hp1_pos, 138, 11, Color(0.30, 0.84, 0.24).lerp(p1.def.accent, 0.22))
+	_p2_hp = _bar_tex(root, _hp2_pos, 138, 11, Color(0.90, 0.18, 0.22).lerp(p2.def.accent, 0.18))
+	_hp_n1 = PixelUI.label_at(root, "%d" % int(p1.max_health), Vector2(24, 64), 1, Color(0.98, 0.98, 0.94))
+	_hp_n2 = PixelUI.label_at(root, "%d" % int(p2.max_health), Vector2(712, 64), 1, Color(0.98, 0.98, 0.94), 0, 552)
+	_hp_n2.set_centered(552)
 
 	_tbox = TextureRect.new()
 	_tbox.texture = PixelUI.timer_box()
@@ -119,6 +135,14 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	_p2_sp = _meter_tex(root, Vector2(1040, 116), 56, 6, Color(0.88, 0.34, 0.64))
 	PixelUI.label_at(root, "METER", Vector2(16, 104), 1, Color(0.94, 0.48, 0.72))
 	PixelUI.label_at(root, "METER", Vector2(1040, 104), 1, Color(0.94, 0.48, 0.72))
+	_g1 = _meter_tex(root, Vector2(16, 142), 56, 4, Color(0.95, 0.78, 0.28))
+	_g2 = _meter_tex(root, Vector2(1040, 142), 56, 4, Color(0.95, 0.78, 0.28))
+	PixelUI.label_at(root, "GUARD", Vector2(16, 132), 1, Color(0.9, 0.82, 0.5))
+	PixelUI.label_at(root, "GUARD", Vector2(1040, 132), 1, Color(0.9, 0.82, 0.5))
+	_rage1 = PixelUI.label_at(root, "RAGE", Vector2(248, 84), 1, Color(1.0, 0.35, 0.28))
+	_rage1.visible = false
+	_rage2 = PixelUI.label_at(root, "RAGE", Vector2(990, 84), 1, Color(1.0, 0.35, 0.28))
+	_rage2.visible = false
 	_ex1 = PixelUI.label_at(root, "EX", Vector2(248, 104), 1, Color(1.0, 0.55, 0.85))
 	_ex1.visible = false
 	_ex2 = PixelUI.label_at(root, "EX", Vector2(990, 104), 1, Color(1.0, 0.55, 0.85))
@@ -145,18 +169,26 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	_max2.visible = false
 
 	var hint := Color(0.96, 0.96, 0.92)
-	_hints.append(PixelUI.label_at(root, "J LIGHT   K HEAVY   L SPECIAL / EX   U BLOCK   O SUPER", Vector2(0, 700), 1, hint, 0, 1280))
+	_hints.append(PixelUI.label_at(root, "J LIGHT   K HEAVY   L SPECIAL / EX   U BLOCK   FWD+U PARRY   RUN+J DASH   O SUPER", Vector2(0, 700), 1, hint, 0, 1280))
 	_hints[0].set_centered(1280)
 
 	PixelUI.label_at(root, arena_name.to_upper(), Vector2(0, 132), 1, Color(0.18, 0.22, 0.14), 0, 1280).set_centered(1280)
 	var sub: String = "TRAINING" if GameState.training else (GameState.difficulty_name() if GameState.p2_is_cpu else "VS HUMAN")
 	if GameState.attract:
 		sub = "DEMO"
-	PixelUI.label_at(root, sub, Vector2(0, 148), 1, Color(0.22, 0.26, 0.18, 0.85), 0, 1280).set_centered(1280)
-	_combo = PixelUI.label_at(root, "", Vector2(0, 176), 4, Color(1, 0.86, 0.28), 0, 1280)
+	if GameState.arcade:
+		sub = "ARCADE  %d / %d" % [GameState.arcade_index + 1, maxi(GameState.arcade_queue.size(), 1)]
+	_mode = PixelUI.label_at(root, sub, Vector2(0, 148), 1, Color(0.22, 0.26, 0.18, 0.85), 0, 1280)
+	_mode.set_centered(1280)
+	_combo = PixelUI.label_at(root, "", Vector2(0, 168), 4, Color(1, 0.86, 0.28), 0, 1280)
 	_combo.set_centered(1280)
 	_combo.visible = false
 	_combo.pivot_offset = Vector2(640, 14)
+	_rank = PixelUI.label_at(root, "", Vector2(0, 214), 2, Color(1.0, 0.72, 0.28), 0, 1280)
+	_rank.set_centered(1280)
+	_rank.visible = false
+	_train = PixelUI.label_at(root, "", Vector2(16, 520), 1, Color(0.88, 0.9, 0.78), 42)
+	_train.visible = GameState.training
 
 	_show1 = 1.0
 	_show2 = 1.0
@@ -234,6 +266,25 @@ func _process(delta: float) -> void:
 		_ex2.visible = _sp_show2 >= 0.99
 		if _ex2.visible:
 			_ex2.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 9.0))
+	if _rage1:
+		_rage1.visible = _p1.raging()
+		if _rage1.visible:
+			_rage1.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 11.0))
+	if _rage2:
+		_rage2.visible = _p2.raging()
+		if _rage2.visible:
+			_rage2.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 11.0))
+	if _p1_port:
+		_p1_port.modulate = Color(1.25, 0.82, 0.78) if _p1.raging() else Color.WHITE
+	if _p2_port:
+		_p2_port.modulate = Color(1.25, 0.82, 0.78) if _p2.raging() else Color.WHITE
+	if _hp_n1:
+		_hp_n1.set_pix("%d" % int(round(_p1.health)), 1, Color(1, 0.45, 0.35) if _low1 else Color(0.98, 0.98, 0.94))
+	if _hp_n2:
+		_hp_n2.set_pix("%d" % int(round(_p2.health)), 1, Color(1, 0.45, 0.35) if _low2 else Color(0.98, 0.98, 0.94))
+		_hp_n2.set_centered(552)
+	_paint_guard()
+	_paint_training()
 	_refresh_combo()
 
 
@@ -325,6 +376,37 @@ func _paint_meters() -> void:
 	_p2_ult.texture = PixelUI.meter_bar(int(_p2_ult.get_meta("bw")), int(_p2_ult.get_meta("bh")), _p2_ult.get_meta("col"), _ult_show2, _ult_show2 >= 0.99)
 
 
+func _paint_guard() -> void:
+	if _g1 == null or _p1 == null:
+		return
+	var t1: float = clampf(_p1.guard_meter / 100.0, 0.0, 1.0)
+	var t2: float = clampf(_p2.guard_meter / 100.0, 0.0, 1.0)
+	_g1.texture = PixelUI.meter_bar(int(_g1.get_meta("bw")), int(_g1.get_meta("bh")), _g1.get_meta("col"), t1, t1 >= 0.92)
+	_g2.texture = PixelUI.meter_bar(int(_g2.get_meta("bw")), int(_g2.get_meta("bh")), _g2.get_meta("col"), t2, t2 >= 0.92)
+
+
+func _paint_training() -> void:
+	if _train == null or not GameState.training or _p1 == null:
+		if _train:
+			_train.visible = false
+		return
+	_train.visible = true
+	var adv: int = int(round(_p1.last_advantage * 60.0))
+	var sign_s: String = "+" if adv >= 0 else ""
+	var hist := ""
+	for i in _p1.input_log.size():
+		if i > 0:
+			hist += " "
+		hist += _p1.input_log[i]
+	_train.set_pix("R RESET   F DUMMY %s   ADV %s%dF   %s\n%s" % [
+		GameState.dummy_mode.to_upper(),
+		sign_s,
+		adv,
+		_p1.last_move.to_upper(),
+		hist
+	], 1, Color(0.88, 0.92, 0.78), 48)
+
+
 func set_timer(v: int) -> void:
 	if v == _last_timer:
 		return
@@ -350,6 +432,8 @@ func set_combo(_side: int, n: int) -> void:
 		_combo.visible = false
 		_combo.modulate = Color.WHITE
 		_combo.scale = Vector2.ONE
+		if _rank:
+			_rank.visible = false
 
 
 func _refresh_combo() -> void:
@@ -359,6 +443,8 @@ func _refresh_combo() -> void:
 	if n < 2:
 		if _combo.visible and _combo_punch <= 0.0:
 			_combo.visible = false
+		if _rank:
+			_rank.visible = false
 		return
 	var dmg: float = _p1.combo_damage if _p1.combo_hits >= _p2.combo_hits else _p2.combo_damage
 	var sc: int = int(round(CombatRules.combo_scale(n) * 100.0))
@@ -370,3 +456,11 @@ func _refresh_combo() -> void:
 	_combo.set_pix("%d HIT  %d  %d%%" % [n, int(round(dmg)), sc], 4, col)
 	_combo.set_centered(1280)
 	_combo.visible = true
+	var rk: String = CombatRules.combo_rank(n)
+	if _rank:
+		if rk.is_empty():
+			_rank.visible = false
+		else:
+			_rank.visible = true
+			_rank.set_pix(rk, 2, col)
+			_rank.set_centered(1280)

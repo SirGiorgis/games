@@ -57,6 +57,8 @@ func _show_menu() -> void:
 	_clear_match()
 	_hide_ui()
 	GameState.attract = false
+	GameState.training = false
+	GameState.end_arcade()
 	if _splash:
 		_splash.queue_free()
 		_splash = null
@@ -73,13 +75,22 @@ func _on_menu(id: String) -> void:
 		"PLAY":
 			GameState.training = false
 			GameState.attract = false
+			GameState.end_arcade()
 			_start_match()
+		"ARCADE":
+			GameState.training = false
+			GameState.attract = false
+			GameState.arcade = true
+			GameState.p2_is_cpu = true
+			_show_select()
 		"TRAINING":
 			GameState.training = true
 			GameState.attract = false
+			GameState.end_arcade()
 			GameState.p2_is_cpu = true
 			_start_match()
 		"CHARACTER SELECT":
+			GameState.end_arcade()
 			_show_select()
 		"OPTIONS":
 			_show_options()
@@ -112,6 +123,10 @@ func _show_stage() -> void:
 func _on_stage_picked() -> void:
 	GameState.training = false
 	GameState.attract = false
+	if GameState.arcade:
+		GameState.begin_arcade(GameState.p1_character_id)
+	else:
+		GameState.rounds_to_win = 2
 	_start_match()
 
 
@@ -161,17 +176,30 @@ func _on_match_over(code: int) -> void:
 		return
 	if code == -2:
 		GameState.training = false
+		GameState.end_arcade()
 		_show_menu()
 		return
 	if GameState.training:
 		_show_menu()
 		return
+	if GameState.arcade and GameState.p1_rounds >= GameState.rounds_to_win:
+		if GameState.next_arcade_bout():
+			_start_match()
+			return
 	_hide_ui()
 	if _result == null:
 		_result = ResultScreen.new()
 		_host.add_child(_result)
-		_result.rematch.connect(_start_match)
+		_result.rematch.connect(_on_rematch)
 		_result.character_select.connect(_show_select)
 		_result.main_menu.connect(_show_menu)
 	_result.visible = true
 	_result.present()
+
+
+func _on_rematch() -> void:
+	if GameState.arcade:
+		var last_bout: bool = GameState.arcade_index >= GameState.arcade_queue.size()
+		if last_bout and GameState.last_winner == 0:
+			GameState.begin_arcade(GameState.p1_character_id)
+	_start_match()

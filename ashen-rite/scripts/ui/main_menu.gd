@@ -4,7 +4,7 @@ extends Control
 signal chosen(id: String)
 
 var _index := 0
-const ITEMS := ["PLAY", "TRAINING", "CHARACTER SELECT", "OPTIONS", "CONTROLS", "QUIT"]
+const ITEMS := ["PLAY", "ARCADE", "TRAINING", "CHARACTER SELECT", "OPTIONS", "CONTROLS", "QUIT"]
 var _entries: Array[Dictionary] = []
 var _chris: Sprite2D
 var _giorgis: Sprite2D
@@ -20,9 +20,9 @@ func _ready() -> void:
 	_title = PixelUI.add_title(self, "GIORGIS FIGHTING", 52, Color(0.95, 0.2, 0.3))
 	PixelUI.label_at(self, "CHRIS  ·  GIORGIS", Vector2(0, 118), 2, Color(0.88, 0.72, 0.38), 0, 1280).set_centered(1280)
 
-	PixelUI.add_panel(self, Vector2(48, 168), Vector2(560, 480), PixelUI.GOLD)
+	PixelUI.add_panel(self, Vector2(48, 160), Vector2(560, 500), PixelUI.GOLD)
 	for i in ITEMS.size():
-		_entries.append(PixelUI.add_menu_row(self, 188.0 + i * 48.0, 480))
+		_entries.append(PixelUI.add_menu_row(self, 176.0 + i * 44.0, 480))
 
 	PixelUI.add_panel(self, Vector2(720, 168), Vector2(512, 480), Color(0.55, 0.12, 0.18))
 	var frame_lbl := PixelUI.label_at(self, "FIGHTER PREVIEW", Vector2(720, 176), 2, Color(0.85, 0.72, 0.42), 0, 512)

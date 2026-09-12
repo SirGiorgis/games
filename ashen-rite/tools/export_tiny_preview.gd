@@ -100,8 +100,14 @@ func _hud(dst: Image, chris: CharacterDef, giorgis: CharacterDef) -> void:
 	gem2.resize(gem2.get_width() * 3, gem2.get_height() * 3, Image.INTERPOLATE_NEAREST)
 	dst.blend_rect(gem2, Rect2i(0, 0, gem2.get_width(), gem2.get_height()), Vector2i(324, 14))
 
-	var combo: Image = PixelFont.make("3 HIT  184  70%", Color(1, 0.86, 0.28), 4).get_image()
-	dst.blend_rect(combo, Rect2i(0, 0, combo.get_width(), combo.get_height()), Vector2i(640 - combo.get_width() / 2, 176))
+	var combo: Image = PixelFont.make("5 HIT  312  60%", Color(1, 0.86, 0.28), 4).get_image()
+	dst.blend_rect(combo, Rect2i(0, 0, combo.get_width(), combo.get_height()), Vector2i(640 - combo.get_width() / 2, 168))
+	var rank: Image = PixelFont.make("GREAT", Color(1.0, 0.72, 0.28), 2).get_image()
+	dst.blend_rect(rank, Rect2i(0, 0, rank.get_width(), rank.get_height()), Vector2i(640 - rank.get_width() / 2, 214))
+	var hpnum: Image = PixelFont.make("880", Color(0.98, 0.98, 0.94), 1).get_image()
+	dst.blend_rect(hpnum, Rect2i(0, 0, hpnum.get_width(), hpnum.get_height()), Vector2i(24, 64))
+	var rage: Image = PixelFont.make("RAGE", Color(1.0, 0.35, 0.28), 1).get_image()
+	dst.blend_rect(rage, Rect2i(0, 0, rage.get_width(), rage.get_height()), Vector2i(990, 84))
 	var mx: Image = PixelFont.make("MAX", Color(0.45, 0.9, 1.0), 2).get_image()
 	dst.blend_rect(mx, Rect2i(0, 0, mx.get_width(), mx.get_height()), Vector2i(380, 668))
 

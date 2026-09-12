@@ -87,6 +87,63 @@ func clash_burst(pos: Vector2) -> void:
 	shockwave(pos)
 
 
+func crystals(pos: Vector2) -> void:
+	for i in 10:
+		var img := Pix.image(5, 7, Color(0, 0, 0, 0))
+		Pix.vline(img, 2, 0, 7, Color(0.75, 0.95, 1.0))
+		Pix.put(img, 1, 2, Color(0.9, 0.98, 1.0))
+		Pix.put(img, 3, 3, Color(0.65, 0.88, 1.0))
+		var s := Sprite2D.new()
+		s.texture = Pix.tex(img)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		s.scale = Vector2(3, 3)
+		s.centered = true
+		s.global_position = pos + Vector2(randf_range(-22, 22), randf_range(-18, 8))
+		add_child(s)
+		var tw := s.create_tween()
+		tw.tween_property(s, "position:y", s.position.y - randf_range(18, 40), 0.38)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.38)
+		tw.parallel().tween_property(s, "rotation", randf_range(-0.8, 0.8), 0.38)
+		tw.tween_callback(s.queue_free)
+
+
+func quake_dust(pos: Vector2) -> void:
+	shockwave(pos + Vector2(0, 40))
+	for i in 12:
+		var img := Pix.image(4, 3, Color(0, 0, 0, 0))
+		Pix.disc(img, 1, 1, 1, Color(0.45, 0.32, 0.16, 0.85))
+		var s := Sprite2D.new()
+		s.texture = Pix.tex(img)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		s.scale = Vector2(4, 4)
+		s.centered = true
+		s.global_position = pos + Vector2(randf_range(-80, 80), randf_range(8, 24))
+		add_child(s)
+		var tw := s.create_tween()
+		tw.tween_property(s, "position:y", s.position.y - 16.0, 0.32)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.32)
+		tw.tween_callback(s.queue_free)
+
+
+func letterbox(dur: float = 0.5) -> void:
+	for y in [0.0, 656.0]:
+		var bar := ColorRect.new()
+		bar.color = Color(0, 0, 0, 0.78)
+		bar.position = Vector2(0, y)
+		bar.size = Vector2(1280, 64)
+		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_overlay.add_child(bar)
+		var tw := bar.create_tween()
+		tw.tween_interval(dur)
+		tw.tween_property(bar, "modulate:a", 0.0, 0.18)
+		tw.tween_callback(bar.queue_free)
+
+
+func burst_ring(pos: Vector2) -> void:
+	shockwave(pos)
+	spark(pos, Color(0.95, 0.85, 1.0), true)
+
+
 func popup(pos: Vector2, text: String, color: Color) -> void:
 	var spr := Sprite2D.new()
 	spr.texture = PixelFont.make(text, color, 2)

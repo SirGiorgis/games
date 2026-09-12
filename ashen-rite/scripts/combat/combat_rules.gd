@@ -20,6 +20,8 @@ static func make_attack(kind: String, def: CharacterDef) -> Dictionary:
 			return _special(def)
 		"ultimate":
 			return _ultimate(def)
+		"dash_atk":
+			return _dash_atk(def)
 		"grab":
 			return _atk("grab", 90.0, 240.0, -140.0, 0.55, 0.07, 0.08, 0.08, 0.42, Vector2(24, 24), 22.0, -32.0, true, def, "throw", 0.0)
 	return make_attack("light", def)
@@ -60,6 +62,7 @@ static func _atk(kind: String, dmg: float, kb: float, launch: float, stun: float
 		"ex": false,
 		"dash_spd": 0.0,
 		"invuln": 0.0,
+		"armor": 0,
 	}
 
 
@@ -167,6 +170,16 @@ static func _ultimate(def: CharacterDef) -> Dictionary:
 	return u
 
 
+static func _dash_atk(def: CharacterDef) -> Dictionary:
+	var d := _atk("dash_atk", 78.0, 210.0, -90.0, 0.34, 0.055, 0.04, 0.08, 0.34, Vector2(42, 22), 50.0, -50.0, false, def, "mid", 210.0)
+	d.dash_spd = 560.0
+	d.invuln = 0.05
+	d.armor = 1
+	d.juggle = true
+	d.meter = 10.0
+	return d
+
+
 static func apply_ex(atk: Dictionary, def: CharacterDef) -> Dictionary:
 	atk.ex = true
 	atk.damage = float(atk.damage) * 1.38
@@ -183,3 +196,48 @@ static func apply_ex(atk: Dictionary, def: CharacterDef) -> Dictionary:
 
 static func combo_scale(hits: int) -> float:
 	return clampf(1.0 - hits * 0.10, 0.32, 1.0)
+
+
+static func juggle_scale(hits: int) -> float:
+	return clampf(1.0 - float(maxi(hits - 1, 0)) * 0.11, 0.42, 1.0)
+
+
+static func combo_rank(hits: int) -> String:
+	if hits >= 12:
+		return "RITE BREAKER"
+	if hits >= 8:
+		return "UNBELIEVABLE"
+	if hits >= 6:
+		return "EXCELLENT"
+	if hits >= 4:
+		return "GREAT"
+	if hits >= 3:
+		return "GOOD"
+	return ""
+
+
+static func guard_gain(kind: String) -> float:
+	match kind:
+		"light", "clight", "jlight":
+			return 8.0
+		"heavy", "cheavy", "jheavy", "dash_atk":
+			return 16.0
+		"special":
+			return 28.0
+		"ultimate":
+			return 44.0
+		_:
+			return 10.0
+
+
+static func chip_mul(kind: String, just: bool) -> float:
+	var m: float = 0.07
+	if kind == "special":
+		m = 0.16
+	elif kind == "ultimate":
+		m = 0.22
+	elif kind in ["heavy", "cheavy", "jheavy", "dash_atk"]:
+		m = 0.10
+	if just:
+		m *= 0.45
+	return m

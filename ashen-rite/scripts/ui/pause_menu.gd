@@ -6,7 +6,7 @@ signal restarted
 signal quit_to_menu
 
 var _index := 0
-const ITEMS := ["RESUME", "RESTART MATCH", "CONTROLS", "QUIT TO MENU"]
+const ITEMS := ["RESUME", "RESTART MATCH", "MOVES", "QUIT TO MENU"]
 var _entries: Array[Dictionary] = []
 var _hint: PixelLabel
 var _active := false
@@ -84,7 +84,8 @@ func _pick() -> void:
 			_active = false
 			restarted.emit()
 		2:
-			_hint.set_pix("A/D MOVE  W JUMP  S CROUCH  J/K LIGHT HEAVY  L SPECIAL  U BLOCK  I GRAB  O SUPER  FULL PINK = EX", 2, Color(0.82, 0.78, 0.72), 36)
+			var d := CharacterCatalog.get_def(GameState.p1_character_id)
+			_hint.set_pix("%s  L %s  O %s  RUN+J DASH  FWD+U PARRY  L+U BURST  GETUP BACK ROLL" % [d.callsign(), d.special_name.to_upper(), d.ultimate_name.to_upper()], 2, Color(0.82, 0.78, 0.72), 36)
 			_hint.set_centered(1280)
 		3:
 			_active = false

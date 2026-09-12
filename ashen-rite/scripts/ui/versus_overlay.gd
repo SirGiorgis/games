@@ -75,6 +75,8 @@ func present(p1: CharacterDef, p2: CharacterDef, arena_name: String) -> void:
 	_root.add_child(vs)
 
 	PixelUI.label_at(_root, arena_name.to_upper(), Vector2(0, 560), 2, Color(0.92, 0.86, 0.7), 0, 1280).set_centered(1280)
+	if GameState.arcade:
+		PixelUI.label_at(_root, "ARCADE BOUT %d / %d" % [GameState.arcade_index + 1, maxi(GameState.arcade_queue.size(), 1)], Vector2(0, 88), 3, Color(1, 0.82, 0.32), 0, 1280).set_centered(1280)
 	var q1: String = p1.intro_quote if p1.intro_quote != "" else p1.win_quote
 	var q2: String = p2.intro_quote if p2.intro_quote != "" else p2.win_quote
 	PixelUI.label_at(_root, q1, Vector2(40, 500), 2, Color(1, 0.88, 0.5), 0, 520).set_centered(520)
