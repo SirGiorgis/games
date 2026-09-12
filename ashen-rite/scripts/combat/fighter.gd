@@ -433,6 +433,7 @@ func _start_attack(kind: String) -> void:
 	attack_active_until = atk.startup + atk.active
 	hitbox.disarm()
 	hitbox.configure(atk.size, Vector2(atk.reach * facing, atk.y))
+	visual.set_attack_timing(atk.startup, atk.active, atk.duration)
 	match kind:
 		"light", "clight", "jlight":
 			state = State.LIGHT

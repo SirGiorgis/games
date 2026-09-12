@@ -21,6 +21,9 @@ var _time := 0.0
 var _last_pose := ""
 var _hold_pose := false
 var _base_scale := Vector2.ONE
+var _atk_startup := 0.0
+var _atk_active := 0.0
+var _atk_duration := 1.0
 
 const ONE_SHOT := ["hit", "air_hit", "launch", "knockdown", "defeat", "land", "getup", "prejump", "block_hit"]
 const ATTACK_POSES := ["light", "clight", "jlight", "heavy", "cheavy", "jheavy", "special", "ultimate", "grab", "jump"]
@@ -71,6 +74,12 @@ func punch_impact(amount: float = 1.0) -> void:
 	impact = max(impact, amount)
 
 
+func set_attack_timing(startup: float, active: float, duration: float) -> void:
+	_atk_startup = startup
+	_atk_active = active
+	_atk_duration = maxf(duration, 0.01)
+
+
 func _process(delta: float) -> void:
 	_time += delta
 	flash = max(0.0, flash - delta * 9.0)
@@ -96,9 +105,12 @@ func _process(delta: float) -> void:
 		var lu: float = clampf(one_shot_u, 0.0, 1.0)
 		squash = 1.0 + (1.0 - lu) * 0.18
 		stretch = 1.0 - (1.0 - lu) * 0.1
+	elif pose in ["light", "clight", "jlight"] and attack_u > 0.22 and attack_u < 0.58:
+		squash = 1.05
+		stretch = 0.96
 	elif pose in ["heavy", "cheavy", "jheavy", "ultimate"] and attack_u > 0.28 and attack_u < 0.52:
-		squash = 1.08
-		stretch = 0.94
+		squash = 1.1
+		stretch = 0.92
 
 	_sprite.scale = Vector2(_base_scale.x * (1.0 + impact * 0.06), _base_scale.y * stretch * squash)
 	_sprite.position.y = _base_y() + _pose_bob() + impact * 6.0
@@ -145,8 +157,11 @@ func _pose_shift() -> float:
 	match pose:
 		"backdash":
 			return -facing * 3.0 * sin(_time * 18.0)
+		"light", "clight", "jlight", "heavy", "cheavy", "jheavy":
+			if attack_u > 0.2 and attack_u < 0.65:
+				return facing * smoothstep(0.2, 0.5, attack_u) * 8.0
 		"special", "ultimate":
-			return facing * attack_u * 4.0
+			return facing * attack_u * 6.0
 	return 0.0
 
 
@@ -213,18 +228,27 @@ func _loop_fps() -> float:
 
 func _attack_index(arr: Array, u: float) -> int:
 	var n: int = arr.size()
+	if n <= 1:
+		return 0
+	var su: float = _atk_startup / _atk_duration
+	var au: float = _atk_active / _atk_duration
+	var eu: float = su + au
+	# Hold the crisp strike frame while hitboxes are active
+	if au > 0.01 and u >= su and u <= eu and pose in ["light", "clight", "jlight", "heavy", "cheavy", "jheavy", "special", "ultimate", "grab"]:
+		var strike_u: float = su + au * 0.42
+		return clampi(int(strike_u * float(n - 1)), 0, n - 1)
 	var mapped: float = u
 	match pose:
 		"light", "clight", "jlight":
-			mapped = _phase_map(u, 0.24, 0.30, 0.46)
+			mapped = _phase_map(u, 0.20, 0.30, 0.50)
 		"heavy", "cheavy", "jheavy":
-			mapped = _phase_map(u, 0.34, 0.28, 0.38)
+			mapped = _phase_map(u, 0.30, 0.28, 0.42)
 		"special":
-			mapped = _phase_map(u, 0.16, 0.34, 0.50)
+			mapped = _phase_map(u, 0.14, 0.36, 0.50)
 		"ultimate":
-			mapped = _phase_map(u, 0.22, 0.32, 0.46)
+			mapped = _phase_map(u, 0.20, 0.32, 0.48)
 		"grab":
-			mapped = _phase_map(u, 0.22, 0.36, 0.42)
+			mapped = _phase_map(u, 0.18, 0.38, 0.44)
 		"jump":
 			mapped = clampf(u, 0.0, 1.0)
 	return clampi(int(mapped * float(n - 1)), 0, n - 1)

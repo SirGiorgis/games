@@ -9,9 +9,14 @@ const SCALE := 4
 const MODEL_W := 160
 const MODEL_H := 160
 const MODEL_SCALE := 3
-const _UPPER := Rect2i(18, 2, 96, 70)
-const _LEG_L := Rect2i(24, 68, 36, 54)
-const _LEG_R := Rect2i(56, 68, 42, 54)
+const _HEAD := Rect2i(40, 3, 48, 28)
+const _TORSO := Rect2i(34, 28, 60, 44)
+const _ARM_L := Rect2i(10, 32, 38, 40)
+const _ARM_R := Rect2i(84, 30, 38, 42)
+const _LEG_L := Rect2i(26, 68, 34, 54)
+const _LEG_R := Rect2i(58, 68, 38, 54)
+const _HIP_X := 64
+const _HIP_Y := 72
 
 static var _face_cache: Dictionary = {}
 static var _model_cache: Dictionary = {}
@@ -85,50 +90,188 @@ static func _paint_model(img: Image, def: CharacterDef, pose: String, f: int, n:
 	var p: Dictionary = _pose_sample(pose, u, ph, f)
 	var pad_x: int = (img.get_width() - 128) / 2
 	var pad_y: int = img.get_height() - 128 - 2
-	var bob: int = int(p.bob) + int(p.squat)
-	var lean: float = float(p.lean)
-	var xoff: int = int(p.xoff)
 
 	if pose in ["knockdown", "defeat"]:
-		var fall_u: float = clampf(u, 0.0, 1.0)
-		if fall_u < 0.42:
-			var stagger: float = fall_u / 0.42
-			_blit_rot_part(img, sheet, _LEG_L, pad_x + 30 + xoff, pad_y + 68, -18.0 - stagger * 20.0, 18, 6)
-			_blit_rot_part(img, sheet, _LEG_R, pad_x + 54 + xoff, pad_y + 68, 14.0 + stagger * 16.0, 20, 6)
-			_blit_rot_part(img, sheet, _UPPER, pad_x + 24 + xoff + int(stagger * 8.0), pad_y + 6 + int(stagger * 6.0), 8.0 + stagger * 24.0, 48, 66)
-		else:
-			var laid := sheet.duplicate()
-			laid.rotate_90(ClockDirection.CLOCKWISE)
-			_blit_sheet(img, laid, xoff - 10, pad_y + 12 + int((fall_u - 0.42) * 24.0))
+		_paint_model_fall(img, sheet, pad_x, pad_y, u, pose)
 		return
 
-	var leg_amp: float = 18.0
-	if pose == "run":
-		leg_amp = 28.0
-	elif pose == "walk":
-		leg_amp = 20.0
-	elif pose == "backdash":
-		leg_amp = 14.0
+	var m: Dictionary = _model_pose(pose, u, ph, p)
+	var ox: int = pad_x + int(m.get("xoff", 0))
+	var oy: int = pad_y + int(m.get("bob", 0)) + int(m.get("squat", 0))
+	var use_full: bool = bool(m.get("full_body", true))
 
-	var ll_rot: float = (float(p.ll_a) - 90.0) * 0.55 + sin(ph) * leg_amp * 0.35
-	var lr_rot: float = (float(p.lr_a) - 90.0) * 0.55 - sin(ph) * leg_amp * 0.35
-	if pose in ["walk", "run", "backdash"]:
-		ll_rot = sin(ph) * leg_amp
-		lr_rot = sin(ph + PI) * leg_amp
+	if use_full:
+		_blit_sheet(img, sheet, ox, oy)
+	else:
+		_paint_model_parts(img, sheet, ox, oy, m)
 
-	var hip_y: int = pad_y + 68 + bob
-	var ux: int = pad_x + 18 + xoff + int(lean)
-	var uy: int = pad_y + 2 + bob - int(maxf(0.0, -float(p.squat)) * 0.4)
+	var lead: Dictionary = m["lead_arm"] as Dictionary
+	var rear: Dictionary = m["rear_arm"] as Dictionary
+	if absf(float(lead.rot)) > 2.0:
+		_blit_rot_part(img, sheet, _ARM_R, ox + int(lead.sx), oy + int(lead.sy), float(lead.rot), int(lead.px), int(lead.py))
+	if absf(float(rear.rot)) > 2.0:
+		_blit_rot_part(img, sheet, _ARM_L, ox + int(rear.sx), oy + int(rear.sy), float(rear.rot), int(rear.px), int(rear.py))
 
-	_blit_rot_part(img, sheet, _LEG_L, pad_x + 24 + xoff, hip_y, ll_rot + float(p.ll_b) * 0.25, 18, 6)
-	_blit_rot_part(img, sheet, _LEG_R, pad_x + 56 + xoff, hip_y, lr_rot - float(p.lr_b) * 0.25, 20, 6)
-	var upper_rot: float = -lean * 1.4 - (float(p.ar_a) - 70.0) * 0.08
-	_blit_rot_part(img, sheet, _UPPER, ux, uy, upper_rot, 48, 66)
-
+	if m.get("fx", false):
+		_punch_flash(img, ox + int(m.get("fx_x", 108)), oy + int(m.get("fx_y", 46)), def.trim)
 	if pose in ["special", "ultimate"]:
-		_smear(img, img.get_width() / 2 + xoff, img.get_height() - 48, def.accent, f)
-	if pose in ["light", "heavy", "clight", "cheavy", "jlight", "jheavy"] and u > 0.22 and u < 0.58:
-		_smear(img, ux + 40, uy + 30, def.trim, f)
+		_smear(img, ox + 80, oy + 100, def.accent, f)
+	elif m.get("fx", false):
+		_smear(img, ox + int(m.get("fx_x", 108)), oy + int(m.get("fx_y", 44)), def.trim, f)
+
+
+static func _paint_model_parts(img: Image, sheet: Image, ox: int, oy: int, m: Dictionary) -> void:
+	var leg_l: Dictionary = m["leg_l"] as Dictionary
+	var leg_r: Dictionary = m["leg_r"] as Dictionary
+	var hip_x: int = ox + _HIP_X
+	var hip_y: int = oy + _HIP_Y
+	_blit_rot_part(img, sheet, _LEG_L, hip_x + int(leg_l.dx) - 38, hip_y + int(leg_l.dy), float(leg_l.rot), 16, 4)
+	_blit_rot_part(img, sheet, _LEG_R, hip_x + int(leg_r.dx) - 8, hip_y + int(leg_r.dy), float(leg_r.rot), 18, 4)
+	var rear: Dictionary = m["rear_arm"] as Dictionary
+	_blit_rot_part(img, sheet, _ARM_L, ox + int(rear.sx), oy + int(rear.sy), float(rear.rot), int(rear.px), int(rear.py))
+	var torso: Dictionary = m["torso"] as Dictionary
+	_blit_rot_part(img, sheet, _TORSO, ox + int(torso.dx), oy + int(torso.dy), float(torso.rot), 30, 8)
+	var head: Dictionary = m["head"] as Dictionary
+	_blit_rot_part(img, sheet, _HEAD, ox + int(head.dx), oy + int(head.dy), float(head.rot), 24, 22)
+
+
+static func _model_pose(pose: String, u: float, ph: float, p: Dictionary) -> Dictionary:
+	var bob: int = int(p.bob) + int(p.squat)
+	var lean: int = int(p.lean)
+	var xoff: int = int(p.xoff)
+	var base := {
+		"xoff": xoff, "bob": bob, "squat": 0, "full_body": true,
+		"leg_l": {"dx": 0, "dy": 0, "rot": 0.0},
+		"leg_r": {"dx": 0, "dy": 0, "rot": 0.0},
+		"torso": {"dx": lean, "dy": 0, "rot": 0.0},
+		"head": {"dx": 0, "dy": 0, "rot": 0.0},
+		"rear_arm": {"sx": 10, "sy": 32, "px": 8, "py": 8, "rot": 0.0},
+		"lead_arm": {"sx": 84, "sy": 30, "px": 6, "py": 8, "rot": 0.0},
+		"fx": false,
+	}
+	match pose:
+		"idle":
+			var breathe: float = sin(ph)
+			base.bob = int(round(breathe * 2.0))
+			base.xoff = int(round(breathe * 0.5))
+		"walk":
+			var step: int = int(floor(ph / TAU * 8.0)) % 8
+			var s: Dictionary = _walk_table()[step]
+			base.bob = int(s.bob)
+			base.xoff = int(s.lean) + int(s.near_x)
+		"run":
+			var rs: int = int(floor(ph / TAU * 6.0)) % 6
+			var rt: Dictionary = _run_table()[rs]
+			base.bob = int(rt.bob)
+			base.xoff = int(rt.xoff) + int(rt.near_x)
+		"backdash":
+			base.xoff = -10 + int(sin(ph * 2.0) * -3.0)
+			base.bob = int(abs(sin(ph * 2.0)) * 2.0)
+		"prejump", "crouch", "land", "getup":
+			base.bob = bob
+			base.squat = int(p.squat)
+		"jump":
+			base.bob = bob - int(_kf([[0.0, 0.0], [0.2, 4.0], [0.5, -6.0], [0.8, -2.0], [1.0, 2.0]], u))
+			base.xoff = int(_kf([[0.0, 0.0], [0.35, 2.0], [0.7, -1.0], [1.0, 0.0]], u))
+		"block", "block_hit":
+			base.xoff = xoff + (5 if pose == "block_hit" else 0)
+			base.bob = 1 if pose == "block_hit" else 0
+		"light", "clight", "jlight":
+			var au: float = _attack_phase(u, 0.20, 0.30)
+			var strike: float = smoothstep(0.30, 0.55, au)
+			var wind: float = 1.0 - strike
+			base.xoff = int(lerpf(-4.0, 16.0, strike))
+			base.bob = int(lerpf(0.0, -3.0, strike) + wind * 1.0)
+			base.lead_arm.rot = lerpf(-14.0, 72.0, _ease_out_cubic(strike))
+			base.rear_arm.rot = lerpf(4.0, -28.0, strike)
+			if strike > 0.25:
+				base.fx = true
+				base.fx_x = 104 + int(strike * 18.0)
+				base.fx_y = 56
+		"heavy", "cheavy", "jheavy":
+			var hu: float = _attack_phase(u, 0.30, 0.28)
+			var hstrike: float = smoothstep(0.32, 0.58, hu)
+			base.xoff = int(lerpf(-6.0, 18.0, hstrike))
+			base.bob = int(lerpf(2.0, -5.0, hstrike))
+			base.lead_arm.rot = lerpf(-22.0, 78.0, _ease_out_back(hstrike))
+			base.rear_arm.rot = lerpf(8.0, -36.0, hstrike)
+			if hstrike > 0.22:
+				base.fx = true
+				base.fx_x = 108 + int(hstrike * 20.0)
+				base.fx_y = 54
+		"special", "ultimate":
+			var spu: float = _attack_phase(u, 0.14, 0.36)
+			base.xoff = int(spu * 14.0)
+			base.bob = int(sin(spu * PI) * -3.0)
+			base.lead_arm.rot = lerpf(-6.0, 44.0, spu)
+			base.rear_arm.rot = lerpf(0.0, -42.0, spu)
+			if spu > 0.28:
+				base.fx = spu < 0.88
+				base.fx_x = 110 + int(spu * 14.0)
+				base.fx_y = 44
+		"grab":
+			var gu: float = _attack_phase(u, 0.18, 0.38)
+			base.xoff = int(gu * 8.0)
+			base.lead_arm.rot = lerpf(-6.0, 22.0, gu)
+			base.rear_arm.rot = lerpf(0.0, 20.0, gu)
+		"hit", "air_hit", "launch":
+			base.xoff = xoff + lean
+			base.bob = int(p.head_x)
+		"victory":
+			base.bob = int(sin(ph * 2.0) * 2.0)
+			base.lead_arm.rot = lerpf(-8.0, -55.0, _ease_out_back(minf(u * 1.3, 1.0)))
+			base.rear_arm.rot = -12.0 + sin(ph) * 4.0
+		_:
+			pass
+	return base
+
+
+static func _walk_table() -> Array:
+	return [
+		{"bob": 0, "lean": 0, "near_x": 0},
+		{"bob": -2, "lean": 2, "near_x": 4},
+		{"bob": -3, "lean": 2, "near_x": 6},
+		{"bob": -2, "lean": 1, "near_x": 3},
+		{"bob": 0, "lean": 0, "near_x": 0},
+		{"bob": -2, "lean": -2, "near_x": -4},
+		{"bob": -3, "lean": -2, "near_x": -6},
+		{"bob": -2, "lean": -1, "near_x": -3},
+	]
+
+
+static func _run_table() -> Array:
+	return [
+		{"bob": -1, "xoff": 3, "near_x": 4},
+		{"bob": -3, "xoff": 5, "near_x": 6},
+		{"bob": -2, "xoff": 4, "near_x": 2},
+		{"bob": -1, "xoff": 3, "near_x": -4},
+		{"bob": -3, "xoff": 5, "near_x": -6},
+		{"bob": -2, "xoff": 4, "near_x": -2},
+	]
+
+
+static func _paint_model_fall(img: Image, sheet: Image, pad_x: int, pad_y: int, u: float, pose: String) -> void:
+	if u < 0.38:
+		var st: float = u / 0.38
+		var ox: int = pad_x + int(st * 10.0)
+		var oy: int = pad_y + int(st * 4.0)
+		_blit_rot_part(img, sheet, _LEG_L, ox + 26, oy + 68, -12.0 - st * 16.0, 16, 4)
+		_blit_rot_part(img, sheet, _LEG_R, ox + 58, oy + 68, 10.0 + st * 12.0, 18, 4)
+		_blit_rot_part(img, sheet, _TORSO, ox + 34 + int(st * 6.0), oy + 28, 8.0 + st * 20.0, 30, 8)
+		_blit_rot_part(img, sheet, _HEAD, ox + 40 + int(st * 8.0), oy + 3, 6.0 + st * 14.0, 24, 22)
+		_blit_rot_part(img, sheet, _ARM_L, ox + 10, oy + 32, 30.0 + st * 20.0, 8, 8)
+		_blit_rot_part(img, sheet, _ARM_R, ox + 84, oy + 30, -10.0, 6, 8)
+	else:
+		var laid := sheet.duplicate()
+		laid.rotate_90(ClockDirection.CLOCKWISE)
+		_blit_sheet(img, laid, pad_x - 12, pad_y + 14 + int((u - 0.38) * 28.0))
+
+
+static func _punch_flash(img: Image, x: int, y: int, col: Color) -> void:
+	Pix.disc(img, x, y, 3, Color(1.0, 0.98, 0.92, 0.85))
+	Pix.disc(img, x + 1, y, 2, Color(col.lightened(0.4), 0.7))
+	for i in 4:
+		Pix.hline(img, x - 6 - i * 2, y - 1 + i, 5 + i, Color(col, 0.25 - float(i) * 0.04))
 
 
 static func _scale_img(src: Image, sx: float, sy: float) -> Image:
@@ -217,6 +360,7 @@ static func _is_model_bg(c: Color) -> bool:
 
 
 static func _paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) -> void:
+	var u: float = float(f) / float(maxi(n - 1, 1))
 	var p: Dictionary = _rig(pose, f, n)
 	var skinny: bool = def.build == "lean" or def.width_scale < 0.92
 	var racing: bool = def.style == "racing"
@@ -237,14 +381,18 @@ static func _paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) 
 	var at: int = 2 if skinny else 3
 
 	_limb(img, cx - 2, hip_y, float(p.ll_a), float(p.ll_b), 14, 14, lt, ls, pants, shoes, true, kit)
-	_arm(img, cx - (4 if skinny else 5), hip_y - 17, float(p.al_a), float(p.al_b), 10, 9, at, sleeve, def.skin)
-
-	_torso(img, def, cx, hip_y, skinny, racing, kit, int(p.lean))
 	_limb(img, cx + 2, hip_y, float(p.lr_a), float(p.lr_b), 14, 14, lt, ls, pants.lightened(0.06), shoes, true, kit)
-	_arm(img, cx + (4 if skinny else 5) + int(p.lean), hip_y - 17, float(p.ar_a), float(p.ar_b), 10, 10, at, sleeve.lightened(0.06), def.skin)
+	_arm(img, cx - (4 if skinny else 5), hip_y - 17, float(p.al_a), float(p.al_b), 10, 9, at, sleeve, def.skin)
+	_torso(img, def, cx, hip_y, skinny, racing, kit, int(p.lean))
+	_arm(img, cx + (4 if skinny else 5) + int(p.lean), hip_y - 17, float(p.ar_a), float(p.ar_b), 11, 11, at, sleeve.lightened(0.06), def.skin)
 
 	if (racing or kit) and pose in ["special", "ultimate"]:
 		_smear(img, cx, hip_y, def.accent, f)
+	if pose in ["light", "clight", "jlight", "heavy", "cheavy", "jheavy", "grab"] and u > 0.28 and u < 0.62:
+		var fist_x: int = cx + 28 + int(p.lean) + int(p.xoff)
+		var fist_y: int = hip_y - 20
+		_punch_flash(img, fist_x, fist_y, def.trim)
+		_smear(img, fist_x - 8, fist_y, def.trim, f)
 
 	var hx: int = cx - 1 + int(p.lean) + int(p.head_x)
 	var hy: int = hip_y - 32 + int(int(p.squat) / 2)
@@ -420,12 +568,15 @@ static func _pose_sample(pose: String, u: float, ph: float, f: int) -> Dictionar
 			d.al_b = 68.0
 			d.ar_b = 74.0
 		"light":
-			var au: float = _attack_phase(u, 0.22, 0.28)
-			d.ar_a = lerpf(150.0, -5.0, _ease_out_cubic(au / 0.72))
-			d.ar_b = lerpf(24.0, 2.0, smoothstep(0.15, 0.65, au))
-			d.al_a = lerpf(118.0, 128.0, au)
-			d.lean = int(round(smoothstep(0.25, 0.55, au) * 4.0))
-			d.xoff = int(round(smoothstep(0.3, 0.55, au) * 3.0))
+			var au: float = _attack_phase(u, 0.20, 0.30)
+			d.ar_a = lerpf(158.0, -2.0, _ease_out_cubic(au / 0.72))
+			d.ar_b = lerpf(32.0, -6.0, _ease_out_cubic(au / 0.72))
+			d.al_a = lerpf(118.0, 135.0, au)
+			d.al_b = lerpf(16.0, 28.0, smoothstep(0.0, 0.35, au))
+			d.lean = int(round(smoothstep(0.22, 0.52, au) * 5.0))
+			d.xoff = int(round(smoothstep(0.28, 0.52, au) * 5.0))
+			d.ll_a = lerpf(98.0, 92.0, au)
+			d.lr_a = lerpf(82.0, 78.0, au)
 		"clight":
 			var cu: float = _attack_phase(u, 0.18, 0.30)
 			d.squat = 14
