@@ -704,21 +704,20 @@ static func _hair_short(img: Image, cx: int, cy: int, pal: Dictionary) -> void:
 
 
 static func _hair_crop(img: Image, cx: int, cy: int, pal: Dictionary) -> void:
-	# Tight curly crop with a fade — photo-like, shorter than Giannis curls.
-	Pix.oval(img, cx, cy - 5, 8, 5, pal.hair)
-	Pix.rect(img, cx - 7, cy - 8, 15, 6, pal.hair)
+	# Tight curly crop with a fade. Round crown, not a cap.
+	Pix.oval(img, cx, cy - 4, 8, 5, pal.hair)
 	var tufts: Array[Vector2i] = [
-		Vector2i(-6, -4), Vector2i(-3, -7), Vector2i(0, -8), Vector2i(3, -7),
-		Vector2i(6, -4), Vector2i(-5, -6), Vector2i(2, -6), Vector2i(5, -2),
-		Vector2i(-4, -2), Vector2i(1, -9),
+		Vector2i(-6, -3), Vector2i(-4, -6), Vector2i(-1, -7), Vector2i(2, -7),
+		Vector2i(5, -5), Vector2i(7, -3), Vector2i(-7, -1), Vector2i(6, -1),
+		Vector2i(-3, -4), Vector2i(1, -5), Vector2i(4, -3), Vector2i(0, -8),
 	]
 	for d in tufts:
 		var col: Color = pal.hair_hi if ((d.x + d.y) & 1) == 0 else pal.hair_dk
 		Pix.disc(img, cx + d.x, cy + d.y, 2, col)
-	Pix.rect(img, cx - 8, cy - 2, 2, 4, pal.hair_dk)
-	Pix.rect(img, cx + 6, cy - 2, 2, 4, pal.hair)
-	Pix.hline(img, cx - 4, cy - 3, 3, pal.hair_dk)
-	Pix.hline(img, cx + 2, cy - 3, 3, pal.hair)
+	Pix.rect(img, cx - 8, cy - 1, 2, 3, pal.hair_dk)
+	Pix.rect(img, cx + 6, cy - 1, 2, 3, pal.hair)
+	Pix.hline(img, cx - 3, cy - 2, 2, pal.hair_dk)
+	Pix.hline(img, cx + 2, cy - 2, 2, pal.hair)
 
 
 static func _trap_torso(img: Image, pal: Dictionary, cx: int, hip_y: int, dripped: bool) -> void:
@@ -756,8 +755,11 @@ static func _trap_torso(img: Image, pal: Dictionary, cx: int, hip_y: int, drippe
 	Pix.rect(img, cx + 6, top + 4, 5, 8, tee_hi)
 	Pix.rect(img, cx - 5, top, 11, 4, tee_dk)
 	Pix.hline(img, cx - 3, top + 3, 7, pal.skin_dk)
-	Pix.hline(img, cx - 2, top + 5, 5, gold.darkened(0.08))
-	Pix.put(img, cx, top + 6, gold)
+	# thin gold chain — original, no wordmark
+	Pix.put(img, cx - 2, top + 5, gold.darkened(0.08))
+	Pix.put(img, cx + 2, top + 5, gold.darkened(0.08))
+	Pix.put(img, cx - 1, top + 6, gold)
+	Pix.put(img, cx + 1, top + 6, gold)
 	Pix.put(img, cx, top + 7, gold_hi)
 	Pix.rect(img, cx - 6, hip_y - 2, 13, 3, pal.jeans)
 	Pix.hline(img, cx - 4, hip_y - 2, 9, pal.jeans_hi)
