@@ -3,11 +3,12 @@ extends RefCounted
 ## Limb-rigged pixel fighter. Faces right; flip_h handles facing.
 ## Chris (style "kit") uses a keyed photo head plus a generic striped kit — no club badge.
 
+const Chibi := preload("res://scripts/pixel/chibi_fighter.gd")
 const PhotoSprite := preload("res://scripts/pixel/photo_fighter_sprite.gd")
 
-const W := 32
-const H := 36
-const SCALE := 3
+const W := 48
+const H := 56
+const SCALE := 2
 const MODEL_W := 160
 const MODEL_H := 160
 const MODEL_SCALE := 3
@@ -84,8 +85,8 @@ static func _frame(def: CharacterDef, pose: String, f: int, n: int) -> ImageText
 		_paint_model(canvas, def, pose, f, n)
 		return Pix.tex(canvas)
 	var img := Pix.image(W, H)
-	_paint(img, def, pose, f, n)
-	Pix.outline(img, Color(0.07, 0.05, 0.06, 1))
+	Chibi.paint(img, def, pose, f, n)
+	Pix.outline(img, Color(0.08, 0.06, 0.07, 1))
 	return Pix.tex(img)
 
 

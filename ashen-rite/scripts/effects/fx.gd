@@ -31,6 +31,20 @@ func spark(pos: Vector2, color: Color, strong: bool) -> void:
 		tw.tween_property(s, "position", s.position + dir * 0.25, 0.18)
 		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.18)
 		tw.tween_callback(s.queue_free)
+	# Tiny Fight-style blood specks
+	if strong:
+		for i in 6:
+			var bimg := Pix.image(3, 3, Color(0, 0, 0, 0))
+			Pix.disc(bimg, 1, 1, 1, Color(0.62, 0.08, 0.10))
+			var bs := Sprite2D.new()
+			bs.texture = Pix.tex(bimg)
+			bs.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+			bs.scale = Vector2(3, 3)
+			bs.global_position = pos + Vector2(randf_range(-10, 10), randf_range(4, 18))
+			add_child(bs)
+			var bt := bs.create_tween()
+			bt.tween_property(bs, "modulate:a", 0.0, 0.55)
+			bt.tween_callback(bs.queue_free)
 	var cross := Pix.image(9, 9, Color(0, 0, 0, 0))
 	Pix.hline(cross, 0, 4, 9, Color(1, 0.92, 0.4, 1))
 	Pix.vline(cross, 4, 0, 9, Color(1, 0.92, 0.4, 1))

@@ -7,7 +7,7 @@ const SCALE := 4
 
 
 static func texture(id: String) -> ImageTexture:
-	var img := Pix.image(W, H, Color(0.66, 0.80, 0.88))
+	var img := Pix.image(W, H, Color(0.55, 0.76, 0.90))
 	match id:
 		"neon_street":
 			_neon(img)
@@ -53,60 +53,96 @@ static func _floor(img: Image, id: String) -> void:
 
 
 static func _meadow(img: Image) -> void:
-	for y in 86:
-		var t: float = float(y) / 86.0
-		Pix.hline(img, 0, y, W, Color(0.66, 0.80, 0.88).lerp(Color(0.76, 0.86, 0.90), t))
-	_mountain(img, 188, 92, 86, Color(0.46, 0.54, 0.48), Color(0.90, 0.90, 0.86))
-	_mountain(img, 118, 96, 52, Color(0.40, 0.52, 0.40), Color(0.62, 0.70, 0.52))
+	for y in 88:
+		var t: float = float(y) / 88.0
+		Pix.hline(img, 0, y, W, Color(0.52, 0.74, 0.90).lerp(Color(0.78, 0.88, 0.94), t))
+	# Solid mid-ground so peaks never leave a fake horizon sea
+	Pix.rect(img, 0, 76, W, 60, Color(0.36, 0.50, 0.30))
+	_peak(img, 200, 96, 78, Color(0.44, 0.52, 0.46), Color(0.90, 0.91, 0.86))
+	_peak(img, 132, 100, 54, Color(0.38, 0.50, 0.40), Color(0.62, 0.70, 0.50))
+	_peak(img, 248, 102, 40, Color(0.42, 0.54, 0.44), Color(0.72, 0.76, 0.62))
+	# Rolling hills
 	for x in W:
-		var hy: int = 92 + int(sin(float(x) * 0.028) * 7.0) + int(sin(float(x) * 0.07) * 3.0)
-		Pix.rect(img, x, hy, 1, maxi(1, 132 - hy), Color(0.38, 0.54, 0.30))
-		Pix.put(img, x, hy, Color(0.48, 0.62, 0.36))
+		var hy: int = 98 + int(sin(float(x) * 0.03) * 8.0) + int(sin(float(x) * 0.11 + 0.6) * 4.0)
+		Pix.rect(img, x, hy, 1, maxi(1, 136 - hy), Color(0.34, 0.52, 0.28))
+		Pix.put(img, x, hy, Color(0.46, 0.62, 0.34))
 	for x in W:
-		var hy2: int = 118 + int(sin(float(x) * 0.05 + 1.2) * 4.0)
-		Pix.rect(img, x, hy2, 1, maxi(1, 140 - hy2), Color(0.42, 0.58, 0.28))
-	_cottage(img, 22, 116, 16, 11, Color(0.82, 0.78, 0.66), Color(0.50, 0.36, 0.20))
-	_cottage(img, 48, 114, 18, 12, Color(0.78, 0.74, 0.60), Color(0.46, 0.32, 0.18))
-	_cottage(img, 78, 118, 14, 10, Color(0.84, 0.80, 0.68), Color(0.52, 0.38, 0.22))
-	_cottage(img, 108, 117, 15, 11, Color(0.80, 0.76, 0.64), Color(0.48, 0.34, 0.20))
-	_cottage(img, 232, 116, 18, 12, Color(0.79, 0.75, 0.62), Color(0.50, 0.35, 0.20))
-	Pix.round_rect(img, 258, 122, 42, 10, 3, Color(0.40, 0.62, 0.72))
-	Pix.hline(img, 262, 124, 32, Color(0.55, 0.74, 0.82))
-	for y in range(132, H):
-		var shade: float = float(y - 132) / 48.0
-		var g: Color = Color(0.56, 0.60, 0.28).lerp(Color(0.40, 0.50, 0.20), shade)
-		Pix.hline(img, 0, y, W, g)
-	for x in range(20, 300, 14):
-		var dx: int = x + (x % 5) - 2
-		Pix.rect(img, dx, 152, 12, 5, Color(0.50, 0.40, 0.22, 0.55))
-		Pix.rect(img, dx + 2, 154, 8, 2, Color(0.42, 0.32, 0.16, 0.4))
+		var hy2: int = 120 + int(sin(float(x) * 0.045 + 1.4) * 5.0)
+		Pix.rect(img, x, hy2, 1, maxi(1, 140 - hy2), Color(0.40, 0.56, 0.26))
+	_tree(img, 14, 128, 11)
+	_tree(img, 168, 126, 9)
+	_tree(img, 300, 130, 10)
+	_cottage(img, 28, 118, 18, 12)
+	_cottage(img, 52, 116, 16, 11)
+	_cottage(img, 76, 120, 15, 10)
+	_cottage(img, 214, 118, 20, 12)
+	# Pond
+	Pix.oval(img, 278, 128, 22, 6, Color(0.38, 0.60, 0.70))
+	Pix.hline(img, 266, 127, 24, Color(0.55, 0.74, 0.82))
+	# Grass field — dither, not stripes
+	Pix.dither_fill(img, 0, 136, W, H - 136, Color(0.50, 0.62, 0.28), Color(0.44, 0.56, 0.24))
+	for y in range(150, H):
+		var t2: float = float(y - 150) / 30.0
+		var g: Color = Color(0.46, 0.58, 0.24).lerp(Color(0.34, 0.46, 0.18), t2)
+		for x in range(0, W, 2):
+			Pix.put(img, x + (y & 1), y, g)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 2014
-	for i in 120:
+	for i in 160:
 		var gx: int = rng.randi_range(1, W - 2)
-		var gy: int = rng.randi_range(136, 176)
-		var tuft: Color = Color(0.30, 0.44, 0.14) if i % 3 == 0 else Color(0.66, 0.72, 0.32)
+		var gy: int = rng.randi_range(138, 176)
+		var tuft: Color = Color(0.28, 0.42, 0.14) if i % 3 == 0 else Color(0.62, 0.72, 0.32)
 		Pix.put(img, gx, gy, tuft)
-		if i % 5 == 0:
-			Pix.put(img, gx, gy - 1, tuft.lightened(0.1))
-	Pix.rect(img, 70, 158, 5, 3, Color(0.42, 0.40, 0.34))
-	Pix.rect(img, 240, 156, 4, 2, Color(0.40, 0.38, 0.32))
+		if i % 4 == 0:
+			Pix.put(img, gx, gy - 1, tuft.lightened(0.08))
+	# Dirt fight lane
+	for i in 18:
+		var dx: int = 48 + i * 12 + rng.randi_range(-2, 2)
+		var dy: int = 154 + rng.randi_range(-2, 2)
+		Pix.oval(img, dx, dy, 7, 3, Color(0.50, 0.40, 0.22, 0.55))
+	# Fence
+	for i in 7:
+		var px: int = 8 + i * 12
+		Pix.rect(img, px, 142, 2, 14, Color(0.40, 0.28, 0.16))
+	Pix.hline(img, 8, 146, 82, Color(0.36, 0.26, 0.14))
+	Pix.hline(img, 8, 152, 82, Color(0.32, 0.22, 0.12))
+	# Rocks
+	Pix.rect(img, 118, 160, 6, 4, Color(0.42, 0.40, 0.34))
+	Pix.rect(img, 246, 158, 5, 3, Color(0.40, 0.38, 0.32))
 
 
-static func _mountain(img: Image, cx: int, base_y: int, half: int, rock: Color, snow: Color) -> void:
+static func _peak(img: Image, cx: int, base_y: int, half: int, rock: Color, snow: Color) -> void:
 	for y in half:
-		var w: int = int(float(y) / float(maxi(half, 1)) * float(half))
-		Pix.hline(img, cx - w, base_y - half + y, w * 2 + 1, rock if y > 10 else snow)
-		if y <= 10:
-			Pix.hline(img, cx - w + 2, base_y - half + y, maxi(1, w * 2 - 3), snow.lightened(0.08))
+		var wobble: int = int(sin(float(y) * 0.31) * 5.0) + int(sin(float(y) * 0.17) * 3.0)
+		var w: int = int(float(y) / float(maxi(half, 1)) * float(half) * 0.92) + wobble
+		w = maxi(1, w)
+		var yy: int = base_y - half + y
+		var col: Color = snow if y < int(float(half) * 0.16) else rock
+		if y > int(float(half) * 0.55):
+			col = col.darkened(0.06)
+		Pix.hline(img, cx - w, yy, w * 2 + 1, col)
+		if y < int(float(half) * 0.16):
+			Pix.hline(img, cx - w + 2, yy, maxi(1, w * 2 - 3), snow.lightened(0.08))
 
 
-static func _cottage(img: Image, x: int, y: int, w: int, h: int, wall: Color, roof: Color) -> void:
+static func _tree(img: Image, x: int, y: int, r: int) -> void:
+	Pix.rect(img, x - 1, y, 3, 8, Color(0.32, 0.22, 0.12))
+	Pix.disc(img, x, y - 2, r, Color(0.22, 0.40, 0.18))
+	Pix.disc(img, x - 2, y - 4, r - 3, Color(0.30, 0.50, 0.22))
+
+
+static func _cottage(img: Image, x: int, y: int, w: int, h: int) -> void:
+	var wall := Color(0.80, 0.76, 0.64)
+	var roof := Color(0.50, 0.34, 0.18)
+	Pix.rect(img, x + 1, y + 2, w, h, Color(0.22, 0.28, 0.16, 0.35))
 	Pix.rect(img, x, y, w, h, wall)
+	Pix.rect(img, x + 1, y + 1, w - 2, 2, wall.lightened(0.08))
 	for i in int(w / 2) + 2:
-		Pix.hline(img, x + i - 1, y - 1 - i, w - i * 2 + 2, roof)
-	Pix.rect(img, x + 2, y + h - 5, 3, 5, Color(0.28, 0.18, 0.12))
-	Pix.rect(img, x + w - 6, y + 2, 3, 3, Color(0.35, 0.55, 0.72))
+		Pix.hline(img, x + i - 2, y - 1 - i, w - i * 2 + 4, roof)
+	Pix.rect(img, x + w - 4, y - 6, 2, 5, Color(0.36, 0.24, 0.14))
+	Pix.rect(img, x + 3, y + h - 5, 3, 5, Color(0.28, 0.16, 0.10))
+	Pix.rect(img, x + w - 7, y + 3, 3, 3, Color(0.35, 0.55, 0.70))
+	Pix.put(img, x + w - 6, y + 4, Color(0.85, 0.82, 0.55))
 
 
 static func _temple(img: Image) -> void:

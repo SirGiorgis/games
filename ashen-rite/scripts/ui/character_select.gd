@@ -215,7 +215,7 @@ func _refresh() -> void:
 	_p2_walk = p2_frames.get("walk", p2_frames["idle"])
 	_p1_preview.texture = _p1_walk[0]
 	_p2_preview.texture = _p2_walk[0]
-	var sc1: float = 5.0 if _p1_preview.texture.get_width() <= 40 else 3.5
-	var sc2: float = 5.0 if _p2_preview.texture.get_width() <= 40 else 3.5
+	var sc1: float = 4.0
+	var sc2: float = 4.0
 	_p1_preview.scale = Vector2(sc1, sc1)
 	_p2_preview.scale = Vector2(-sc2, sc2)

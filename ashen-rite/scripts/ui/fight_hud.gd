@@ -24,8 +24,21 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 
-	PixelUI.label_at(root, p1.def.name.to_upper(), Vector2(20, 8), 1, Color(0.12, 0.12, 0.12))
-	var p2n := PixelUI.label_at(root, p2.def.name.to_upper(), Vector2(980, 8), 1, Color(0.12, 0.12, 0.12), 0, 280)
+	var p1_pill := TextureRect.new()
+	p1_pill.texture = PixelUI.name_pill(70, 8, Color(0.07, 0.07, 0.08))
+	p1_pill.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	p1_pill.position = Vector2(16, 8)
+	p1_pill.scale = Vector2(4, 4)
+	root.add_child(p1_pill)
+	PixelUI.label_at(root, p1.def.name.to_upper(), Vector2(24, 12), 1, Color(0.95, 0.95, 0.92))
+
+	var p2_pill := TextureRect.new()
+	p2_pill.texture = PixelUI.name_pill(70, 8, Color(0.07, 0.07, 0.08))
+	p2_pill.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	p2_pill.position = Vector2(984, 8)
+	p2_pill.scale = Vector2(4, 4)
+	root.add_child(p2_pill)
+	var p2n := PixelUI.label_at(root, p2.def.name.to_upper(), Vector2(984, 12), 1, Color(0.95, 0.95, 0.92), 0, 280)
 	p2n.set_centered(280)
 
 	_p1_hp = _bar_tex(root, Vector2(16, 24), 132, 9, Color(0.28, 0.82, 0.22))
@@ -37,8 +50,7 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	tbox.position = Vector2(596, 8)
 	tbox.scale = Vector2(4, 4)
 	root.add_child(tbox)
-	_timer = PixelUI.label_at(root, "99", Vector2(0, 28), 3, Color(1, 1, 1), 0, 1280)
-	_timer.set_centered(1280)
+	_timer = PixelUI.label_at(root, "99", Vector2(612, 22), 3, Color(1, 1, 1))
 
 	_p1_sp = _meter_tex(root, Vector2(16, 68), 48, 5, Color(0.86, 0.32, 0.62))
 	_p2_sp = _meter_tex(root, Vector2(1072, 68), 48, 5, Color(0.86, 0.32, 0.62))
@@ -130,7 +142,6 @@ func _paint_meters(left: bool, s: float, u: float) -> void:
 
 func set_timer(v: int) -> void:
 	_timer.set_pix("%02d" % v, 3, Color(1, 0.35, 0.3) if v <= 10 else Color(1, 1, 1))
-	_timer.set_centered(1280)
 
 
 func set_rounds(a: int, b: int) -> void:
