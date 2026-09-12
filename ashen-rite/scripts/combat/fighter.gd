@@ -628,6 +628,8 @@ func _on_landed() -> void:
 		state = State.LAND
 		_land_t = LAND_T + 0.04
 		attack_timer = attack_duration
+		_atk_buf = ""
+		_atk_buf_t = 0.0
 	elif state == State.JUMP or state == State.PREJUMP or state == State.HIT:
 		state = State.LAND
 		_land_t = LAND_T
