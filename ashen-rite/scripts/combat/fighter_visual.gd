@@ -208,6 +208,8 @@ func _pose_shift() -> float:
 			if attack_u > 0.18 and attack_u < 0.62:
 				return facing * smoothstep(0.18, 0.48, attack_u) * 10.0
 		"special", "ultimate":
+			if def and def.ultimate_id in ["flex", "vodka", "fart"] and pose == "ultimate":
+				return 0.0
 			if def and def.ultimate_id == "dempsey" and pose == "ultimate":
 				return facing * sin(_time * 22.0) * 10.0
 			return facing * attack_u * 7.0
@@ -243,7 +245,7 @@ func _one_shot_duration() -> float:
 
 
 func _current_tex() -> Texture2D:
-	var key := pose
+	var key := _sheet_key(pose)
 	if not _frames.has(key):
 		key = "idle"
 	var arr: Array = _frames[key]
@@ -267,6 +269,19 @@ func _current_tex() -> Texture2D:
 	var spd: float = _loop_fps()
 	var idx2: int = int(_time * spd) % arr.size()
 	return arr[idx2]
+
+
+func _sheet_key(p: String) -> String:
+	if p != "ultimate" and _ripped() and _frames.has(p + "_rip"):
+		return p + "_rip"
+	return p
+
+
+func _ripped() -> bool:
+	if def == null or def.ultimate_id != "flex":
+		return false
+	var host = get_parent()
+	return host and host.has_method("buffed") and host.buffed()
 
 
 func _loop_fps() -> float:

@@ -183,6 +183,28 @@ func vodka_glug(pos: Vector2) -> void:
 		tw.tween_callback(s.queue_free)
 
 
+func shirt_rip(pos: Vector2) -> void:
+	shockwave(pos)
+	spark(pos, Color(0.35, 0.82, 0.92), true)
+	for i in 18:
+		var img := Pix.image(4, 5, Color(0, 0, 0, 0))
+		var col := Color(0.14, 0.20, 0.30) if i % 2 == 0 else Color(0.22, 0.30, 0.42)
+		Pix.rect(img, 0, 0, 3, 4, col)
+		Pix.put(img, 1, 0, Color(0.85, 0.88, 0.92, 0.7))
+		var s := Sprite2D.new()
+		s.texture = Pix.tex(img)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		s.scale = Vector2(3, 3)
+		s.centered = true
+		s.global_position = pos + Vector2(randf_range(-36, 36), randf_range(-22, 18))
+		add_child(s)
+		var tw := s.create_tween()
+		tw.tween_property(s, "position", s.position + Vector2(randf_range(-80, 80), randf_range(-40, 20)), 0.48)
+		tw.parallel().tween_property(s, "rotation", randf_range(-2.2, 2.2), 0.48)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.48)
+		tw.tween_callback(s.queue_free)
+
+
 func dempsey_burst(pos: Vector2) -> void:
 	spark(pos, Color(0.95, 0.72, 0.38), true)
 	for i in 8:

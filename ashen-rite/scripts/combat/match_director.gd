@@ -420,6 +420,9 @@ func _on_super(f: Fighter) -> void:
 		"fart":
 			flash_col = Color(0.55, 0.88, 0.32)
 			fx.fart_cloud(f.global_position + Vector2(float(f.facing) * 24.0, -28))
+		"flex":
+			flash_col = Color(0.35, 0.82, 0.92)
+			fx.shirt_rip(f.global_position + Vector2(0, -70))
 	fx.super_flash(flash_col, 0.42)
 	fx.shade(0.55)
 	fx.shockwave(f.global_position + Vector2(0, -70))

@@ -291,13 +291,9 @@ func _process(delta: float) -> void:
 		if _rage2.visible:
 			_rage2.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 11.0))
 	if _buff1:
-		_buff1.visible = _p1.buffed()
-		if _buff1.visible:
-			_buff1.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 9.0))
+		_sync_buff(_buff1, _p1)
 	if _buff2:
-		_buff2.visible = _p2.buffed()
-		if _buff2.visible:
-			_buff2.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 9.0))
+		_sync_buff(_buff2, _p2)
 	if _poison1:
 		_poison1.visible = _p1.poisoned()
 		if _poison1.visible:
@@ -353,6 +349,17 @@ func _tick_bar(delta: float, left: bool) -> void:
 
 func _callsign(def: CharacterDef) -> String:
 	return def.callsign()
+
+
+func _sync_buff(lbl: PixelLabel, f: Fighter) -> void:
+	lbl.visible = f.buffed()
+	if not lbl.visible:
+		return
+	var flex: bool = f.def.ultimate_id == "flex"
+	var tag := "FLEX" if flex else "VODKA"
+	var col := Color(1.0, 0.72, 0.28) if flex else Color(0.62, 0.95, 0.88)
+	lbl.set_pix(tag, 1, col)
+	lbl.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 9.0))
 
 
 func _bar_tex(root: Control, pos: Vector2, w: int, h: int, col: Color) -> TextureRect:

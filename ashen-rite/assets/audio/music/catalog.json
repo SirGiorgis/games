@@ -28,7 +28,8 @@
     "theme:chris_xrisakis": "theme_chris_xrisakis.wav",
     "theme:hoodrich_stacks": "theme_hoodrich_stacks.wav",
     "theme:mako": "theme_mako.wav",
-    "theme:fogas": "theme_fogas.wav"
+    "theme:fogas": "theme_fogas.wav",
+    "theme:giannis": "theme_giannis.wav"
   },
   "tracks": [
     {
@@ -179,6 +180,12 @@
       "id": "theme:fogas",
       "file": "theme_fogas.wav",
       "title": "STILL SMILING",
+      "seconds": 72
+    },
+    {
+      "id": "theme:giannis",
+      "file": "theme_giannis.wav",
+      "title": "SHOW OUT",
       "seconds": 72
     },
     {

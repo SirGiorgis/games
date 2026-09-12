@@ -52,6 +52,7 @@ TRACKS = [
     ("theme:hoodrich_stacks", "SAY THE NAME", 138, 7, 5),
     ("theme:mako", "STILL STANDING", 128, 2, 9),
     ("theme:fogas", "STILL SMILING", 96, 5, 3),
+    ("theme:giannis", "SHOW OUT", 132, 11, 6),
 ]
 
 

@@ -268,6 +268,26 @@ static func _ultimate(def: CharacterDef) -> Dictionary:
 			u.poison_t = 5.0
 			u.poison_dps = 26.0
 			u.stun = true
+		"flex":
+			u.projectile = ""
+			u.quake = true
+			u.damage = 52.0 * def.attack
+			u.knockback = 620.0
+			u.launch = -48.0
+			u.hitstun = 0.52
+			u.blockstun = 0.28
+			u.size = Vector2(1600, 96)
+			u.reach = 0.0
+			u.y = -48.0
+			u.startup = 0.18
+			u.active = 0.16
+			u.duration = 0.72
+			u.invuln = 0.22
+			u.armor = 2
+			u.knockdown = false
+			u.push_away = true
+			u.atk_boost = 1.42
+			u.atk_boost_t = 10.0
 		_:
 			u.projectile = "ult"
 			u.proj_count = 1

@@ -949,7 +949,10 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 	var vy: float = launch
 	if not on_ground and absf(launch) < 8.0:
 		vy = velocity.y
-	velocity = Vector2(attacker.facing * kb, vy)
+	var dir: float = float(attacker.facing)
+	if bool(attack.get("push_away", false)):
+		dir = 1.0 if global_position.x >= attacker.global_position.x else -1.0
+	velocity = Vector2(dir * kb, vy)
 	var hard_kd: bool = bool(attack.get("knockdown", false)) or health <= 0.0 or broke
 	state = State.KNOCKDOWN if hard_kd else State.HIT
 	visual.pulse_hit()
