@@ -93,7 +93,7 @@ static func _motion(pose: String, f: int, n: int, def: CharacterDef = null) -> D
 			d.rear_ay = 3 + (1 if step % 2 == 0 else 0)
 			d.blink = step == 4 or step == 10
 			if def and def.style == "tee":
-				d.squat = 1
+				d.squat = 0
 				d.lead_ax = -2
 				d.lead_ay = 6
 				d.rear_ax = 7
