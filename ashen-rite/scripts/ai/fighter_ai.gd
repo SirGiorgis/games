@@ -147,9 +147,23 @@ func _process(delta: float) -> void:
 	if opp.state == Fighter.State.BLOCK and dist < 70.0 and _rng.randf() < 0.55:
 		_intent.grab = true
 		return
-	if me.ultimate_meter >= 100.0 and dist < 180.0 and _rng.randf() < 0.45:
-		_intent.ultimate = true
-		return
+	if me.ultimate_meter >= 100.0:
+		var uid: String = me.def.ultimate_id
+		if uid == "vodka" and me.health < me.max_health * 0.94 and _rng.randf() < 0.7:
+			_intent.ultimate = true
+			return
+		if uid == "vodka" and _rng.randf() < 0.28:
+			_intent.ultimate = true
+			return
+		if uid == "grid" and dist < 420.0 and _rng.randf() < 0.5:
+			_intent.ultimate = true
+			return
+		if uid == "dempsey" and dist < 170.0 and _rng.randf() < 0.55:
+			_intent.ultimate = true
+			return
+		if dist < 180.0 and _rng.randf() < 0.45:
+			_intent.ultimate = true
+			return
 	if me.special_meter >= 50.0 and dist < 260.0 and _rng.randf() < _special_bias:
 		_intent.special = true
 		_advance()

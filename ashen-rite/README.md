@@ -56,7 +56,7 @@ Change bindings in `scripts/input/control_map.gd` (keyboard + gamepad hooks).
 
 **Chris Xrisakis**, **Giorgis**, and **Mako**. Default match is Chris vs Giorgis.
 
-Mako is a shirtless close-range brawler (Body Check / Floor Drop). Each of the three has a theme in the gallery.
+Mako is a shirtless close-range brawler (Body Check / Dempsey Roll). Each of the three has a unique super: Chris sends original open-wheel cars (Grid Strike), Giorgis drinks Straight Vodka for heal + ATK, Mako weaves the Dempsey Roll. Each has a theme in the gallery.
 
 ## Add a character
 

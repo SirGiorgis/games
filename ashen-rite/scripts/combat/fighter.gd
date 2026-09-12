@@ -83,6 +83,8 @@ const MAX_GUARD := 100.0
 var input_log: Array[String] = []
 var last_advantage: float = 0.0
 var last_move: String = ""
+var attack_mul: float = 1.0
+var attack_mul_t: float = 0.0
 
 var visual: FighterVisual
 var hurtbox: Area2D
@@ -186,6 +188,8 @@ func reset_round(start_pos: Vector2) -> void:
 	guard_meter = 0.0
 	last_advantage = 0.0
 	last_move = ""
+	attack_mul = 1.0
+	attack_mul_t = 0.0
 	rotation = 0
 	visual.rotation = 0
 	visual.set_pose_name("idle")
@@ -228,6 +232,10 @@ func _physics_process(delta: float) -> void:
 	if not guarding:
 		guard_meter = maxf(0.0, guard_meter - 32.0 * delta)
 	_taunt_t = max(0.0, _taunt_t - delta)
+	if attack_mul_t > 0.0:
+		attack_mul_t = max(0.0, attack_mul_t - delta)
+		if attack_mul_t <= 0.0:
+			attack_mul = 1.0
 	if on_ground and state != State.HIT:
 		_wall_used = false
 
@@ -412,7 +420,7 @@ func _think(cmd: Dictionary, delta: float) -> void:
 				live = true
 				hit_i = i
 				break
-		if live:
+		if live and float(current_attack.get("damage", 0.0)) > 0.0:
 			if (not hitbox.active) or _hit_pass != hit_i:
 				hitbox.disarm()
 				hitbox.arm(current_attack)
@@ -708,6 +716,7 @@ func _start_attack(kind: String) -> void:
 			state = State.ULTIMATE
 			ultimate_meter = 0.0
 			AudioDirector.play("ultimate")
+			_apply_buff_if_any(atk)
 			_apply_special_motion(atk)
 			_spawn_projectile_if_any()
 			super_started.emit()
@@ -743,6 +752,22 @@ func _apply_special_motion(atk: Dictionary) -> void:
 	if atk.get("quake") and visual:
 		visual.dust()
 		AudioDirector.play("hit_h", 0.7, 0.8)
+	if float(atk.get("heal", 0.0)) > 0.0:
+		velocity.x = 0.0
+
+
+func _apply_buff_if_any(atk: Dictionary) -> void:
+	var heal_v: float = float(atk.get("heal", 0.0))
+	if heal_v > 0.0:
+		if heal_v <= 1.5:
+			heal_v = max_health * heal_v
+		health = minf(max_health, health + heal_v)
+		health_changed.emit(health, max_health)
+	var boost: float = float(atk.get("atk_boost", 1.0))
+	var boost_t: float = float(atk.get("atk_boost_t", 0.0))
+	if boost > 1.0 and boost_t > 0.0:
+		attack_mul = boost
+		attack_mul_t = boost_t
 
 
 func _spawn_projectile_if_any() -> void:
@@ -753,15 +778,26 @@ func _spawn_projectile_if_any() -> void:
 	var spread: float = float(current_attack.get("proj_spread", 0.0))
 	for i in n:
 		var p := Projectile.new()
-		p.setup(self, kind, def.accent)
+		var col: Color = def.accent
+		if kind == "car":
+			col = Color(0.78, 0.08, 0.10)
+		p.setup(self, kind, col)
 		p.pierce = bool(current_attack.get("pierce", false))
 		p.freeze = bool(current_attack.get("freeze", false))
 		p.life = float(current_attack.get("proj_life", 0.7))
-		p.position = global_position + Vector2(28 * facing, -58 - i * 6)
+		var yoff: float = -58.0 - float(i) * 6.0
+		var xoff: float = 28.0
+		if kind == "car":
+			yoff = -18.0 - float(i) * 11.0
+			xoff = 40.0 + float(i) * 18.0
+		p.position = global_position + Vector2(xoff * float(facing), yoff)
 		var vy: float = 0.0
-		if n > 1:
+		if n > 1 and kind != "car":
 			vy = spread * (float(i) - float(n - 1) * 0.5) / maxf(float(n - 1), 1.0)
-		p.velocity = Vector2(float(current_attack.get("proj_speed", 520.0)) * float(facing), vy)
+		var spd: float = float(current_attack.get("proj_speed", 520.0))
+		if kind == "car":
+			spd += float(i) * 40.0
+		p.velocity = Vector2(spd * float(facing), vy)
 		get_parent().add_child(p)
 
 
@@ -834,6 +870,8 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 	var dmg: float = float(attack.damage) * attacker.def.attack / max(def.defense, 0.2)
 	if attacker.raging():
 		dmg *= 1.16
+	if attacker.attack_mul > 1.0:
+		dmg *= attacker.attack_mul
 	var broke := false
 	if blocked:
 		guard_meter = minf(MAX_GUARD, guard_meter + CombatRules.guard_gain(str(attack.get("kind", ""))))
@@ -941,6 +979,10 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 
 func raging() -> bool:
 	return health / maxf(max_health, 1.0) <= 0.22
+
+
+func buffed() -> bool:
+	return attack_mul_t > 0.0 and attack_mul > 1.0
 
 
 func _try_burst(cmd: Dictionary) -> bool:

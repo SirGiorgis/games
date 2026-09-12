@@ -63,6 +63,9 @@ static func _atk(kind: String, dmg: float, kb: float, launch: float, stun: float
 		"dash_spd": 0.0,
 		"invuln": 0.0,
 		"armor": 0,
+		"heal": 0.0,
+		"atk_boost": 1.0,
+		"atk_boost_t": 0.0,
 	}
 
 
@@ -171,6 +174,65 @@ static func _ultimate(def: CharacterDef) -> Dictionary:
 			u.hits = 2
 			u.hit_gap = 0.14
 			u.duration = 0.82
+		"grid":
+			u.projectile = "car"
+			u.proj_count = 3
+			u.proj_speed = 760.0
+			u.proj_life = 0.95
+			u.pierce = true
+			u.dash_spd = 220.0
+			u.invuln = 0.12
+			u.damage = 62.0 * def.attack
+			u.knockback = 280.0
+			u.launch = -160.0
+			u.hitstun = 0.42
+			u.size = Vector2(48, 28)
+			u.reach = 36.0
+			u.y = -28.0
+			u.startup = 0.12
+			u.active = 0.08
+			u.duration = 0.62
+			u.knockdown = false
+		"dempsey":
+			u.projectile = ""
+			u.quake = false
+			u.hits = 6
+			u.hit_gap = 0.05
+			u.dash_spd = 520.0
+			u.invuln = 0.20
+			u.armor = 2
+			u.damage = 38.0 * def.attack
+			u.knockback = 90.0
+			u.launch = -70.0
+			u.hitstun = 0.18
+			u.blockstun = 0.12
+			u.size = Vector2(58, 36)
+			u.reach = 46.0
+			u.y = -48.0
+			u.startup = 0.08
+			u.active = 0.05
+			u.duration = 0.58
+			u.knockdown = false
+			u.juggle = true
+		"vodka":
+			u.projectile = ""
+			u.damage = 0.0
+			u.knockback = 0.0
+			u.launch = 0.0
+			u.hitstun = 0.0
+			u.blockstun = 0.0
+			u.size = Vector2(8, 8)
+			u.reach = 0.0
+			u.y = -40.0
+			u.startup = 0.10
+			u.active = 0.02
+			u.duration = 0.62
+			u.invuln = 0.22
+			u.armor = 2
+			u.heal = 0.28
+			u.atk_boost = 1.38
+			u.atk_boost_t = 10.0
+			u.knockdown = false
 		_:
 			u.projectile = "ult"
 			u.proj_count = 1

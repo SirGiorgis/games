@@ -144,6 +144,64 @@ func burst_ring(pos: Vector2) -> void:
 	spark(pos, Color(0.95, 0.85, 1.0), true)
 
 
+func vodka_glug(pos: Vector2) -> void:
+	shockwave(pos + Vector2(0, -8))
+	for i in 12:
+		var img := Pix.image(3, 5, Color(0, 0, 0, 0))
+		var col := Color(0.78, 0.95, 0.88) if i % 2 == 0 else Color(0.92, 0.96, 1.0)
+		Pix.vline(img, 1, 0, 5, col)
+		Pix.put(img, 1, 4, Color(0.55, 0.78, 0.70))
+		var s := Sprite2D.new()
+		s.texture = Pix.tex(img)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		s.scale = Vector2(3, 3)
+		s.centered = true
+		s.global_position = pos + Vector2(randf_range(-18, 18), randf_range(-24, 6))
+		add_child(s)
+		var tw := s.create_tween()
+		tw.tween_property(s, "position:y", s.position.y - randf_range(20, 44), 0.42)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.42)
+		tw.tween_callback(s.queue_free)
+
+
+func dempsey_burst(pos: Vector2) -> void:
+	spark(pos, Color(0.95, 0.72, 0.38), true)
+	for i in 8:
+		var img := Pix.image(6, 4, Color(0, 0, 0, 0))
+		Pix.disc(img, 2, 2, 2, Color(0.95, 0.82, 0.55))
+		var s := Sprite2D.new()
+		s.texture = Pix.tex(img)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		s.scale = Vector2(3, 3)
+		s.centered = true
+		var side: float = -1.0 if i % 2 == 0 else 1.0
+		s.global_position = pos + Vector2(side * randf_range(8, 28), randf_range(-22, 10))
+		add_child(s)
+		var tw := s.create_tween()
+		tw.tween_property(s, "position:x", s.position.x + side * 36.0, 0.18)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.18)
+		tw.tween_callback(s.queue_free)
+
+
+func grid_streaks(pos: Vector2, facing: int = 1) -> void:
+	shockwave(pos)
+	var car: Image = Projectile.art_for("car", Color(0.78, 0.08, 0.10))
+	for i in 3:
+		var s := Sprite2D.new()
+		s.texture = Pix.tex(car)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		s.scale = Vector2(4, 4)
+		s.centered = true
+		s.flip_h = facing < 0
+		s.global_position = pos + Vector2(float(facing) * (-20.0 - float(i) * 18.0), -6.0 + float(i) * 10.0)
+		s.modulate = Color(1, 1, 1, 0.55)
+		add_child(s)
+		var tw := s.create_tween()
+		tw.tween_property(s, "position:x", s.position.x + float(facing) * 220.0, 0.28)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.28)
+		tw.tween_callback(s.queue_free)
+
+
 func popup(pos: Vector2, text: String, color: Color) -> void:
 	var spr := Sprite2D.new()
 	spr.texture = PixelFont.make(text, color, 2)

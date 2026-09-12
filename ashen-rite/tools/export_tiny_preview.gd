@@ -17,8 +17,13 @@ func _init() -> void:
 	_stamp_fighter(field, chris, "idle", 0, 420, 620, false)
 	_stamp_fighter(field, mako, "idle", 0, 640, 620, false)
 	_stamp_fighter(field, giorgis, "idle", 0, 860, 620, true)
-	_stamp_fighter(field, chris, "light", 5, 180, 620, false)
-	_stamp_fighter(field, giorgis, "heavy", 7, 1100, 620, true)
+	_stamp_fighter(field, chris, "ultimate", 8, 180, 620, false)
+	_stamp_fighter(field, giorgis, "ultimate", 7, 1100, 620, true)
+
+	var car: Image = Projectile.art_for("car", Color(0.78, 0.08, 0.10))
+	car.resize(car.get_width() * 4, car.get_height() * 4, Image.INTERPOLATE_NEAREST)
+	field.blend_rect(car, Rect2i(0, 0, car.get_width(), car.get_height()), Vector2i(250, 560))
+	field.blend_rect(car, Rect2i(0, 0, car.get_width(), car.get_height()), Vector2i(310, 548))
 
 	_hud(field, chris, giorgis)
 	var out := "res://.godot/tiny_preview"

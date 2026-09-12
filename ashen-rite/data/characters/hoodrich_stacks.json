@@ -27,9 +27,9 @@
   "special_id": "dash",
   "special_name": "Block Step",
   "special_desc": "Slides through the lane and catches you on the exit.",
-  "ultimate_id": "storm",
-  "ultimate_name": "House Call",
-  "ultimate_desc": "A final flurry that hits like the name on the title screen.",
+  "ultimate_id": "vodka",
+  "ultimate_name": "Straight Vodka",
+  "ultimate_desc": "Takes a drink. Restores health and pumps ATK for a stretch.",
 	"win_quote": "SAY THE NAME.",
 	"intro_quote": "THE HOUSE IS HERE.",
   "reference_image": "res://data/characters/refs/hoodrich_stacks.jpg"

@@ -404,7 +404,18 @@ func _flash_call(text: String) -> void:
 
 
 func _on_super(f: Fighter) -> void:
-	fx.super_flash(Color(0.95, 0.9, 1.0), 0.42)
+	var flash_col := Color(0.95, 0.9, 1.0)
+	match f.def.ultimate_id:
+		"grid":
+			flash_col = Color(0.86, 0.14, 0.12)
+			fx.grid_streaks(f.global_position + Vector2(float(f.facing) * 40.0, -24), f.facing)
+		"dempsey":
+			flash_col = Color(0.95, 0.72, 0.38)
+			fx.dempsey_burst(f.global_position + Vector2(float(f.facing) * 28.0, -70))
+		"vodka":
+			flash_col = Color(0.72, 0.95, 0.86)
+			fx.vodka_glug(f.global_position + Vector2(0, -78))
+	fx.super_flash(flash_col, 0.42)
 	fx.shade(0.55)
 	fx.shockwave(f.global_position + Vector2(0, -70))
 	cam.punch(0.08)

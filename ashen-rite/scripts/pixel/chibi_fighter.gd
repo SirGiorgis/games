@@ -4,7 +4,7 @@ extends RefCounted
 
 
 static func paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) -> void:
-	var m: Dictionary = _motion(pose, f, n)
+	var m: Dictionary = _motion(pose, f, n, def)
 	var pal: Dictionary = _palette(def)
 	var cx: int = 24 + int(m.lean) + int(m.xoff)
 	var bob: int = int(m.bob)
@@ -28,6 +28,8 @@ static func paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) -
 	if punch == 2:
 		_smear(img, cx + 6, hip_y - 12, pal.trim)
 	_arm(img, cx + 6, hip_y - 11, int(m.lead_ax), int(m.lead_ay), pal.sleeve_hi, pal.skin, true, punch)
+	if str(m.get("prop", "")) == "bottle":
+		_bottle(img, cx + 6 + int(m.lead_ax), hip_y - 11 + int(m.lead_ay) - 4, pal)
 	if bool(m.get("flash", false)):
 		_flash(img, cx + int(m.lead_ax) + 8, hip_y - 11 + int(m.lead_ay), pal.trim)
 
@@ -60,7 +62,7 @@ static func _palette(def: CharacterDef) -> Dictionary:
 	}
 
 
-static func _motion(pose: String, f: int, n: int) -> Dictionary:
+static func _motion(pose: String, f: int, n: int, def: CharacterDef = null) -> Dictionary:
 	var u: float = float(f) / float(maxi(n - 1, 1))
 	var ph: float = TAU * float(f) / float(n)
 	var d := {
@@ -68,8 +70,9 @@ static func _motion(pose: String, f: int, n: int) -> Dictionary:
 		"back_x": -1, "front_x": 1, "back_k": 1, "front_k": 0,
 		"back_lift": 0, "front_lift": 0,
 		"rear_ax": -4, "rear_ay": 4, "lead_ax": 6, "lead_ay": -2,
-		"flash": false, "blink": false, "punch": 0,
+		"flash": false, "blink": false, "punch": 0, "prop": "",
 	}
+	var uid: String = def.ultimate_id if def else ""
 	match pose:
 		"idle":
 			var step: int = f % 12
@@ -212,14 +215,50 @@ static func _motion(pose: String, f: int, n: int) -> Dictionary:
 				d.rear_ax = 4
 				d.rear_ay = 0
 		"special", "ultimate":
-			var sp: float = smoothstep(0.10, 0.52, u)
-			d.punch = 2 if sp > 0.4 and u < 0.85 else 1
-			d.xoff = int(sp * 6.0)
-			d.lean = int(sp * 3.0)
-			d.lead_ax = int(lerpf(4.0, 16.0, sp))
-			d.rear_ax = int(lerpf(-2.0, 8.0, sp))
-			d.lead_ay = int(lerpf(-2.0, -6.0, sp))
-			d.flash = sp > 0.4 and u < 0.85
+			if pose == "ultimate" and uid == "vodka":
+				d.punch = 0
+				d.squat = 1
+				d.lean = 1
+				d.head = 1
+				d.head_y = 1
+				d.lead_ax = 3
+				d.lead_ay = int(lerpf(2.0, -13.0, smoothstep(0.08, 0.42, u)))
+				d.rear_ax = -5
+				d.rear_ay = 3
+				d.prop = "bottle"
+				d.flash = u > 0.35 and u < 0.72
+			elif pose == "ultimate" and uid == "dempsey":
+				var weave: float = sin(ph * 3.0)
+				d.punch = 2 if weave > 0.0 else 1
+				d.xoff = int(weave * 5.0)
+				d.lean = int(weave * 3.0)
+				d.squat = 1
+				d.head = int(-weave)
+				d.lead_ax = 14 if weave > 0.0 else 8
+				d.lead_ay = -4 if weave > 0.0 else 2
+				d.rear_ax = -8 if weave > 0.0 else 6
+				d.rear_ay = 2
+				d.back_x = int(-weave * 3.0)
+				d.front_x = int(weave * 3.0)
+				d.flash = true
+			elif pose == "ultimate" and uid == "grid":
+				d.punch = 1
+				d.xoff = int(smoothstep(0.12, 0.5, u) * 4.0)
+				d.lean = 2
+				d.lead_ax = int(lerpf(4.0, 14.0, smoothstep(0.12, 0.55, u)))
+				d.lead_ay = -3
+				d.rear_ax = -6
+				d.rear_ay = 1
+				d.flash = u > 0.28 and u < 0.8
+			else:
+				var sp: float = smoothstep(0.10, 0.52, u)
+				d.punch = 2 if sp > 0.4 and u < 0.85 else 1
+				d.xoff = int(sp * 6.0)
+				d.lean = int(sp * 3.0)
+				d.lead_ax = int(lerpf(4.0, 16.0, sp))
+				d.rear_ax = int(lerpf(-2.0, 8.0, sp))
+				d.lead_ay = int(lerpf(-2.0, -6.0, sp))
+				d.flash = sp > 0.4 and u < 0.85
 		"hit", "block_hit":
 			d.xoff = 3
 			d.lean = 2
@@ -394,6 +433,9 @@ static func _head(img: Image, def: CharacterDef, pal: Dictionary, cx: int, cy: i
 		Pix.hline(img, cx - 1, cy + 5, 3, pal.skin_dk)
 		Pix.put(img, cx - 2, cy + 4, pal.skin_dk)
 		Pix.put(img, cx + 2, cy + 4, pal.skin_dk)
+	elif pose == "ultimate" and def.ultimate_id == "vodka":
+		Pix.rect(img, cx - 1, cy + 5, 3, 2, Color(0.38, 0.14, 0.16))
+		Pix.put(img, cx, cy + 6, Color(0.22, 0.10, 0.12))
 	else:
 		Pix.hline(img, cx - 1, cy + 5, 3, pal.skin_dk)
 		Pix.put(img, cx, cy + 6, pal.skin_dk)
@@ -451,6 +493,21 @@ static func _hair_short(img: Image, cx: int, cy: int, pal: Dictionary) -> void:
 	Pix.rect(img, cx + 6, cy - 2, 2, 4, pal.hair)
 	Pix.hline(img, cx - 7, cy + 2, 2, pal.hair_dk)
 	Pix.put(img, cx - 5, cy - 3, pal.hair_hi)
+
+
+static func _bottle(img: Image, x: int, y: int, pal: Dictionary) -> void:
+	var glass := Color(0.72, 0.88, 0.82, 0.95)
+	var glass_dk := Color(0.42, 0.62, 0.58)
+	var fill := Color(0.92, 0.94, 0.96)
+	var cap := pal.silver
+	Pix.rect(img, x - 1, y - 8, 3, 3, cap)
+	Pix.put(img, x, y - 9, cap.lightened(0.12))
+	Pix.rect(img, x - 1, y - 5, 3, 2, glass_dk)
+	Pix.rect(img, x - 2, y - 3, 5, 7, glass)
+	Pix.rect(img, x - 1, y - 2, 3, 5, fill)
+	Pix.hline(img, x - 1, y + 1, 3, Color(0.78, 0.80, 0.84))
+	Pix.put(img, x + 1, y - 2, Color(1, 1, 1, 0.7))
+	Pix.hline(img, x - 2, y + 4, 5, glass_dk)
 
 
 static func _smear(img: Image, x: int, y: int, col: Color) -> void:

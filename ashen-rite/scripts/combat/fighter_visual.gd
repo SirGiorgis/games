@@ -163,7 +163,9 @@ func _apply_juice() -> void:
 	_sprite.rotation = _pose_tilt() * facing
 	_sprite.modulate = Color.WHITE.lerp(Color(1.75, 1.68, 1.52), flash)
 	var host = get_parent()
-	if host and host.has_method("raging") and host.raging() and flash < 0.2:
+	if host and host.has_method("buffed") and host.buffed() and flash < 0.2:
+		_sprite.modulate = Color.WHITE.lerp(Color(0.72, 1.18, 0.98), 0.48 + 0.22 * sin(_time * 8.0))
+	elif host and host.has_method("raging") and host.raging() and flash < 0.2:
 		_sprite.modulate = Color.WHITE.lerp(Color(1.35, 0.72, 0.68), 0.45 + 0.25 * sin(_time * 9.0))
 
 
@@ -204,6 +206,8 @@ func _pose_shift() -> float:
 			if attack_u > 0.18 and attack_u < 0.62:
 				return facing * smoothstep(0.18, 0.48, attack_u) * 10.0
 		"special", "ultimate":
+			if def and def.ultimate_id == "dempsey" and pose == "ultimate":
+				return facing * sin(_time * 22.0) * 10.0
 			return facing * attack_u * 7.0
 	return 0.0
 

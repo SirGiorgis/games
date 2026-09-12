@@ -27,9 +27,9 @@
   "special_id": "dash",
   "special_name": "Through Ball",
   "special_desc": "Bursts through the defensive line like a threaded pass.",
-  "ultimate_id": "storm",
-  "ultimate_name": "Injury Time",
-  "ultimate_desc": "One last surge that hits like a stoppage-time winner.",
+  "ultimate_id": "grid",
+  "ultimate_name": "Grid Strike",
+  "ultimate_desc": "A pack of original open-wheel cars tears down the lane. Rosso livery, CX mark — no team badges.",
 	"win_quote": "LANE'S OPEN.",
 	"intro_quote": "THREAD THE LANE.",
   "reference_image": "res://data/characters/refs/chris.png"
