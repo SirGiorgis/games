@@ -69,13 +69,25 @@ func _ready() -> void:
 
 	PixelUI.add_panel(self, Vector2(40, 220), Vector2(360, 340), PixelUI.GOLD)
 	PixelUI.label_at(self, "PLAYER 1", Vector2(40, 228), 2, Color(0.95, 0.78, 0.35), 0, 360).set_centered(360)
-	_p1_preview = _make_preview(Vector2(220, 390))
+	var g1 := TextureRect.new()
+	g1.texture = PixelUI.stage_strip()
+	g1.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	g1.position = Vector2(56, 478)
+	g1.scale = Vector2(2.7, 3.0)
+	add_child(g1)
+	_p1_preview = _make_preview(Vector2(220, 430))
 
 	PixelUI.add_panel(self, Vector2(880, 220), Vector2(360, 340), Color(0.35, 0.75, 1.0))
 	var p2_hdr := PixelUI.label_at(self, "OPPONENT", Vector2(880, 228), 2, Color(0.55, 0.85, 1.0), 0, 360)
 	p2_hdr.set_centered(360)
 	p2_hdr.position.x = 880
-	_p2_preview = _make_preview(Vector2(1060, 390))
+	var g2 := TextureRect.new()
+	g2.texture = PixelUI.stage_strip()
+	g2.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	g2.position = Vector2(896, 478)
+	g2.scale = Vector2(2.7, 3.0)
+	add_child(g2)
+	_p2_preview = _make_preview(Vector2(1060, 430))
 
 	PixelUI.add_panel(self, Vector2(420, 580), Vector2(440, 96), Color(0.45, 0.35, 0.55))
 	_info = PixelUI.label_at(self, "", Vector2(432, 592), 2, Color(0.92, 0.9, 0.86), 38)
@@ -111,12 +123,16 @@ func _process(delta: float) -> void:
 		return
 	_walk_t += delta
 	if _p1_preview and not _p1_walk.is_empty():
-		_p1_preview.texture = _p1_walk[int(_walk_t * 12.0) % _p1_walk.size()]
+		_p1_preview.texture = _p1_walk[int(_walk_t * 14.0) % _p1_walk.size()]
+		_p1_preview.position.y = 430.0 + sin(_walk_t * 2.3) * 5.0
 	if _p2_preview and not _p2_walk.is_empty():
-		_p2_preview.texture = _p2_walk[int(_walk_t * 12.0) % _p2_walk.size()]
+		_p2_preview.texture = _p2_walk[int(_walk_t * 14.0) % _p2_walk.size()]
+		_p2_preview.position.y = 430.0 + sin(_walk_t * 2.3 + 0.8) * 5.0
 	for i in _cards.size():
 		var on: bool = i == _p1_index or i == _p2_index
-		_cards[i].modulate = Color(1, 1, 1, 1) if on else Color(0.78, 0.78, 0.82, 1)
+		var pulse: float = 1.0 + (0.035 * sin(_walk_t * 9.0) if on else 0.0)
+		_cards[i].modulate = Color(1.08, 1.06, 1.0) if on else Color(0.70, 0.70, 0.74, 1)
+		_cards[i].scale = Vector2(pulse, pulse)
 	if Input.is_action_just_pressed(ControlMap.MENU.right):
 		_move(1)
 	elif Input.is_action_just_pressed(ControlMap.MENU.left):

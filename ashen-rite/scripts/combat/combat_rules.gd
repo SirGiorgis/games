@@ -5,17 +5,17 @@ extends RefCounted
 static func make_attack(kind: String, def: CharacterDef) -> Dictionary:
 	match kind:
 		"light":
-			return _atk("light", 42.0, 110.0, -30.0, 0.30, 0.045, 0.05, 0.06, 0.28, Vector2(34, 20), 42.0, -58.0, false, def, "mid", 55.0)
+			return _atk("light", 40.0, 96.0, -22.0, 0.28, 0.032, 0.032, 0.05, 0.21, Vector2(34, 20), 44.0, -58.0, false, def, "mid", 78.0)
 		"clight":
-			return _atk("clight", 38.0, 90.0, -16.0, 0.28, 0.04, 0.05, 0.07, 0.30, Vector2(36, 16), 44.0, -28.0, false, def, "mid", 40.0)
+			return _atk("clight", 36.0, 82.0, -12.0, 0.26, 0.030, 0.034, 0.05, 0.22, Vector2(36, 16), 46.0, -28.0, false, def, "mid", 58.0)
 		"jlight":
-			return _atk("jlight", 40.0, 80.0, 50.0, 0.26, 0.04, 0.04, 0.10, 0.32, Vector2(32, 22), 36.0, -52.0, false, def, "high", 0.0)
+			return _atk("jlight", 38.0, 74.0, 36.0, 0.24, 0.030, 0.030, 0.08, 0.26, Vector2(32, 22), 38.0, -52.0, false, def, "high", 0.0)
 		"heavy":
-			return _atk("heavy", 92.0, 240.0, -180.0, 0.42, 0.09, 0.10, 0.10, 0.48, Vector2(44, 24), 50.0, -56.0, false, def, "mid", 90.0)
+			return _atk("heavy", 90.0, 230.0, -170.0, 0.40, 0.072, 0.078, 0.09, 0.40, Vector2(44, 24), 52.0, -56.0, false, def, "mid", 118.0)
 		"cheavy":
-			return _atk("cheavy", 84.0, 200.0, -20.0, 0.46, 0.08, 0.09, 0.12, 0.54, Vector2(48, 18), 50.0, -22.0, true, def, "low", 70.0)
+			return _atk("cheavy", 82.0, 190.0, -16.0, 0.42, 0.068, 0.072, 0.10, 0.46, Vector2(48, 18), 52.0, -22.0, true, def, "low", 92.0)
 		"jheavy":
-			return _atk("jheavy", 88.0, 200.0, 90.0, 0.36, 0.08, 0.07, 0.12, 0.42, Vector2(40, 26), 42.0, -48.0, false, def, "high", 0.0)
+			return _atk("jheavy", 84.0, 188.0, 70.0, 0.34, 0.064, 0.064, 0.10, 0.36, Vector2(40, 26), 44.0, -48.0, false, def, "high", 0.0)
 		"special":
 			return _special(def)
 		"ultimate":

@@ -13,6 +13,7 @@ var attack_u: float = 0.0
 var one_shot_u: float = -1.0
 var flash: float = 0.0
 var impact: float = 0.0
+var recoil: float = 0.0
 var trail_timer: float = 0.0
 var move_speed: float = 0.0
 var frozen: bool = false
@@ -76,6 +77,7 @@ func set_pose_name(p: String) -> void:
 func pulse_hit() -> void:
 	flash = 1.0
 	impact = 1.0
+	recoil = 1.0
 
 
 func punch_impact(amount: float = 1.0) -> void:
@@ -88,63 +90,78 @@ func set_attack_timing(startup: float, active: float, duration: float) -> void:
 	_atk_duration = maxf(duration, 0.01)
 
 
+func idle_tex() -> Texture2D:
+	return _tex("idle", 0)
+
+
 func _process(delta: float) -> void:
 	if _sprite == null:
 		return
 	if facing != _last_facing:
 		_flip_squash = 1.0
 		_last_facing = facing
-	if frozen:
-		_sprite.texture = _current_tex()
-		_sprite.flip_h = facing < 0
-		return
+	if not frozen:
+		_time += delta
+		flash = max(0.0, flash - delta * 11.0)
+		impact = max(0.0, impact - delta * 7.2)
+		recoil = max(0.0, recoil - delta * 9.0)
+		_flip_squash = max(0.0, _flip_squash - delta * 12.0)
+		if pose in ONE_SHOT and one_shot_u >= 0.0:
+			var rate: float = 1.0 / maxf(_one_shot_duration(), 0.04)
+			one_shot_u = minf(one_shot_u + delta * rate, 1.0)
+			if one_shot_u >= 0.98:
+				_hold_pose = true
+		if pose in ["walk", "run"]:
+			_stride += maxf(absf(move_speed), 80.0) * delta * 0.082
+		if pose in TRAIL_POSES and trail_timer <= 0.0:
+			trail_timer = 0.08 if pose == "backdash" else 0.11
+			_ghost()
+		elif pose in ["light", "clight", "jlight", "heavy", "cheavy", "jheavy"] and attack_u > 0.22 and attack_u < 0.58 and trail_timer <= 0.0:
+			trail_timer = 0.06
+			_ghost()
+		trail_timer = max(0.0, trail_timer - delta)
+		if pose == "land" and not _land_puff:
+			_land_puff = true
+			_puff()
 
-	_time += delta
-	flash = max(0.0, flash - delta * 9.0)
-	impact = max(0.0, impact - delta * 5.5)
-	_flip_squash = max(0.0, _flip_squash - delta * 10.0)
-
-	if pose in ONE_SHOT and one_shot_u >= 0.0:
-		var rate: float = 1.0 / maxf(_one_shot_duration(), 0.04)
-		one_shot_u = minf(one_shot_u + delta * rate, 1.0)
-		if one_shot_u >= 0.98:
-			_hold_pose = true
-
-	if pose in ["walk", "run"]:
-		_stride += maxf(absf(move_speed), 70.0) * delta * 0.078
 	_sprite.texture = _current_tex()
 	_sprite.flip_h = facing < 0
+	_apply_juice()
 
+
+func _apply_juice() -> void:
 	var squash: float = 1.0
 	var stretch: float = 1.0
 	if impact > 0.05:
-		squash = 1.0 + impact * 0.14
-		stretch = 1.0 - impact * 0.08
+		squash = 1.0 + impact * 0.16
+		stretch = 1.0 - impact * 0.09
 	elif pose == "land":
 		var lu: float = clampf(one_shot_u, 0.0, 1.0)
-		squash = 1.0 + (1.0 - lu) * 0.18
-		stretch = 1.0 - (1.0 - lu) * 0.1
-	elif pose in ["light", "clight", "jlight"] and attack_u > 0.22 and attack_u < 0.58:
-		squash = 1.05
-		stretch = 0.96
-	elif pose in ["heavy", "cheavy", "jheavy", "ultimate"] and attack_u > 0.28 and attack_u < 0.52:
-		squash = 1.1
-		stretch = 0.92
+		squash = 1.0 + (1.0 - lu) * 0.20
+		stretch = 1.0 - (1.0 - lu) * 0.12
+	elif pose == "prejump":
+		squash = 1.12
+		stretch = 0.90
+	elif pose == "jump":
+		if attack_u < 0.38:
+			squash = 0.92
+			stretch = 1.10
+		else:
+			squash = 1.06
+			stretch = 0.94
+	elif pose in ["light", "clight", "jlight"] and attack_u > 0.20 and attack_u < 0.55:
+		squash = 1.06
+		stretch = 0.95
+	elif pose in ["heavy", "cheavy", "jheavy", "ultimate"] and attack_u > 0.26 and attack_u < 0.52:
+		squash = 1.12
+		stretch = 0.90
 
-	var fx_w: float = 1.0 - _flip_squash * 0.22
-	_sprite.scale = Vector2(_base_scale.x * (1.0 + impact * 0.06) * fx_w, _base_scale.y * stretch * squash)
-	_sprite.position.y = _base_y() + _pose_bob() + impact * 6.0
-	_sprite.position.x = _base_x() + _pose_shift()
+	var fx_w: float = 1.0 - _flip_squash * 0.18
+	_sprite.scale = Vector2(_base_scale.x * (1.0 + impact * 0.05) * fx_w, _base_scale.y * stretch * squash)
+	_sprite.position.y = _base_y() + _pose_bob() + impact * 5.0
+	_sprite.position.x = _base_x() + _pose_shift() - float(facing) * recoil * 11.0
 	_sprite.rotation = _pose_tilt() * facing
-	_sprite.modulate = Color.WHITE.lerp(Color(1.7, 1.65, 1.55), flash)
-
-	if pose in TRAIL_POSES and trail_timer <= 0.0:
-		trail_timer = 0.10 if pose == "backdash" else 0.14
-		_ghost()
-	trail_timer = max(0.0, trail_timer - delta)
-	if pose == "land" and not _land_puff:
-		_land_puff = true
-		_puff()
+	_sprite.modulate = Color.WHITE.lerp(Color(1.75, 1.68, 1.52), flash)
 
 
 func _base_x() -> float:
@@ -166,11 +183,11 @@ func _base_y() -> float:
 func _pose_bob() -> float:
 	match pose:
 		"idle":
-			return sin(_time * 2.05) * 2.0
+			return sin(_time * 2.15) * 2.2
 		"walk":
-			return abs(sin(_stride * 1.2)) * 2.2
+			return abs(sin(_stride * 1.15)) * 2.4
 		"run", "backdash":
-			return abs(sin(_stride * 1.4)) * 3.2
+			return abs(sin(_stride * 1.35)) * 3.4
 		"victory":
 			return sin(_time * 5.0) * 2.5
 	return 0.0
@@ -181,35 +198,37 @@ func _pose_shift() -> float:
 		"backdash":
 			return -facing * 3.0 * sin(_time * 18.0)
 		"light", "clight", "jlight", "heavy", "cheavy", "jheavy":
-			if attack_u > 0.2 and attack_u < 0.65:
-				return facing * smoothstep(0.2, 0.5, attack_u) * 8.0
+			if attack_u > 0.18 and attack_u < 0.62:
+				return facing * smoothstep(0.18, 0.48, attack_u) * 10.0
 		"special", "ultimate":
-			return facing * attack_u * 6.0
+			return facing * attack_u * 7.0
 	return 0.0
 
 
 func _pose_tilt() -> float:
 	match pose:
 		"hit", "block_hit":
-			return deg_to_rad(-8.0 * impact)
+			return deg_to_rad(-10.0 * maxf(impact, recoil))
 		"launch", "air_hit":
 			return deg_to_rad(sin(_time * 12.0) * 6.0)
 		"run":
-			return deg_to_rad(4.0)
+			return deg_to_rad(5.0)
 		"backdash":
-			return deg_to_rad(-6.0)
+			return deg_to_rad(-7.0)
+		"jump":
+			return deg_to_rad(lerpf(-3.0, 4.0, clampf(attack_u, 0.0, 1.0)))
 	return 0.0
 
 
 func _one_shot_duration() -> float:
 	match pose:
-		"prejump": return 0.05
-		"land": return 0.12
-		"getup": return 0.18
-		"hit", "block_hit": return 0.22
-		"air_hit": return 0.18
-		"launch": return 0.24
-		"knockdown": return 0.45
+		"prejump": return 0.04
+		"land": return 0.10
+		"getup": return 0.14
+		"hit", "block_hit": return 0.20
+		"air_hit": return 0.16
+		"launch": return 0.22
+		"knockdown": return 0.42
 		"defeat": return 0.55
 	return 0.2
 
@@ -260,16 +279,15 @@ func _attack_index(arr: Array, u: float) -> int:
 	var su: float = _atk_startup / _atk_duration
 	var au: float = _atk_active / _atk_duration
 	var eu: float = su + au
-	# Hold the crisp strike frame while hitboxes are active
 	if au > 0.01 and u >= su and u <= eu and pose in ["light", "clight", "jlight", "heavy", "cheavy", "jheavy", "special", "ultimate", "grab"]:
 		var strike_u: float = su + au * 0.42
 		return clampi(int(strike_u * float(n - 1)), 0, n - 1)
 	var mapped: float = u
 	match pose:
 		"light", "clight", "jlight":
-			mapped = _phase_map(u, 0.20, 0.30, 0.50)
+			mapped = _phase_map(u, 0.18, 0.32, 0.50)
 		"heavy", "cheavy", "jheavy":
-			mapped = _phase_map(u, 0.30, 0.28, 0.42)
+			mapped = _phase_map(u, 0.28, 0.30, 0.42)
 		"special":
 			mapped = _phase_map(u, 0.14, 0.36, 0.50)
 		"ultimate":
@@ -313,15 +331,16 @@ func _ghost() -> void:
 	g.scale = _sprite.scale
 	g.flip_h = _sprite.flip_h
 	g.rotation = _sprite.rotation
-	var alpha: float = 0.42 if pose == "backdash" else 0.32
+	var alpha: float = 0.46 if pose == "backdash" else 0.30
 	g.modulate = Color(def.accent, alpha)
 	g.z_index = -1
 	var p := get_parent()
 	if p:
 		p.add_child(g)
 		var tw := g.create_tween()
-		tw.tween_property(g, "modulate:a", 0.0, 0.14 if pose == "backdash" else 0.18)
-		tw.parallel().tween_property(g, "global_position:x", g.global_position.x - facing * 12.0, 0.14)
+		tw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		tw.tween_property(g, "modulate:a", 0.0, 0.12 if pose == "backdash" else 0.16)
+		tw.parallel().tween_property(g, "global_position:x", g.global_position.x - facing * 14.0, 0.14)
 		tw.tween_callback(g.queue_free)
 
 
@@ -329,7 +348,7 @@ func _puff() -> void:
 	var p := get_parent()
 	if p == null:
 		return
-	for i in 5:
+	for i in 6:
 		var img := Pix.image(4, 3, Color(0, 0, 0, 0))
 		Pix.disc(img, 1, 1, 1, Color(0.62, 0.52, 0.28, 0.7))
 		var s := Sprite2D.new()
@@ -337,10 +356,11 @@ func _puff() -> void:
 		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		s.scale = Vector2(3, 3)
 		s.centered = true
-		s.position = Vector2((i - 2) * 10, 2)
+		s.position = Vector2((i - 2.5) * 9, 2)
 		s.z_index = -1
 		p.add_child(s)
 		var tw := s.create_tween()
-		tw.tween_property(s, "position", s.position + Vector2((i - 2) * 14, -8), 0.22)
-		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.22)
+		tw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		tw.tween_property(s, "position", s.position + Vector2((i - 2.5) * 16, -10), 0.20)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.20)
 		tw.tween_callback(s.queue_free)

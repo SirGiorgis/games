@@ -47,6 +47,8 @@ func show_menu() -> void:
 func _process(_delta: float) -> void:
 	if not _active or not visible:
 		return
+	for i in _entries.size():
+		_entries[i]["row"].modulate = Color(1.12, 1.08, 0.9) if i == _index else Color.WHITE
 	if Input.is_action_just_pressed(ControlMap.MENU.down):
 		_index = (_index + 1) % ITEMS.size()
 		AudioDirector.play("ui")

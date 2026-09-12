@@ -10,6 +10,11 @@ var _entries: Array[Dictionary] = []
 const ITEMS := ["REMATCH", "CHARACTER SELECT", "MAIN MENU"]
 var _title: PixelLabel
 var _sub: PixelLabel
+var _p1_spr: Sprite2D
+var _p2_spr: Sprite2D
+var _p1_walk: Array = []
+var _p2_walk: Array = []
+var _t := 0.0
 
 
 func _ready() -> void:
@@ -19,8 +24,33 @@ func _ready() -> void:
 	_title = PixelUI.add_title(self, "VICTORY", 120, Color(0.95, 0.82, 0.32))
 	_sub = PixelUI.label_at(self, "", Vector2(0, 200), 2, Color(0.85, 0.8, 0.75), 0, 1280)
 	_sub.set_centered(1280)
+
+	var grass := TextureRect.new()
+	grass.texture = PixelUI.stage_strip()
+	grass.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	grass.position = Vector2(300, 392)
+	grass.scale = Vector2(5.6, 3.2)
+	add_child(grass)
+	var vs := TextureRect.new()
+	vs.texture = PixelUI.vs_emblem()
+	vs.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	vs.position = Vector2(616, 292)
+	vs.scale = Vector2(3, 3)
+	add_child(vs)
+	_p1_spr = Sprite2D.new()
+	_p1_spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_p1_spr.centered = true
+	_p1_spr.scale = Vector2(3.2, 3.2)
+	_p1_spr.position = Vector2(430, 372)
+	add_child(_p1_spr)
+	_p2_spr = Sprite2D.new()
+	_p2_spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_p2_spr.centered = true
+	_p2_spr.scale = Vector2(-3.2, 3.2)
+	_p2_spr.position = Vector2(850, 372)
+	add_child(_p2_spr)
 	for i in ITEMS.size():
-		_entries.append(PixelUI.add_menu_row(self, 300.0 + i * 52.0, 480))
+		_entries.append(PixelUI.add_menu_row(self, 508.0 + i * 48.0, 480))
 	PixelUI.add_footer(self, "W/S MOVE  ENTER CONFIRM")
 	_refresh()
 
@@ -40,12 +70,29 @@ func present() -> void:
 	_sub.set_pix("%s   %d  —  %d   %s" % [a, GameState.p1_rounds, GameState.p2_rounds, b], 2, Color(0.85, 0.8, 0.75))
 	_sub.set_centered(1280)
 	AudioDirector.play_music("menu")
+	var p1_frames: Dictionary = PixelFighterBake.bake(CharacterCatalog.get_def(GameState.p1_character_id))
+	var p2_frames: Dictionary = PixelFighterBake.bake(CharacterCatalog.get_def(GameState.p2_character_id))
+	_p1_walk = p1_frames.get("victory" if p1_win else "defeat", p1_frames.get("idle", []))
+	_p2_walk = p2_frames.get("victory" if not p1_win else "defeat", p2_frames.get("idle", []))
+	if _p1_spr and not _p1_walk.is_empty():
+		_p1_spr.texture = _p1_walk[0]
+	if _p2_spr and not _p2_walk.is_empty():
+		_p2_spr.texture = _p2_walk[0]
 	_refresh()
 
 
-func _process(_d: float) -> void:
+func _process(delta: float) -> void:
 	if not visible:
 		return
+	_t += delta
+	if _title:
+		_title.modulate = Color(1.0, 0.95 + sin(_t * 3.0) * 0.05, 0.9)
+	if _p1_spr and not _p1_walk.is_empty():
+		_p1_spr.texture = _p1_walk[int(_t * 10.0) % _p1_walk.size()]
+		_p1_spr.position.y = 372.0 + sin(_t * 2.4) * 4.0
+	if _p2_spr and not _p2_walk.is_empty():
+		_p2_spr.texture = _p2_walk[int(_t * 10.0) % _p2_walk.size()]
+		_p2_spr.position.y = 372.0 + sin(_t * 2.4 + 0.9) * 4.0
 	if Input.is_action_just_pressed(ControlMap.MENU.down):
 		_index = (_index + 1) % ITEMS.size()
 		AudioDirector.play("ui")

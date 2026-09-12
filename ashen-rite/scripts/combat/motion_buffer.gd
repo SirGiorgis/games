@@ -10,7 +10,7 @@ var _prev_fwd: bool = false
 var _prev_back: bool = false
 
 const MAX_LEN := 20
-const TAP_WIN := 0.22
+const TAP_WIN := 0.28
 
 
 func reset() -> void:

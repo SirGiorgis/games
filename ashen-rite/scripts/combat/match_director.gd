@@ -110,14 +110,14 @@ func _process(delta: float) -> void:
 	match phase:
 		"intro":
 			phase_t += delta
-			if phase_t > 1.1:
+			if phase_t > 0.85:
 				_set_banner("FIGHT")
 				AudioDirector.play("fight")
 				phase = "fight_call"
 				phase_t = 0.0
 		"fight_call":
 			phase_t += delta
-			if phase_t > 0.55:
+			if phase_t > 0.42:
 				_set_banner("")
 				p1.can_act = true
 				p2.can_act = true
@@ -196,7 +196,11 @@ func _finish_round() -> void:
 func _on_hit(f: Fighter, attack: Dictionary, crit: bool) -> void:
 	var strong: bool = attack.get("kind", "") in ["heavy", "special", "ultimate"] or crit
 	fx.spark(f.global_position + Vector2(0, -72), p1.def.accent if f == p2 else p2.def.accent, strong)
-	cam.shake(0.35 if strong else 0.12)
+	cam.shake(0.42 if strong else 0.14)
+	cam.punch(0.034 if strong else 0.018)
+	var dealt: int = int(round(float(attack.get("dealt", attack.get("damage", 0)))))
+	if dealt > 0:
+		fx.popup(f.global_position + Vector2(randf_range(-12, 12), -40), str(dealt), Color(1, 0.92, 0.45) if not crit else Color(1, 0.55, 0.2))
 	if crit:
 		_set_banner("CRITICAL")
 		get_tree().create_timer(0.35).timeout.connect(func(): if phase == "fight": _set_banner(""))
@@ -235,7 +239,7 @@ func _set_banner(text: String) -> void:
 	_banner.visible = true
 	var col := Color(1, 0.92, 0.42)
 	if text == "FIGHT":
-		col = Color(1, 0.35, 0.28)
+		col = Color(1, 0.32, 0.26)
 	elif text == "KO" or text == "RITE COMPLETE":
 		col = Color(0.95, 0.78, 0.28)
 	elif text == "TIME":
@@ -245,12 +249,19 @@ func _set_banner(text: String) -> void:
 	_banner.set_pix(text, 6, col)
 	_banner.set_centered(1280)
 	_banner.position = Vector2(0, 292)
-	_banner.modulate = Color(1.35, 1.35, 1.25)
+	_banner.modulate = Color(1.4, 1.4, 1.28)
+	_banner.scale = Vector2(1.18, 1.18)
+	_banner.pivot_offset = Vector2(640, 24)
 	var tw := create_tween()
+	tw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	tw.tween_property(_banner, "modulate", Color.WHITE, 0.22)
+	tw.parallel().tween_property(_banner, "scale", Vector2.ONE, 0.22)
 	if _banner_bg:
-		var bw: int = clampi(text.length() * 14 + 40, 100, 180)
+		var bw: int = clampi(text.length() * 14 + 48, 110, 190)
 		_banner_bg.texture = PixelUI.round_banner(bw)
-		_banner_bg.size = Vector2(bw * 4, 112)
-		_banner_bg.position = Vector2(640.0 - _banner_bg.size.x * 0.5, 268)
+		_banner_bg.size = Vector2(bw * 4, 120)
+		_banner_bg.position = Vector2(640.0 - _banner_bg.size.x * 0.5, 264)
 		_banner_bg.visible = true
+		_banner_bg.modulate = Color(1.2, 1.2, 1.15)
+		var btw := create_tween()
+		btw.tween_property(_banner_bg, "modulate", Color.WHITE, 0.2)
