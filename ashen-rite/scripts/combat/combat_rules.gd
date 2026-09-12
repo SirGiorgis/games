@@ -119,6 +119,10 @@ static func _special(def: CharacterDef) -> Dictionary:
 			base.knockdown = true
 			base.launch = -70.0
 			base.dash_spd = 0.0
+			if def.id == "mako":
+				base.damage = 118.0 * def.attack
+				base.armor = 1
+				base.size = Vector2(96, 28)
 		"blast":
 			base.projectile = "ice"
 			base.proj_count = 1

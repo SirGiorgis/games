@@ -13,10 +13,12 @@ func _init() -> void:
 
 	var chris := _def("chris_xrisakis")
 	var giorgis := _def("hoodrich_stacks")
-	_stamp_fighter(field, chris, "idle", 0, 500, 620, false)
-	_stamp_fighter(field, giorgis, "idle", 0, 760, 620, true)
-	_stamp_fighter(field, chris, "light", 5, 200, 620, false)
-	_stamp_fighter(field, giorgis, "heavy", 7, 1080, 620, true)
+	var mako := _def("mako")
+	_stamp_fighter(field, chris, "idle", 0, 420, 620, false)
+	_stamp_fighter(field, mako, "idle", 0, 640, 620, false)
+	_stamp_fighter(field, giorgis, "idle", 0, 860, 620, true)
+	_stamp_fighter(field, chris, "light", 5, 180, 620, false)
+	_stamp_fighter(field, giorgis, "heavy", 7, 1100, 620, true)
 
 	_hud(field, chris, giorgis)
 	var out := "res://.godot/tiny_preview"

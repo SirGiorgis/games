@@ -35,7 +35,8 @@ static func paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) -
 static func _palette(def: CharacterDef) -> Dictionary:
 	var kit: bool = def.style == "kit"
 	var street: bool = def.style == "street"
-	var jeans: Color = Color(0.22, 0.38, 0.62) if kit else (Color(0.16, 0.22, 0.40) if street else def.outfit.darkened(0.28))
+	var bare: bool = def.style == "bare"
+	var jeans: Color = Color(0.10, 0.10, 0.12) if bare else (Color(0.22, 0.38, 0.62) if kit else (Color(0.16, 0.22, 0.40) if street else def.outfit.darkened(0.28)))
 	return {
 		"skin": def.skin,
 		"skin_hi": def.skin.lightened(0.10),
@@ -331,6 +332,18 @@ static func _torso(img: Image, def: CharacterDef, pal: Dictionary, cx: int, hip_
 		Pix.hline(img, cx - 2, top + 5, 5, pal.silver.darkened(0.08))
 		Pix.rect(img, cx - 6, hip_y - 2, 13, 3, pal.jeans)
 		Pix.hline(img, cx - 4, hip_y - 2, 9, pal.jeans_hi)
+	elif def.style == "bare":
+		Pix.rect(img, cx - 8, top + 2, 17, 11, pal.skin)
+		Pix.rect(img, cx - 6, top + 3, 13, 10, pal.skin_hi)
+		Pix.rect(img, cx - 9, top + 3, 4, 7, pal.skin_dk)
+		Pix.rect(img, cx + 6, top + 3, 4, 7, pal.skin)
+		Pix.hline(img, cx - 5, top + 6, 4, pal.skin_dk)
+		Pix.hline(img, cx + 2, top + 6, 4, pal.skin_dk)
+		Pix.put(img, cx, top + 8, pal.skin_dk)
+		Pix.put(img, cx - 2, top + 10, pal.skin_dk)
+		Pix.put(img, cx + 2, top + 10, pal.skin_dk)
+		Pix.rect(img, cx - 6, hip_y - 3, 13, 4, pal.jeans)
+		Pix.hline(img, cx - 5, hip_y - 3, 11, pal.jeans_hi)
 	elif def.style == "racing":
 		Pix.rect(img, cx - 5, top, 11, 14, pal.outfit)
 		Pix.vline(img, cx, top + 2, 10, pal.accent)
@@ -384,7 +397,9 @@ static func _head(img: Image, def: CharacterDef, pal: Dictionary, cx: int, cy: i
 	else:
 		Pix.hline(img, cx - 1, cy + 5, 3, pal.skin_dk)
 		Pix.put(img, cx, cy + 6, pal.skin_dk)
-	if def.style == "street":
+	if def.style == "bare":
+		_hair_mako(img, cx, cy, pal)
+	elif def.style == "street":
 		_hair_short(img, cx, cy, pal)
 		# hoop earring on the near ear
 		Pix.put(img, cx + 8, cy + 3, pal.silver)
@@ -410,6 +425,21 @@ static func _hair_curly(img: Image, cx: int, cy: int, pal: Dictionary) -> void:
 	# bangs over the brow
 	Pix.hline(img, cx - 4, cy - 3, 3, pal.hair_dk)
 	Pix.hline(img, cx + 2, cy - 3, 3, pal.hair)
+
+
+static func _hair_mako(img: Image, cx: int, cy: int, pal: Dictionary) -> void:
+	Pix.oval(img, cx, cy - 4, 8, 6, pal.hair)
+	Pix.rect(img, cx - 8, cy - 8, 16, 7, pal.hair)
+	# longer sides like the photo
+	Pix.rect(img, cx - 8, cy - 1, 3, 9, pal.hair_dk)
+	Pix.rect(img, cx + 6, cy - 1, 3, 9, pal.hair)
+	Pix.put(img, cx - 7, cy + 7, pal.hair_dk)
+	Pix.put(img, cx + 7, cy + 7, pal.hair)
+	# bangs sit above the eyes
+	Pix.hline(img, cx - 5, cy - 4, 5, pal.hair_dk)
+	Pix.hline(img, cx + 1, cy - 4, 5, pal.hair)
+	Pix.put(img, cx - 1, cy - 4, pal.hair_hi)
+	Pix.put(img, cx + 3, cy - 5, pal.hair_hi)
 
 
 static func _hair_short(img: Image, cx: int, cy: int, pal: Dictionary) -> void:

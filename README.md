@@ -2,7 +2,7 @@
 
 ## Giorgis Fighting (Godot 4.7)
 
-Original 2D arcade fighter with a unique song for every mode, stage, and fighter. Open `ashen-rite/project.godot` in Godot 4.7 and press Play.
+Original 2D arcade fighter. Roster: Chris, Giorgis, and Mako. Open `ashen-rite/project.godot` in Godot 4.7 and press Play.
 
 Full notes: [ashen-rite/README.md](ashen-rite/README.md)
 

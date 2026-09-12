@@ -23,7 +23,6 @@ func reload() -> void:
 	roster.sort_custom(func(a, b): return a.roster_order < b.roster_order or (a.roster_order == b.roster_order and a.name < b.name))
 	if roster.is_empty():
 		_fallback_roster()
-	_ensure_custom_slot()
 
 
 func get_def(id: String) -> CharacterDef:
@@ -60,9 +59,19 @@ func _load_json(path: String) -> void:
 	var outfit := def.outfit
 	var trim := def.trim
 	var accent := def.accent
+	var skin := def.skin
+	var hair := def.hair
+	var eyes := def.eyes
 	if not def.reference_image.is_empty():
 		CharacterForge.apply_photo(def, def.reference_image)
-	if def.keep_outfit:
+	if def.keep_palette:
+		def.skin = skin
+		def.hair = hair
+		def.eyes = eyes
+		def.outfit = outfit
+		def.trim = trim
+		def.accent = accent
+	elif def.keep_outfit:
 		def.outfit = outfit
 		def.trim = trim
 		def.accent = accent
@@ -90,11 +99,9 @@ func _ensure_custom_slot() -> void:
 
 func _fallback_roster() -> void:
 	var specs := [
-		["chris_xrisakis", "Male fighter, skinny lean build, curly brown hair, black teal racing jacket, aggressive personality, formula racing speed powers."],
-		["mira_solen", "Female fighter, athletic, crimson hair, red dancer wraps, fierce personality, fire-based powers."],
-		["rook_ironveil", "Male fighter, tall, heavy muscular build, brown hair, gold-trim armor, stoic personality, earth-based powers."],
-		["nyx_hollow", "Female fighter, lean, black hair, violet cloak, cunning personality, shadow-based powers."],
-		["asha_wren", "Female fighter, compact, ivory hair, teal robes, patient personality, ice-based powers."],
+		["chris_xrisakis", "Male fighter, skinny lean build, curly brown hair, red white striped football shirt, aggressive personality."],
+		["hoodrich_stacks", "Male fighter, athletic, short dark hair, grey hoodie, aggressive rushdown."],
+		["mako", "Male fighter, muscular athletic build, medium dark hair, shirtless, black pants."],
 	]
 	for s in specs:
 		var def := CharacterForge.forge(s[1], "", s[0])

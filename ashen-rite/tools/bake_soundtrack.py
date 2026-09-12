@@ -49,18 +49,7 @@ TRACKS = [
     ("stage:void_garden", "VOID GARDEN", 100, 11, 7),
     ("theme:chris_xrisakis", "THREAD THE LANE", 142, 0, 4),
     ("theme:hoodrich_stacks", "SAY THE NAME", 138, 7, 5),
-    ("theme:mira_solen", "CINDER ARC", 150, 3, 8),
-    ("theme:rook_ironveil", "IRON VOW", 108, 5, 2),
-    ("theme:nyx_hollow", "ALREADY BEHIND YOU", 134, 11, 9),
-    ("theme:asha_wren", "GLACIER VOW", 98, 4, 1),
-    ("theme:vela_spark", "LIVE WIRE", 156, 2, 11),
-    ("theme:borin_flint", "STONE NOTE", 96, 8, 3),
-    ("theme:kira_bloom", "PETAL CUT", 124, 10, 6),
-    ("theme:dax_coil", "COIL SNAP", 146, 1, 8),
-    ("theme:juniper_vale", "COLD ROOM", 102, 4, 0),
-    ("theme:sol_renn", "NOON FIRE", 140, 3, 7),
-    ("theme:ori_pax", "QUIET SPARK", 114, 9, 4),
-    ("theme:maeve_thorn", "THORN STEP", 130, 6, 10),
+    ("theme:mako", "STILL STANDING", 128, 2, 9),
 ]
 
 

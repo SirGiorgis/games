@@ -1,13 +1,13 @@
 {
   "map": {
-    "timeattack": "timeattack.wav",
     "menu": "menu.wav",
-    "survival": "survival.wav",
     "arcade": "arcade.wav",
+    "survival": "survival.wav",
+    "timeattack": "timeattack.wav",
     "results": "results.wav",
     "defeat": "defeat.wav",
-    "gallery": "gallery.wav",
     "tutorial": "tutorial.wav",
+    "gallery": "gallery.wav",
     "attract": "attract.wav",
     "pause": "pause.wav",
     "final": "final.wav",
@@ -17,28 +17,17 @@
     "stage:neon_street": "stage_neon_street.wav",
     "stage:the_pit": "stage_the_pit.wav",
     "stage:crimson_keep": "stage_crimson_keep.wav",
-    "stage:snow_ridge": "stage_snow_ridge.wav",
     "stage:tidal_dock": "stage_tidal_dock.wav",
+    "stage:snow_ridge": "stage_snow_ridge.wav",
     "stage:desert_gate": "stage_desert_gate.wav",
     "stage:clocktower": "stage_clocktower.wav",
     "stage:bamboo_yard": "stage_bamboo_yard.wav",
-    "stage:sunset_pier": "stage_sunset_pier.wav",
     "stage:storm_bridge": "stage_storm_bridge.wav",
+    "stage:sunset_pier": "stage_sunset_pier.wav",
     "stage:void_garden": "stage_void_garden.wav",
-    "theme:hoodrich_stacks": "theme_hoodrich_stacks.wav",
     "theme:chris_xrisakis": "theme_chris_xrisakis.wav",
-    "theme:mira_solen": "theme_mira_solen.wav",
-    "theme:rook_ironveil": "theme_rook_ironveil.wav",
-    "theme:nyx_hollow": "theme_nyx_hollow.wav",
-    "theme:asha_wren": "theme_asha_wren.wav",
-    "theme:vela_spark": "theme_vela_spark.wav",
-    "theme:borin_flint": "theme_borin_flint.wav",
-    "theme:kira_bloom": "theme_kira_bloom.wav",
-    "theme:dax_coil": "theme_dax_coil.wav",
-    "theme:juniper_vale": "theme_juniper_vale.wav",
-    "theme:sol_renn": "theme_sol_renn.wav",
-    "theme:ori_pax": "theme_ori_pax.wav",
-    "theme:maeve_thorn": "theme_maeve_thorn.wav"
+    "theme:hoodrich_stacks": "theme_hoodrich_stacks.wav",
+    "theme:mako": "theme_mako.wav"
   },
   "tracks": [
     {
@@ -180,27 +169,9 @@
       "seconds": 72
     },
     {
-      "id": "theme:asha_wren",
-      "file": "theme_asha_wren.wav",
-      "title": "GLACIER VOW",
-      "seconds": 72
-    },
-    {
-      "id": "theme:borin_flint",
-      "file": "theme_borin_flint.wav",
-      "title": "STONE NOTE",
-      "seconds": 72
-    },
-    {
       "id": "theme:chris_xrisakis",
       "file": "theme_chris_xrisakis.wav",
       "title": "THREAD THE LANE",
-      "seconds": 72
-    },
-    {
-      "id": "theme:dax_coil",
-      "file": "theme_dax_coil.wav",
-      "title": "COIL SNAP",
       "seconds": 72
     },
     {
@@ -210,57 +181,9 @@
       "seconds": 72
     },
     {
-      "id": "theme:juniper_vale",
-      "file": "theme_juniper_vale.wav",
-      "title": "COLD ROOM",
-      "seconds": 72
-    },
-    {
-      "id": "theme:kira_bloom",
-      "file": "theme_kira_bloom.wav",
-      "title": "PETAL CUT",
-      "seconds": 72
-    },
-    {
-      "id": "theme:maeve_thorn",
-      "file": "theme_maeve_thorn.wav",
-      "title": "THORN STEP",
-      "seconds": 72
-    },
-    {
-      "id": "theme:mira_solen",
-      "file": "theme_mira_solen.wav",
-      "title": "CINDER ARC",
-      "seconds": 72
-    },
-    {
-      "id": "theme:nyx_hollow",
-      "file": "theme_nyx_hollow.wav",
-      "title": "ALREADY BEHIND YOU",
-      "seconds": 72
-    },
-    {
-      "id": "theme:ori_pax",
-      "file": "theme_ori_pax.wav",
-      "title": "QUIET SPARK",
-      "seconds": 72
-    },
-    {
-      "id": "theme:rook_ironveil",
-      "file": "theme_rook_ironveil.wav",
-      "title": "IRON VOW",
-      "seconds": 72
-    },
-    {
-      "id": "theme:sol_renn",
-      "file": "theme_sol_renn.wav",
-      "title": "NOON FIRE",
-      "seconds": 72
-    },
-    {
-      "id": "theme:vela_spark",
-      "file": "theme_vela_spark.wav",
-      "title": "LIVE WIRE",
+      "id": "theme:mako",
+      "file": "theme_mako.wav",
+      "title": "STILL STANDING",
       "seconds": 72
     },
     {

@@ -10,7 +10,7 @@
   "build": "athletic",
   "style": "street",
   "keep_outfit": true,
-  "roster_order": 2,
+  "roster_order": 1,
   "height_scale": 1.02,
   "width_scale": 0.96,
   "health": 960,

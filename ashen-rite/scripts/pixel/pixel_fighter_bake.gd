@@ -878,9 +878,26 @@ static func _photo_face(def: CharacterDef) -> Image:
 	var ry: int
 	var rw: int
 	var rh: int
-	var fw: int = 8
-	var fh: int = 9
-	if def.id == "hoodrich_stacks" or float(sh) > float(sw) * 1.1:
+	var fw: int = 12 if def.id == "mako" else 8
+	var fh: int = 14 if def.id == "mako" else 9
+	if def.id == "mako":
+		var face_path := "res://data/characters/refs/mako_face.png"
+		var baked: Image = CharacterForge._load_image(face_path)
+		if baked:
+			baked.convert(Image.FORMAT_RGBA8)
+			# drop gray wall leftovers
+			for y in baked.get_height():
+				for x in baked.get_width():
+					var c: Color = baked.get_pixel(x, y)
+					if c.s < 0.10 and c.get_luminance() > 0.38:
+						baked.set_pixel(x, y, Color(0, 0, 0, 0))
+			_face_cache[def.id] = baked
+			return baked
+		rx = int(round(float(sw) * 0.453))
+		ry = int(round(float(sh) * 0.214))
+		rw = int(round(float(sw) * 0.156))
+		rh = int(round(float(sh) * 0.335))
+	elif def.id == "hoodrich_stacks" or float(sh) > float(sw) * 1.1:
 		rx = int(round(float(sw) * 0.26))
 		ry = int(round(float(sh) * 0.05))
 		rw = int(round(float(sw) * 0.48))
@@ -916,6 +933,10 @@ static func _is_wall(c: Color, char_id: String = "") -> bool:
 	var lum: float = c.get_luminance()
 	if lum > 0.78 and c.s < 0.16:
 		return true
+	if char_id == "mako":
+		if c.s < 0.14 and lum > 0.30:
+			return true
+		return false
 	if char_id == "hoodrich_stacks":
 		if c.s < 0.22 and lum > 0.45 and lum < 0.92:
 			return true

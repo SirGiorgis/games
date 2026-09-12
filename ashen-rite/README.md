@@ -54,9 +54,9 @@ Change bindings in `scripts/input/control_map.gd` (keyboard + gamepad hooks).
 
 ## Roster
 
-Chris, Giorgis, Mira, Rook, Nyx, Asha, plus Vela Spark, Borin Flint, Kira Bloom, Dax Coil, Juniper Vale, Sol Renn, Ori Pax, Maeve Thorn, and a Custom Rite slot.
+**Chris Xrisakis**, **Giorgis**, and **Mako**. Default match is Chris vs Giorgis.
 
-Nyx and Maeve teleport / air dash. Dax dashes like Chris. Juniper freeze-nova like Asha. Everyone has their own theme in the gallery.
+Mako is a shirtless close-range brawler (Body Check / Floor Drop). Each of the three has a theme in the gallery.
 
 ## Add a character
 
@@ -91,7 +91,7 @@ Each stage has its own song. Character select plays that fighter's theme.
 
 ## Soundtrack
 
-39 unique songs in `assets/audio/music/` (one per menu, mode, stage, and fighter). Rebuild with:
+28 unique songs in `assets/audio/music/` (one per menu, mode, stage, and fighter). Rebuild with:
 
 `python3 tools/bake_soundtrack.py`
 
