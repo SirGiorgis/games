@@ -185,7 +185,7 @@ func dempsey_burst(pos: Vector2) -> void:
 
 func grid_streaks(pos: Vector2, facing: int = 1) -> void:
 	shockwave(pos)
-	var car: Image = Projectile.art_for("car", Color(0.78, 0.08, 0.10))
+	var car: Image = Pix.car()
 	for i in 3:
 		var s := Sprite2D.new()
 		s.texture = Pix.tex(car)

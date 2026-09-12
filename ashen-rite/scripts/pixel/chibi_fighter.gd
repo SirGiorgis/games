@@ -499,7 +499,7 @@ static func _bottle(img: Image, x: int, y: int, pal: Dictionary) -> void:
 	var glass := Color(0.72, 0.88, 0.82, 0.95)
 	var glass_dk := Color(0.42, 0.62, 0.58)
 	var fill := Color(0.92, 0.94, 0.96)
-	var cap := pal.silver
+	var cap: Color = pal.silver
 	Pix.rect(img, x - 1, y - 8, 3, 3, cap)
 	Pix.put(img, x, y - 9, cap.lightened(0.12))
 	Pix.rect(img, x - 1, y - 5, 3, 2, glass_dk)

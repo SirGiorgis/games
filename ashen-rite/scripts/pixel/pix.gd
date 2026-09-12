@@ -120,6 +120,41 @@ static func tex(img: Image) -> ImageTexture:
 	return t
 
 
+static func car(color: Color = Color(0.78, 0.08, 0.10)) -> Image:
+	# Original open-wheel racer. Rosso body, yellow CX roundel. No team badges.
+	var img := image(26, 12, Color(0, 0, 0, 0))
+	var body: Color = Color(0.78, 0.08, 0.10) if color.r > 0.4 else color
+	var body_hi: Color = body.lightened(0.16)
+	var body_dk: Color = body.darkened(0.22)
+	var wing: Color = Color(0.12, 0.11, 0.12)
+	var yellow := Color(0.96, 0.78, 0.12)
+	var tire := Color(0.08, 0.08, 0.09)
+	var rim := Color(0.62, 0.62, 0.66)
+	rect(img, 1, 1, 5, 2, wing)
+	vline(img, 3, 3, 3, wing)
+	rect(img, 18, 4, 7, 2, body)
+	rect(img, 21, 3, 4, 1, yellow)
+	rect(img, 20, 6, 6, 1, wing)
+	hline(img, 19, 7, 7, wing)
+	rect(img, 5, 3, 16, 4, body)
+	rect(img, 7, 2, 11, 2, body_hi)
+	rect(img, 6, 6, 13, 1, body_dk)
+	rect(img, 10, 1, 6, 3, Color(0.18, 0.22, 0.28))
+	rect(img, 11, 1, 4, 2, Color(0.55, 0.72, 0.88))
+	put(img, 12, 2, Color(0.85, 0.92, 1.0))
+	disc(img, 16, 5, 2, yellow)
+	put(img, 15, 4, Color(0.12, 0.10, 0.10))
+	put(img, 16, 5, Color(0.12, 0.10, 0.10))
+	put(img, 17, 4, Color(0.12, 0.10, 0.10))
+	put(img, 17, 6, Color(0.12, 0.10, 0.10))
+	rect(img, 4, 7, 4, 4, tire)
+	rect(img, 5, 8, 2, 2, rim)
+	rect(img, 18, 7, 4, 4, tire)
+	rect(img, 19, 8, 2, 2, rim)
+	outline(img, Color(0.05, 0.04, 0.06))
+	return img
+
+
 static func scaled_tex(img: Image, scale: int) -> ImageTexture:
 	var big := img.duplicate()
 	big.resize(img.get_width() * scale, img.get_height() * scale, Image.INTERPOLATE_NEAREST)
