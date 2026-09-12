@@ -3,6 +3,8 @@ extends RefCounted
 ## Limb-rigged pixel fighter. Faces right; flip_h handles facing.
 ## Chris (style "kit") uses a keyed photo head plus a generic striped kit — no club badge.
 
+const PhotoSprite := preload("res://scripts/pixel/photo_fighter_sprite.gd")
+
 const W := 72
 const H := 96
 const SCALE := 4
@@ -326,25 +328,30 @@ static func _blit_sheet(dst: Image, src: Image, xoff: int, yoff: int) -> void:
 static func _model_sheet(def: CharacterDef) -> Image:
 	if _model_cache.has(def.id):
 		return _model_cache[def.id]
-	var path: String = def.reference_image
-	if path.is_empty():
-		path = "res://data/characters/refs/chris_model.png"
-	var src: Image = CharacterForge._load_image(path)
+	var baked_path: String = "res://data/characters/refs/%s_model.png" % def.id
+	var src: Image = CharacterForge._load_image(baked_path)
 	if src == null:
-		_model_cache[def.id] = null
-		return null
-	src.convert(Image.FORMAT_RGBA8)
-	for y in src.get_height():
-		for x in src.get_width():
-			var c: Color = src.get_pixel(x, y)
-			if _is_model_bg(c):
-				src.set_pixel(x, y, Color(0, 0, 0, 0))
-	# Keep 128x128 so part rects stay aligned to the uploaded sprite.
-	if src.get_width() != 128 or src.get_height() != 128:
-		var canvas := Image.create(128, 128, false, Image.FORMAT_RGBA8)
-		canvas.fill(Color(0, 0, 0, 0))
-		canvas.blit_rect(src, Rect2i(0, 0, mini(128, src.get_width()), mini(128, src.get_height())), Vector2i.ZERO)
-		src = canvas
+		var path: String = def.reference_image
+		if path.is_empty() and def.id == "chris_xrisakis":
+			path = "res://data/characters/refs/chris_model.png"
+		src = CharacterForge._load_image(path)
+		if src == null:
+			_model_cache[def.id] = null
+			return null
+		if PhotoSprite.is_portrait(src):
+			src = PhotoSprite.build_from_photo(src, def)
+		else:
+			src.convert(Image.FORMAT_RGBA8)
+			for y in src.get_height():
+				for x in src.get_width():
+					var c: Color = src.get_pixel(x, y)
+					if _is_model_bg(c):
+						src.set_pixel(x, y, Color(0, 0, 0, 0))
+			if src.get_width() != 128 or src.get_height() != 128:
+				var canvas := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+				canvas.fill(Color(0, 0, 0, 0))
+				canvas.blit_rect(src, Rect2i(0, 0, mini(128, src.get_width()), mini(128, src.get_height())), Vector2i.ZERO)
+				src = canvas
 	_model_cache[def.id] = src
 	return src
 
