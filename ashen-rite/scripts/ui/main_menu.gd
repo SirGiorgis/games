@@ -52,7 +52,7 @@ func _ready() -> void:
 	PixelUI.label_at(self, "CHRIS", Vector2(780, 560), 2, Color(0.95, 0.78, 0.35), 0, 160).set_centered(160)
 	PixelUI.label_at(self, "GIORGIS", Vector2(1010, 560), 2, Color(0.62, 0.82, 0.95), 0, 160).set_centered(160)
 
-	PixelUI.add_footer(self, "ENTER / J CONFIRM   W/S MOVE   ESC QUIT")
+	PixelUI.add_footer(self, "ENTER / CROSS OK   W/S / DPAD MOVE   ESC / CIRCLE BACK")
 	_refresh()
 	AudioDirector.play_music("menu")
 

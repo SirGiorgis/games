@@ -42,9 +42,9 @@ func _ready() -> void:
 	PixelUI.label_at(self, "CHRIS", Vector2(350, 520), 2, Color(0.95, 0.78, 0.35), 0, 160).set_centered(160)
 	PixelUI.label_at(self, "GIORGIS", Vector2(770, 520), 2, Color(0.62, 0.82, 0.95), 0, 160).set_centered(160)
 
-	_press = PixelUI.label_at(self, "PRESS ENTER", Vector2(0, 600), 3, Color(1, 0.92, 0.45), 0, 1280)
+	_press = PixelUI.label_at(self, "PRESS ENTER / CROSS", Vector2(0, 600), 3, Color(1, 0.92, 0.45), 0, 1280)
 	_press.set_centered(1280)
-	PixelUI.add_footer(self, "ENTER START   WAIT FOR DEMO   ARCADE ON MENU")
+	PixelUI.add_footer(self, "ENTER / CROSS START   OPTIONS PAUSE   WAIT FOR DEMO")
 	AudioDirector.play_music("menu")
 
 
@@ -72,7 +72,7 @@ func _process(delta: float) -> void:
 		_giorgis.position.y = 440.0 + sin(_t * 2.2 + 1.0) * 5.0
 	if _press:
 		_press.modulate.a = 0.35 + 0.65 * (0.5 + 0.5 * sin(_t * 6.0))
-	if Input.is_action_just_pressed(ControlMap.MENU.confirm) or Input.is_action_just_pressed(ControlMap.MENU.back):
+	if Input.is_action_just_pressed(ControlMap.MENU.confirm) or Input.is_action_just_pressed(ControlMap.MENU.back) or Input.is_action_just_pressed(ControlMap.P1.pause):
 		_finish()
 	elif _t > 8.0:
 		_go_attract()

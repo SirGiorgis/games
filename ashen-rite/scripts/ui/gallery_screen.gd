@@ -37,7 +37,7 @@ func _ready() -> void:
 	_preview.position = Vector2(640, 390)
 	add_child(_preview)
 	_ids = CharacterCatalog.ids()
-	PixelUI.add_footer(self, "A/D TRACK  ENTER PLAY  ESC BACK")
+	PixelUI.add_footer(self, "A/D / DPAD TRACK  CROSS PLAY  CIRCLE BACK")
 	_play_current()
 
 

@@ -101,7 +101,7 @@ func _ready() -> void:
 	_cpu_label = PixelUI.label_at(self, "", Vector2(880, 552), 2, Color(0.65, 0.82, 0.95), 36)
 	_arena_lbl = PixelUI.label_at(self, "", Vector2(420, 520), 2, Color(0.88, 0.78, 0.42), 36)
 
-	PixelUI.add_footer(self, "A/D SELECT  J THEN STAGE  R RANDOM  C CPU  T ARENA  F FORGE  ESC BACK")
+	PixelUI.add_footer(self, "A/D / DPAD  CROSS OK  CIRCLE BACK  R RANDOM  C CPU  T ARENA")
 	if GameState.arcade:
 		PixelUI.label_at(self, "ARCADE LADDER", Vector2(0, 12), 2, Color(1, 0.82, 0.32), 0, 1280).set_centered(1280)
 	elif GameState.survival:

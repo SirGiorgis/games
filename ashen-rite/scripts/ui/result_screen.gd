@@ -54,7 +54,7 @@ func _ready() -> void:
 	add_child(_p2_spr)
 	for i in ITEMS.size():
 		_entries.append(PixelUI.add_menu_row(self, 508.0 + i * 48.0, 480))
-	PixelUI.add_footer(self, "W/S MOVE  ENTER CONFIRM")
+	PixelUI.add_footer(self, "W/S / DPAD MOVE  ENTER / CROSS OK")
 	_refresh()
 
 

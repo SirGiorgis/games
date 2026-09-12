@@ -31,26 +31,28 @@ Wait on the title splash for the attract demo.
 
 ## Controls (Player 1)
 
-| Key | Action |
-| --- | --- |
-| A / D | Move |
-| W | Jump |
-| S | Crouch |
-| J | Light attack |
-| K | Heavy attack |
-| L | Special (50 meter; EX when the pink meter is full) |
-| U | Block |
-| Forward + U | Parry (tap at impact) |
-| Run + J / K | Dash attack |
-| L + U while hit | Burst (50 meter, escape a combo) |
-| I | Grab (beats block) |
-| O | Ultimate (full meter) |
-| Getup + back | Roll |
-| Esc / P | Pause |
+| Key | DualSense | Action |
+| --- | --- | --- |
+| A / D | Left stick / D-pad | Move |
+| W | Stick up / D-pad up | Jump |
+| S | Stick down / D-pad down | Crouch |
+| J | Square | Light attack |
+| K | Triangle | Heavy attack |
+| L | Circle | Special (50 meter; EX when the pink meter is full) |
+| U | L1 or L2 | Block |
+| Forward + U | Forward + L1 | Parry (tap at impact) |
+| Run + J / K | Run + Square / Triangle | Dash attack |
+| L + U while hit | Circle + L1 while hit | Burst (50 meter, escape a combo) |
+| I | R1 | Grab (beats block) |
+| O | R2 | Ultimate (full meter) |
+| Getup + back | Getup + back | Roll |
+| Esc / P | Options / touchpad | Pause |
 
-Player 2 (optional human): arrows + Z/X/C/V/B/N or numpad 1–6.
+Menus: **Cross** confirm, **Circle** back, D-pad or left stick to move.
 
-Change bindings in `scripts/input/control_map.gd` (keyboard + gamepad hooks).
+Player 2: keyboard arrows + Z/X/C/V/B/N, or a second DualSense (same layout). Pad 1 is P1, pad 2 is P2.
+
+Change bindings in `scripts/input/control_map.gd`.
 
 ## Roster
 

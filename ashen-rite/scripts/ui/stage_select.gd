@@ -45,7 +45,7 @@ func _ready() -> void:
 	add_child(_preview)
 	_title = PixelUI.label_at(self, "", Vector2(0, 552), 3, Color(1, 0.88, 0.42), 0, 1280)
 	_title.set_centered(1280)
-	PixelUI.add_footer(self, "A/D SELECT  ENTER FIGHT  ESC BACK")
+	PixelUI.add_footer(self, "A/D / DPAD  CROSS FIGHT  CIRCLE BACK")
 	_sync_from_state()
 	_refresh()
 

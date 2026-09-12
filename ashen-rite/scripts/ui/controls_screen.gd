@@ -10,54 +10,46 @@ func _ready() -> void:
 	PixelUI.add_title(self, "CONTROLS", 40, Color(0.95, 0.22, 0.28))
 
 	PixelUI.add_panel(self, Vector2(40, 120), Vector2(600, 520), PixelUI.GOLD)
-	PixelUI.label_at(self, "PLAYER 1", Vector2(40, 132), 3, Color(0.95, 0.78, 0.35), 0, 600).set_centered(600)
-	PixelUI.label_at(self, """A / D     WALK
-DD        RUN
-AA        BACKDASH
-W         JUMP
-S         CROUCH
-J         LIGHT
-K         HEAVY
-L         SPECIAL
-U         BLOCK
-I         THROW
-O         SUPER
-S+I       TAUNT
+	PixelUI.label_at(self, "KEYBOARD", Vector2(40, 132), 3, Color(0.95, 0.78, 0.35), 0, 600).set_centered(600)
+	PixelUI.label_at(self, """P1  A/D WALK   W JUMP   S CROUCH
+J LIGHT   K HEAVY   L SPECIAL
+U BLOCK   I THROW   O SUPER
 ESC / P   PAUSE
-FWD+U     PARRY
-RUN+J/K   DASH ATTACK
-L+U HIT   BURST
-GETUP+A   ROLL""", Vector2(64, 184), 2, Color(0.92, 0.9, 0.86), 26)
+FWD+U PARRY   RUN+J/K DASH ATTACK
+L+U HIT BURST   GETUP+A ROLL
+
+P2  ARROWS MOVE
+Z LIGHT  X HEAVY  C SPECIAL
+V BLOCK  B THROW  N SUPER
+
+LIGHT > (LIGHT) > HEAVY > SPECIAL > SUPER
+LIGHTS MINUS ON BLOCK
+JUMP CANCEL HEAVY ON HIT
+THROW TECH  PRESS THROW
+LOW HP  RAGE""", Vector2(64, 176), 2, Color(0.92, 0.9, 0.86), 28)
 
 	PixelUI.add_panel(self, Vector2(640, 120), Vector2(600, 520), Color(0.35, 0.75, 1.0))
-	PixelUI.label_at(self, "PLAYER 2 / CPU", Vector2(640, 132), 3, Color(0.55, 0.85, 1.0), 0, 600).set_centered(600)
-	PixelUI.label_at(self, """ARROWS    MOVE
-Z / NP1   LIGHT
-X / NP2   HEAVY
-C / NP3   SPECIAL
-V / NP4   BLOCK
-B / NP5   THROW
-N / NP6   SUPER
+	PixelUI.label_at(self, "DUALSENSE  PS5", Vector2(640, 132), 3, Color(0.55, 0.85, 1.0), 0, 600).set_centered(600)
+	PixelUI.label_at(self, """LS / DPAD     MOVE
+LS UP / UP    JUMP
+LS DOWN       CROUCH
+SQUARE        LIGHT
+TRIANGLE      HEAVY
+CIRCLE        SPECIAL
+L1 / L2       BLOCK
+R1            THROW
+R2            SUPER
+OPTIONS       PAUSE
+TOUCHPAD      PAUSE
+FWD+L1        PARRY
+RUN+SQ/TRI    DASH ATTACK
+CIRCLE+L1 HIT BURST
+GETUP+BACK    ROLL
+CROSS         MENU OK
+CIRCLE        MENU BACK
+PAD 1 = P1    PAD 2 = P2""", Vector2(664, 176), 2, Color(0.88, 0.9, 0.94), 22)
 
-STAND BLOCK  MID AND HIGH
-CROUCH BLOCK MID AND LOW
-THROW BEATS BLOCK
-LIGHT > (LIGHT) > HEAVY > SPECIAL > SUPER
-ONE LIGHT GATLING  LIGHTS MINUS ON BLOCK
-JUMP CANCEL HEAVY ON HIT
-THROW TECH  PRESS I
-AIR TECH    W ONLY
-JUST GUARD  BLOCK LATE
-PUSHBLOCK   L WHILE BLOCKSTUN
-GETUP ATTACK IS A REVERSAL
-MAX METER   EX SPECIAL
-O SUPER     UNIQUE PER FIGHTER
-FWD+BLOCK   PARRY
-L+U ON HIT  BURST
-LOW HP      RAGE
-BLOCK TOO   GUARD BREAK""", Vector2(664, 184), 2, Color(0.88, 0.9, 0.94), 20)
-
-	PixelUI.add_footer(self, "ESC / ENTER  BACK")
+	PixelUI.add_footer(self, "ESC / CIRCLE  BACK     ENTER / CROSS  OK")
 
 
 func _process(_d: float) -> void:

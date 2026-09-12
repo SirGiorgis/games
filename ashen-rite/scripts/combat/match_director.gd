@@ -181,7 +181,7 @@ func _process(delta: float) -> void:
 			_restore_time()
 	if _paused:
 		return
-	if GameState.attract and (Input.is_action_just_pressed(ControlMap.MENU.confirm) or Input.is_action_just_pressed(ControlMap.P1.pause)):
+	if GameState.attract and (Input.is_action_just_pressed(ControlMap.MENU.confirm) or Input.is_action_just_pressed(ControlMap.MENU.back) or Input.is_action_just_pressed(ControlMap.P1.pause)):
 		_quit_match()
 		return
 	if _pause_lock <= 0.0 and Input.is_action_just_pressed(ControlMap.P1.pause):

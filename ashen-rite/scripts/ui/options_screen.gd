@@ -15,7 +15,7 @@ func _ready() -> void:
 	PixelUI.add_title(self, "OPTIONS", 64, Color(0.95, 0.22, 0.28))
 	for i in KEYS.size():
 		_entries.append(PixelUI.add_menu_row(self, 128.0 + i * 44.0, 600))
-	PixelUI.add_footer(self, "A/D ADJUST  ENTER CONFIRM  ESC BACK")
+	PixelUI.add_footer(self, "A/D / LS ADJUST  CROSS OK  CIRCLE BACK")
 	_refresh()
 
 
