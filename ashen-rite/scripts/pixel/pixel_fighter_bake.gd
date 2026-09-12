@@ -109,10 +109,11 @@ static func _paint_model(img: Image, def: CharacterDef, pose: String, f: int, n:
 
 	var lead: Dictionary = m["lead_arm"] as Dictionary
 	var rear: Dictionary = m["rear_arm"] as Dictionary
-	if absf(float(lead.rot)) > 2.0:
-		_blit_rot_part(img, sheet, _ARM_R, ox + int(lead.sx), oy + int(lead.sy), float(lead.rot), int(lead.px), int(lead.py))
-	if absf(float(rear.rot)) > 2.0:
-		_blit_rot_part(img, sheet, _ARM_L, ox + int(rear.sx), oy + int(rear.sy), float(rear.rot), int(rear.px), int(rear.py))
+	if use_full:
+		if absf(float(lead.rot)) > 2.0:
+			_blit_rot_part(img, sheet, _ARM_R, ox + int(lead.sx), oy + int(lead.sy), float(lead.rot), int(lead.px), int(lead.py))
+		if absf(float(rear.rot)) > 2.0:
+			_blit_rot_part(img, sheet, _ARM_L, ox + int(rear.sx), oy + int(rear.sy), float(rear.rot), int(rear.px), int(rear.py))
 
 	if m.get("fx", false):
 		_punch_flash(img, ox + int(m.get("fx_x", 108)), oy + int(m.get("fx_y", 46)), def.trim)
@@ -131,6 +132,8 @@ static func _paint_model_parts(img: Image, sheet: Image, ox: int, oy: int, m: Di
 	_blit_rot_part(img, sheet, _LEG_R, hip_x + int(leg_r.dx) - 8, hip_y + int(leg_r.dy), float(leg_r.rot), 18, 4)
 	var rear: Dictionary = m["rear_arm"] as Dictionary
 	_blit_rot_part(img, sheet, _ARM_L, ox + int(rear.sx), oy + int(rear.sy), float(rear.rot), int(rear.px), int(rear.py))
+	var lead: Dictionary = m["lead_arm"] as Dictionary
+	_blit_rot_part(img, sheet, _ARM_R, ox + int(lead.sx), oy + int(lead.sy), float(lead.rot), int(lead.px), int(lead.py))
 	var torso: Dictionary = m["torso"] as Dictionary
 	_blit_rot_part(img, sheet, _TORSO, ox + int(torso.dx), oy + int(torso.dy), float(torso.rot), 30, 8)
 	var head: Dictionary = m["head"] as Dictionary
@@ -161,11 +164,21 @@ static func _model_pose(pose: String, u: float, ph: float, p: Dictionary) -> Dic
 			var s: Dictionary = _walk_table()[step]
 			base.bob = int(s.bob)
 			base.xoff = int(s.lean) + int(s.near_x)
+			base.full_body = false
+			base.leg_l.rot = float(s.get("ll_rot", 0.0))
+			base.leg_r.rot = float(s.get("lr_rot", 0.0))
+			base.rear_arm.rot = float(s.get("al_rot", 0.0))
+			base.lead_arm.rot = float(s.get("ar_rot", 0.0))
 		"run":
 			var rs: int = int(floor(ph / TAU * 6.0)) % 6
 			var rt: Dictionary = _run_table()[rs]
 			base.bob = int(rt.bob)
 			base.xoff = int(rt.xoff) + int(rt.near_x)
+			base.full_body = false
+			base.leg_l.rot = float(rt.get("ll_rot", 0.0))
+			base.leg_r.rot = float(rt.get("lr_rot", 0.0))
+			base.rear_arm.rot = float(rt.get("al_rot", 0.0))
+			base.lead_arm.rot = float(rt.get("ar_rot", 0.0))
 		"backdash":
 			base.xoff = -10 + int(sin(ph * 2.0) * -3.0)
 			base.bob = int(abs(sin(ph * 2.0)) * 2.0)
@@ -230,25 +243,25 @@ static func _model_pose(pose: String, u: float, ph: float, p: Dictionary) -> Dic
 
 static func _walk_table() -> Array:
 	return [
-		{"bob": 0, "lean": 0, "near_x": 0},
-		{"bob": -2, "lean": 2, "near_x": 4},
-		{"bob": -3, "lean": 2, "near_x": 6},
-		{"bob": -2, "lean": 1, "near_x": 3},
-		{"bob": 0, "lean": 0, "near_x": 0},
-		{"bob": -2, "lean": -2, "near_x": -4},
-		{"bob": -3, "lean": -2, "near_x": -6},
-		{"bob": -2, "lean": -1, "near_x": -3},
+		{"bob": 0, "lean": 0, "near_x": 0, "ll_rot": 0.0, "lr_rot": 0.0, "al_rot": 0.0, "ar_rot": 0.0},
+		{"bob": -2, "lean": 2, "near_x": 4, "ll_rot": -16.0, "lr_rot": 12.0, "al_rot": 6.0, "ar_rot": -4.0},
+		{"bob": -3, "lean": 2, "near_x": 6, "ll_rot": -22.0, "lr_rot": 18.0, "al_rot": 10.0, "ar_rot": -8.0},
+		{"bob": -2, "lean": 1, "near_x": 3, "ll_rot": -10.0, "lr_rot": 8.0, "al_rot": 4.0, "ar_rot": -2.0},
+		{"bob": 0, "lean": 0, "near_x": 0, "ll_rot": 0.0, "lr_rot": 0.0, "al_rot": 0.0, "ar_rot": 0.0},
+		{"bob": -2, "lean": -2, "near_x": -4, "ll_rot": 12.0, "lr_rot": -16.0, "al_rot": -4.0, "ar_rot": 6.0},
+		{"bob": -3, "lean": -2, "near_x": -6, "ll_rot": 18.0, "lr_rot": -22.0, "al_rot": -8.0, "ar_rot": 10.0},
+		{"bob": -2, "lean": -1, "near_x": -3, "ll_rot": 8.0, "lr_rot": -10.0, "al_rot": -2.0, "ar_rot": 4.0},
 	]
 
 
 static func _run_table() -> Array:
 	return [
-		{"bob": -1, "xoff": 3, "near_x": 4},
-		{"bob": -3, "xoff": 5, "near_x": 6},
-		{"bob": -2, "xoff": 4, "near_x": 2},
-		{"bob": -1, "xoff": 3, "near_x": -4},
-		{"bob": -3, "xoff": 5, "near_x": -6},
-		{"bob": -2, "xoff": 4, "near_x": -2},
+		{"bob": -1, "xoff": 3, "near_x": 4, "ll_rot": -20.0, "lr_rot": 16.0, "al_rot": 12.0, "ar_rot": -10.0},
+		{"bob": -3, "xoff": 5, "near_x": 6, "ll_rot": -28.0, "lr_rot": 24.0, "al_rot": 16.0, "ar_rot": -14.0},
+		{"bob": -2, "xoff": 4, "near_x": 2, "ll_rot": -8.0, "lr_rot": 10.0, "al_rot": 6.0, "ar_rot": -4.0},
+		{"bob": -1, "xoff": 3, "near_x": -4, "ll_rot": 16.0, "lr_rot": -20.0, "al_rot": -10.0, "ar_rot": 12.0},
+		{"bob": -3, "xoff": 5, "near_x": -6, "ll_rot": 24.0, "lr_rot": -28.0, "al_rot": -14.0, "ar_rot": 16.0},
+		{"bob": -2, "xoff": 4, "near_x": -2, "ll_rot": 10.0, "lr_rot": -8.0, "al_rot": -4.0, "ar_rot": 6.0},
 	]
 
 
