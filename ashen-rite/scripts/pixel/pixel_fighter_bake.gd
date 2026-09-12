@@ -811,46 +811,63 @@ static func _torso(img: Image, def: CharacterDef, cx: int, hip_y: int, skinny: b
 
 
 static func _photo_head(img: Image, def: CharacterDef, cx: int, cy: int, pose: String, street: bool) -> void:
+	Pix.oval(img, cx, cy + 1, 6, 7, def.skin)
+	Pix.rect(img, cx - 1, cy + 6, 3, 3, def.skin.darkened(0.1))
 	var face: Image = _photo_face(def)
 	if face != null:
 		var fw: int = face.get_width()
 		var fh: int = face.get_height()
 		var ox: int = cx - fw / 2
-		var oy: int = cy - fh / 2
+		var oy: int = cy - fh / 2 + 1
 		if pose == "hit":
 			ox += 1
 			oy += 1
-		Pix.oval(img, cx, cy + 1, 5, 6, def.skin)
 		for y in fh:
 			for x in fw:
 				var c: Color = face.get_pixel(x, y)
 				if c.a < 0.4:
 					continue
+				var nx: float = float(ox + x - cx) / 6.0
+				var ny: float = float(oy + y - cy) / 7.0
+				if nx * nx + ny * ny > 1.05:
+					continue
 				Pix.put(img, ox + x, oy + y, c)
-		Pix.rect(img, cx - 1, cy + fh / 2, 3, 2, def.skin.darkened(0.08))
-		if street:
-			_paint_street_hair(img, cx, cy, def)
-		else:
-			_paint_curly_hair(img, cx, cy, def)
-		return
-	_head(img, def, cx, cy, street, true, pose)
+	Pix.put(img, cx - 2, cy + 1, Color(0.95, 0.93, 0.9))
+	Pix.put(img, cx + 2, cy + 1, Color(0.95, 0.93, 0.9))
+	Pix.put(img, cx - 2, cy + 1, def.eyes)
+	Pix.put(img, cx + 2, cy + 1, def.eyes)
+	if pose == "hit":
+		Pix.hline(img, cx - 1, cy + 3, 3, Color(0.45, 0.2, 0.2))
+	else:
+		Pix.hline(img, cx - 1, cy + 4, 3, def.skin.darkened(0.32))
+	if street:
+		_paint_street_hair(img, cx, cy, def)
+	else:
+		_paint_curly_hair(img, cx, cy, def)
 
 
 static func _paint_curly_hair(img: Image, cx: int, cy: int, def: CharacterDef) -> void:
 	var h1: Color = def.hair
-	var h2: Color = def.hair.lightened(0.14)
-	Pix.oval(img, cx, cy - 4, 6, 4, h1)
-	Pix.disc(img, cx - 4, cy - 2, 2, h1)
-	Pix.disc(img, cx + 4, cy - 3, 2, h2)
-	Pix.disc(img, cx - 1, cy - 6, 2, h1)
-	Pix.disc(img, cx + 2, cy - 6, 2, h2)
+	var h2: Color = def.hair.lightened(0.16)
+	var h3: Color = def.hair.darkened(0.18)
+	Pix.oval(img, cx, cy - 5, 7, 5, h1)
+	Pix.disc(img, cx - 5, cy - 3, 2, h3)
+	Pix.disc(img, cx + 5, cy - 4, 2, h2)
+	Pix.disc(img, cx - 2, cy - 7, 2, h1)
+	Pix.disc(img, cx + 2, cy - 7, 2, h2)
+	Pix.disc(img, cx + 4, cy - 1, 2, h1)
+	Pix.disc(img, cx - 5, cy - 1, 2, h1)
 
 
 static func _paint_street_hair(img: Image, cx: int, cy: int, def: CharacterDef) -> void:
 	var h: Color = def.hair
-	Pix.oval(img, cx, cy - 4, 6, 4, h)
-	Pix.rect(img, cx - 5, cy - 5, 11, 3, h)
-	Pix.put(img, cx - 4, cy, Color(0.78, 0.80, 0.84))
+	Pix.oval(img, cx, cy - 5, 6, 4, h)
+	Pix.rect(img, cx - 6, cy - 6, 13, 4, h)
+	Pix.rect(img, cx - 5, cy - 3, 4, 4, h.darkened(0.08))
+	var silver := Color(0.78, 0.80, 0.84)
+	Pix.put(img, cx - 6, cy + 1, silver)
+	Pix.put(img, cx - 6, cy + 2, silver.darkened(0.2))
+	Pix.put(img, cx - 5, cy + 2, silver)
 
 
 static func _logo_hoodrich(img: Image, x: int, y: int, white: Color, blue: Color) -> void:
@@ -876,8 +893,8 @@ static func _photo_face(def: CharacterDef) -> Image:
 	var ry: int
 	var rw: int
 	var rh: int
-	var fw: int = 10
-	var fh: int = 12
+	var fw: int = 8
+	var fh: int = 9
 	if def.id == "hoodrich_stacks" or float(sh) > float(sw) * 1.1:
 		rx = int(round(float(sw) * 0.26))
 		ry = int(round(float(sh) * 0.05))

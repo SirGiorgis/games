@@ -10,33 +10,19 @@ const PANEL := Color(0.08, 0.05, 0.1, 0.92)
 
 
 static func menu_bg() -> ImageTexture:
-	var img := Pix.image(W, H, Color(0.03, 0.02, 0.05))
-	# vertical gradient
+	var img := Pix.image(W, H, Color(0.66, 0.80, 0.88))
 	for y in H:
 		var t: float = float(y) / float(H)
-		var c: Color = INK.lerp(Color(0.12, 0.04, 0.08), t * 0.55)
+		var c: Color = Color(0.62, 0.80, 0.90).lerp(Color(0.42, 0.58, 0.28), clampf((t - 0.45) * 2.2, 0.0, 1.0))
+		if t < 0.48:
+			c = Color(0.66, 0.82, 0.90).lerp(Color(0.78, 0.88, 0.92), t / 0.48)
 		Pix.hline(img, 0, y, W, c)
-	# diagonal accent stripes
-	for i in 40:
-		var x0: int = (i * 41) % (W + 40) - 20
-		Pix.vline(img, x0, 0, H, Color(0.18, 0.06, 0.1, 0.18))
-	# scanlines
-	for y in range(0, H, 2):
-		Pix.hline(img, 0, y, W, Color(0, 0, 0, 0.12))
-	# vignette corners
-	for i in 24:
-		Pix.hline(img, 0, i, W, Color(0, 0, 0, 0.08 + float(i) * 0.004))
-		Pix.hline(img, 0, H - 1 - i, W, Color(0, 0, 0, 0.08 + float(i) * 0.004))
-	# top/bottom gold rails
-	Pix.rect(img, 0, 0, W, 4, RED)
-	Pix.rect(img, 0, 4, W, 2, GOLD)
-	Pix.rect(img, 0, H - 4, W, 4, RED)
-	Pix.rect(img, 0, H - 6, W, 2, GOLD.darkened(0.2))
-	# sparkles
-	for i in 18:
-		var sx: int = (i * 53 + 7) % W
-		var sy: int = (i * 29 + 11) % (H - 20) + 10
-		Pix.put(img, sx, sy, Color(1, 0.85, 0.4, 0.35))
+	# far mountain silhouette
+	for y in 40:
+		var w: int = int(float(y) / 40.0 * 70.0)
+		Pix.hline(img, 200 - w, 28 + y, w * 2, Color(0.48, 0.56, 0.50, 0.85))
+	Pix.rect(img, 0, 0, W, 3, Color(0.18, 0.16, 0.12))
+	Pix.rect(img, 0, H - 4, W, 4, Color(0.28, 0.42, 0.16))
 	return Pix.tex(img)
 
 
@@ -185,20 +171,15 @@ static func portrait_frame(w: int, h: int, accent: Color) -> ImageTexture:
 
 static func round_gem(on: bool) -> ImageTexture:
 	var img := Pix.image(8, 8, Color(0, 0, 0, 0))
-	if on:
-		Pix.disc(img, 4, 4, 3, GOLD)
-		Pix.disc(img, 4, 3, 2, Color(1, 0.95, 0.7))
-	else:
-		Pix.disc(img, 4, 4, 3, Color(0.14, 0.12, 0.14))
-		Pix.disc(img, 4, 4, 2, Color(0.08, 0.07, 0.09))
+	Pix.star(img, 4, 4, on)
 	return Pix.tex(img)
 
 
 static func timer_box() -> ImageTexture:
 	var img := Pix.image(22, 22, Color(0, 0, 0, 0))
-	Pix.disc(img, 11, 11, 10, Color(0.08, 0.07, 0.08))
-	Pix.disc(img, 11, 11, 8, Color(0.16, 0.14, 0.15))
-	Pix.disc(img, 11, 11, 7, Color(0.06, 0.05, 0.06))
+	Pix.disc(img, 11, 11, 10, Color(0.06, 0.05, 0.05))
+	Pix.disc(img, 11, 11, 8, Color(0.16, 0.14, 0.14))
+	Pix.disc(img, 11, 11, 7, Color(0.08, 0.07, 0.07))
 	return Pix.tex(img)
 
 
@@ -207,17 +188,17 @@ static func hud_top() -> ImageTexture:
 	return Pix.tex(img)
 
 
-static func tiny_hp(w: int, h: int, fill: Color, t: float) -> ImageTexture:
+static func tiny_hp(w: int, h: int, fill: Color, t: float, from_right: bool = false) -> ImageTexture:
 	var img := Pix.image(w, h, Color(0, 0, 0, 0))
-	Pix.rect(img, 0, 0, w, h, Color(0.05, 0.05, 0.06))
-	Pix.rect(img, 1, 1, w - 2, h - 2, Color(0.12, 0.12, 0.12))
-	var fw: int = int(clampf(t, 0.0, 1.0) * float(w - 4))
+	Pix.round_rect(img, 0, 0, w, h, 3, Color(0.04, 0.04, 0.05))
+	Pix.round_rect(img, 1, 1, w - 2, h - 2, 2, Color(0.12, 0.12, 0.12))
+	var inner: int = w - 4
+	var fw: int = int(clampf(t, 0.0, 1.0) * float(inner))
 	if fw > 0:
-		Pix.rect(img, 2, 2, fw, h - 4, fill)
-		Pix.hline(img, 2, 2, fw, fill.lightened(0.28))
-		Pix.hline(img, 2, h - 3, fw, fill.darkened(0.18))
-	Pix.hline(img, 0, 0, w, Color(0.02, 0.02, 0.02))
-	Pix.hline(img, 0, h - 1, w, Color(0.02, 0.02, 0.02))
+		var x0: int = 2 + (inner - fw if from_right else 0)
+		Pix.rect(img, x0, 2, fw, h - 4, fill)
+		Pix.hline(img, x0, 2, fw, fill.lightened(0.28))
+		Pix.hline(img, x0, h - 3, fw, fill.darkened(0.18))
 	return Pix.tex(img)
 
 

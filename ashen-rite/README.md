@@ -1,6 +1,6 @@
 # Giorgis Fighting
 
-Original arcade 2D fighting game for **Godot 4.7**.
+Original arcade 2D fighting game for **Godot 4.7**. Visual north star: compact chibi fighters on a bright outdoor field (Tiny Fight-style), not oversized model sprites or neon arenas.
 
 Open the `ashen-rite` folder in Godot 4.7 and press **Play**. Nothing else to configure.
 
@@ -10,7 +10,7 @@ Open the `ashen-rite` folder in Godot 4.7 and press **Play**. Nothing else to co
 2. Import `ashen-rite/project.godot`.
 3. Press Play. Main scene is already set.
 
-Lead fighter: **Chris Xrisakis**.
+Lead fighter: **Chris Xrisakis**. Default opponent: **Stacks**. Default arena: **Green Hill Field**.
 
 ## Controls (Player 1)
 
@@ -49,4 +49,8 @@ Or write a description (see `data/descriptions/example.txt`), put a photo at `da
 
 ## Arenas
 
-Moonlit Temple, Neon Rift Street, The Under-Rite, Crimson Keep. Random by default; pick one in Options.
+Green Hill Field (default), Moonlit Temple, Neon Rift Street, The Under-Rite, Crimson Keep. Pick one in Options, or cycle to RANDOM.
+
+## Download
+
+https://github.com/SirGiorgis/games/archive/refs/heads/cursor/ashen-rite-fighter-acf2.zip

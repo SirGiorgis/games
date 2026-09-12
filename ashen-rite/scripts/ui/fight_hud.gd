@@ -24,26 +24,12 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 
-	# Tiny Fight-style top strip: name pills + HP + round timer
-	var p1_pill := TextureRect.new()
-	p1_pill.texture = PixelUI.name_pill(72, 8, Color(0.08, 0.08, 0.09))
-	p1_pill.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	p1_pill.position = Vector2(16, 12)
-	p1_pill.scale = Vector2(4, 4)
-	root.add_child(p1_pill)
-	PixelUI.label_at(root, p1.def.name.to_upper(), Vector2(24, 16), 1, Color(0.95, 0.95, 0.92))
+	PixelUI.label_at(root, p1.def.name.to_upper(), Vector2(20, 8), 1, Color(0.12, 0.12, 0.12))
+	var p2n := PixelUI.label_at(root, p2.def.name.to_upper(), Vector2(980, 8), 1, Color(0.12, 0.12, 0.12), 0, 280)
+	p2n.set_centered(280)
 
-	var p2_pill := TextureRect.new()
-	p2_pill.texture = PixelUI.name_pill(72, 8, Color(0.08, 0.08, 0.09))
-	p2_pill.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	p2_pill.position = Vector2(976, 12)
-	p2_pill.scale = Vector2(4, 4)
-	root.add_child(p2_pill)
-	var p2n := PixelUI.label_at(root, p2.def.name.to_upper(), Vector2(976, 16), 1, Color(0.95, 0.95, 0.92), 0, 288)
-	p2n.set_centered(288)
-
-	_p1_hp = _bar_tex(root, Vector2(16, 48), 112, 8, Color(0.28, 0.82, 0.22))
-	_p2_hp = _bar_tex(root, Vector2(816, 48), 112, 8, Color(0.86, 0.18, 0.22))
+	_p1_hp = _bar_tex(root, Vector2(16, 24), 132, 9, Color(0.28, 0.82, 0.22))
+	_p2_hp = _bar_tex(root, Vector2(736, 24), 132, 9, Color(0.86, 0.18, 0.22))
 
 	var tbox := TextureRect.new()
 	tbox.texture = PixelUI.timer_box()
@@ -54,26 +40,30 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	_timer = PixelUI.label_at(root, "99", Vector2(0, 28), 3, Color(1, 1, 1), 0, 1280)
 	_timer.set_centered(1280)
 
-	_p1_sp = _meter_tex(root, Vector2(16, 84), 48, 5, Color(0.86, 0.32, 0.62))
-	_p2_sp = _meter_tex(root, Vector2(1072, 84), 48, 5, Color(0.86, 0.32, 0.62))
-	PixelUI.label_at(root, "BLOCK", Vector2(16, 72), 1, Color(0.92, 0.45, 0.7))
-	PixelUI.label_at(root, "BLOCK", Vector2(1072, 72), 1, Color(0.92, 0.45, 0.7))
+	_p1_sp = _meter_tex(root, Vector2(16, 68), 48, 5, Color(0.86, 0.32, 0.62))
+	_p2_sp = _meter_tex(root, Vector2(1072, 68), 48, 5, Color(0.86, 0.32, 0.62))
+	PixelUI.label_at(root, "BLOCK", Vector2(16, 56), 1, Color(0.92, 0.45, 0.7))
+	PixelUI.label_at(root, "BLOCK", Vector2(1072, 56), 1, Color(0.92, 0.45, 0.7))
 
 	for i in 2:
-		_p1_rounds.append(_gem(root, Vector2(220 + i * 28, 80)))
-		_p2_rounds.append(_gem(root, Vector2(1032 - i * 28, 80)))
+		_p1_rounds.append(_gem(root, Vector2(220 + i * 28, 64)))
+		_p2_rounds.append(_gem(root, Vector2(1032 - i * 28, 64)))
 
 	_p1_ult = _meter_tex(root, Vector2(16, 676), 80, 6, Color(0.25, 0.72, 0.95))
 	_p2_ult = _meter_tex(root, Vector2(944, 676), 80, 6, Color(0.95, 0.78, 0.25))
-	PixelUI.label_at(root, "SPECIAL", Vector2(16, 660), 1, Color(0.55, 0.82, 1.0))
-	PixelUI.label_at(root, "SPECIAL", Vector2(944, 660), 1, Color(0.95, 0.82, 0.4))
+	PixelUI.label_at(root, "SPECIAL", Vector2(16, 660), 1, Color(0.15, 0.18, 0.22))
+	PixelUI.label_at(root, "SPECIAL", Vector2(944, 660), 1, Color(0.15, 0.18, 0.22))
 
-	PixelUI.label_at(root, "J LIGHT   K HEAVY   L SPECIAL", Vector2(16, 620), 1, Color(0.12, 0.12, 0.12))
-	PixelUI.label_at(root, "U BLOCK   I THROW   O SUPER", Vector2(16, 636), 1, Color(0.12, 0.12, 0.12))
-	var hints := PixelUI.label_at(root, "ATTACK J   POWER K   DASH L   BLOCK U", Vector2(720, 636), 1, Color(0.12, 0.12, 0.12), 0, 544)
-	hints.set_centered(544)
+	var hint := Color(0.95, 0.95, 0.92)
+	PixelUI.label_at(root, "J  LIGHT", Vector2(16, 560), 1, hint)
+	PixelUI.label_at(root, "K  HEAVY", Vector2(16, 576), 1, hint)
+	PixelUI.label_at(root, "L  SPECIAL", Vector2(16, 592), 1, hint)
+	PixelUI.label_at(root, "ATTACK        J", Vector2(1000, 544), 1, hint)
+	PixelUI.label_at(root, "POWER ATTACK  K", Vector2(1000, 560), 1, hint)
+	PixelUI.label_at(root, "DASH          L", Vector2(1000, 576), 1, hint)
+	PixelUI.label_at(root, "BLOCK         U", Vector2(1000, 592), 1, hint)
 
-	PixelUI.label_at(root, arena_name, Vector2(0, 108), 1, Color(0.18, 0.22, 0.16), 0, 1280).set_centered(1280)
+	PixelUI.label_at(root, arena_name, Vector2(0, 96), 1, Color(0.18, 0.22, 0.16), 0, 1280).set_centered(1280)
 	_combo = PixelUI.label_at(root, "", Vector2(0, 140), 3, Color(1, 0.85, 0.3), 0, 1280)
 	_combo.set_centered(1280)
 
@@ -122,11 +112,11 @@ func _gem(root: Control, pos: Vector2) -> TextureRect:
 	return t
 
 
-func _paint_hp(bar: TextureRect, cur: float, mx: float, _left: bool) -> void:
+func _paint_hp(bar: TextureRect, cur: float, mx: float, left: bool) -> void:
 	var t := clampf(cur / max(mx, 1.0), 0.0, 1.0)
 	var base: Color = bar.get_meta("col")
 	var col: Color = base if t > 0.3 else Color(0.95, 0.75, 0.15)
-	bar.texture = PixelUI.tiny_hp(int(bar.get_meta("bw")), int(bar.get_meta("bh")), col, t)
+	bar.texture = PixelUI.tiny_hp(int(bar.get_meta("bw")), int(bar.get_meta("bh")), col, t, not left)
 
 
 func _paint_meters(left: bool, s: float, u: float) -> void:

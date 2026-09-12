@@ -39,7 +39,7 @@ func build(d: CharacterDef) -> void:
 	_sprite.texture = _tex("idle", 0)
 	var tw: int = _sprite.texture.get_width()
 	var th: int = _sprite.texture.get_height()
-	var sc: int = PixelFighterBake.MODEL_SCALE if tw >= 120 else PixelFighterBake.SCALE
+	var sc: int = PixelFighterBake.SCALE
 	_base_scale = Vector2(sc, sc)
 	_sprite.position = Vector2(-tw * sc / 2, -th * sc)
 	_sprite.scale = _base_scale
