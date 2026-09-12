@@ -421,9 +421,9 @@ static func _paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) 
 		_downed(img, def, racing, hero, f, n, pose)
 		return
 
-	var pants: Color = Color(0.18, 0.32, 0.55) if kit else (Color(0.14, 0.15, 0.18) if street else (Color(0.12, 0.11, 0.14) if racing else def.outfit.darkened(0.25)))
+	var pants: Color = Color(0.18, 0.32, 0.55) if kit else (Color(0.12, 0.16, 0.30) if street else (Color(0.12, 0.11, 0.14) if racing else def.outfit.darkened(0.25)))
 	var shoes: Color = Color(0.08, 0.08, 0.09)
-	var sleeve: Color = def.outfit if street else (def.skin if kit else (def.outfit if racing else def.skin))
+	var sleeve: Color = def.outfit if (street or kit or racing) else def.skin
 	var lt: int = 2
 	var ls: int = 2
 	var at: int = 2
@@ -772,34 +772,34 @@ static func _arm(img: Image, sx: int, sy: int, ang: float, bend: float, upper: i
 
 
 static func _torso(img: Image, def: CharacterDef, cx: int, hip_y: int, skinny: bool, racing: bool, kit: bool, street: bool, lean: int) -> void:
-	var tw: int = 8 if kit else (9 if street else (4 if skinny else (7 if def.build == "heavy" else 5)))
-	var h: int = 10 if (kit or street) else 8
+	var tw: int = 9 if kit else (10 if street else (4 if skinny else (7 if def.build == "heavy" else 5)))
+	var h: int = 12 if (kit or street) else 8
 	var top: int = hip_y - h
 	var tx: int = cx - tw / 2 + lean
 	if kit:
 		# Red / white horizontal stripes, blue collar, short sleeves. No crest.
-		Pix.rect(img, tx, top + 2, tw + 1, h - 2, def.trim)
-		var row: int = top + 2
+		Pix.rect(img, tx, top + 3, tw + 1, h - 3, def.trim)
+		var row: int = top + 3
 		while row < top + h - 1:
-			var band: Color = def.outfit if int((row - top) / 2) % 2 == 0 else def.trim
-			Pix.rect(img, tx, row, tw + 1, 2, band)
-			row += 2
-		Pix.rect(img, tx, top, tw + 1, 3, def.accent)
-		Pix.put(img, cx + lean, top + 2, def.trim)
-		Pix.rect(img, tx - 2, top + 2, 3, 4, def.outfit)
-		Pix.rect(img, tx + tw, top + 2, 3, 4, def.outfit)
-		Pix.put(img, cx + lean - 1, top + 3, Color(0.06, 0.05, 0.05))
-		Pix.put(img, cx + lean + 1, top + 3, Color(0.06, 0.05, 0.05))
+			var band: Color = def.outfit if (row - top) % 2 == 0 else def.trim
+			Pix.rect(img, tx, row, tw + 1, 1, band)
+			row += 1
+		Pix.rect(img, tx, top, tw + 1, 4, def.accent)
+		Pix.rect(img, tx + 1, top + 1, tw - 1, 2, def.accent.lightened(0.08))
+		Pix.rect(img, tx - 3, top + 3, 4, 5, def.outfit)
+		Pix.rect(img, tx + tw, top + 3, 4, 5, def.outfit)
+		Pix.rect(img, tx, top + h - 2, tw + 1, 2, def.outfit.darkened(0.12))
 	elif street:
 		var shirt: Color = def.outfit
-		var shirt_hi: Color = def.outfit.lightened(0.10)
+		var shirt_hi: Color = def.outfit.lightened(0.12)
 		Pix.rect(img, tx - 1, top + 2, tw + 3, h - 2, shirt)
 		Pix.rect(img, tx, top + 3, tw + 1, h - 4, shirt_hi)
-		Pix.rect(img, tx - 2, top + 3, 3, 5, shirt)
-		Pix.rect(img, tx + tw, top + 3, 3, 5, shirt)
+		Pix.rect(img, tx - 3, top + 3, 4, 6, shirt)
+		Pix.rect(img, tx + tw, top + 3, 4, 6, shirt)
+		Pix.rect(img, tx + 1, top, tw - 1, 4, shirt.darkened(0.08))
 		Pix.hline(img, tx + 2, top + 2, tw - 3, def.skin.darkened(0.06))
-		Pix.put(img, cx + lean, top + 3, Color(0.78, 0.80, 0.84))
-		_logo_hoodrich(img, tx + 1, top + 4, def.trim, def.accent)
+		Pix.hline(img, cx + lean - 2, top + 4, 5, Color(0.78, 0.80, 0.84))
+		_logo_hoodrich(img, tx + 2, top + 6, def.trim, def.accent)
 	elif racing:
 		Pix.rect(img, tx, top, tw + 1, h, def.outfit)
 		Pix.rect(img, tx, top, tw + 1, 2, def.accent.darkened(0.25))
@@ -811,35 +811,19 @@ static func _torso(img: Image, def: CharacterDef, cx: int, hip_y: int, skinny: b
 
 
 static func _photo_head(img: Image, def: CharacterDef, cx: int, cy: int, pose: String, street: bool) -> void:
+	# Photo crops smear at chibi scale — draw readable pixel faces instead.
 	Pix.oval(img, cx, cy + 1, 6, 7, def.skin)
-	Pix.rect(img, cx - 1, cy + 6, 3, 3, def.skin.darkened(0.1))
-	var face: Image = _photo_face(def)
-	if face != null:
-		var fw: int = face.get_width()
-		var fh: int = face.get_height()
-		var ox: int = cx - fw / 2
-		var oy: int = cy - fh / 2 + 1
-		if pose == "hit":
-			ox += 1
-			oy += 1
-		for y in fh:
-			for x in fw:
-				var c: Color = face.get_pixel(x, y)
-				if c.a < 0.4:
-					continue
-				var nx: float = float(ox + x - cx) / 6.0
-				var ny: float = float(oy + y - cy) / 7.0
-				if nx * nx + ny * ny > 1.05:
-					continue
-				Pix.put(img, ox + x, oy + y, c)
-	Pix.put(img, cx - 2, cy + 1, Color(0.95, 0.93, 0.9))
-	Pix.put(img, cx + 2, cy + 1, Color(0.95, 0.93, 0.9))
-	Pix.put(img, cx - 2, cy + 1, def.eyes)
-	Pix.put(img, cx + 2, cy + 1, def.eyes)
+	Pix.rect(img, cx - 1, cy + 6, 3, 3, def.skin.darkened(0.12))
+	Pix.hline(img, cx - 3, cy, 3, def.hair.darkened(0.1))
+	Pix.hline(img, cx + 1, cy, 3, def.hair.darkened(0.1))
+	Pix.put(img, cx - 2, cy + 2, Color(0.95, 0.93, 0.9))
+	Pix.put(img, cx + 2, cy + 2, Color(0.95, 0.93, 0.9))
+	Pix.put(img, cx - 2, cy + 2, def.eyes)
+	Pix.put(img, cx + 2, cy + 2, def.eyes)
 	if pose == "hit":
-		Pix.hline(img, cx - 1, cy + 3, 3, Color(0.45, 0.2, 0.2))
+		Pix.hline(img, cx - 1, cy + 4, 3, Color(0.45, 0.2, 0.2))
 	else:
-		Pix.hline(img, cx - 1, cy + 4, 3, def.skin.darkened(0.32))
+		Pix.hline(img, cx - 1, cy + 5, 3, def.skin.darkened(0.35))
 	if street:
 		_paint_street_hair(img, cx, cy, def)
 	else:

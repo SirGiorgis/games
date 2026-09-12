@@ -74,9 +74,7 @@ static func _meadow(img: Image) -> void:
 	Pix.hline(img, 262, 124, 32, Color(0.55, 0.74, 0.82))
 	for y in range(132, H):
 		var shade: float = float(y - 132) / 48.0
-		var g: Color = Color(0.58, 0.62, 0.30).lerp(Color(0.38, 0.48, 0.18), shade)
-		if y % 4 == 0:
-			g = g.lerp(Color(0.46, 0.40, 0.20), 0.25)
+		var g: Color = Color(0.56, 0.60, 0.28).lerp(Color(0.40, 0.50, 0.20), shade)
 		Pix.hline(img, 0, y, W, g)
 	for x in range(20, 300, 14):
 		var dx: int = x + (x % 5) - 2

@@ -58,6 +58,8 @@ func _hud(dst: Image) -> void:
 	var tbox: Image = PixelUI.timer_box().get_image()
 	tbox.resize(tbox.get_width() * 4, tbox.get_height() * 4, Image.INTERPOLATE_NEAREST)
 	dst.blend_rect(tbox, Rect2i(0, 0, tbox.get_width(), tbox.get_height()), Vector2i(596, 8))
+	var num: Image = PixelFont.make("99", Color(1, 1, 1), 3).get_image()
+	dst.blend_rect(num, Rect2i(0, 0, num.get_width(), num.get_height()), Vector2i(640 - num.get_width() / 2, 28))
 
 
 func _export_strips(def: CharacterDef, id: String) -> void:
