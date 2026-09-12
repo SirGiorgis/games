@@ -9,12 +9,14 @@ signal combo_changed(count: int)
 
 enum State { IDLE, WALK, RUN, BACKDASH, PREJUMP, JUMP, LAND, CROUCH, LIGHT, HEAVY, SPECIAL, ULTIMATE, BLOCK, GRAB, HIT, KNOCKDOWN, GETUP, VICTORY, DEFEAT }
 
-const GRAVITY := 2800.0
+const GRAVITY := 2450.0
 const MAX_SPECIAL := 100.0
 const MAX_ULTIMATE := 100.0
 const WALK_BACK := 0.72
 const RUN_MUL := 1.85
-const AIR_CTRL := 0.08
+const ACCEL := 3000.0
+const FRICTION := 2400.0
+const AIR_ACCEL := 1750.0
 
 var fighter_id: int = 0
 var def: CharacterDef
@@ -53,6 +55,10 @@ var _jump_x: float = 0.0
 var _was_air: bool = false
 var guarding: bool = false
 var crouch_guarding: bool = false
+var _atk_buf: String = ""
+var _atk_buf_t: float = 0.0
+var _jbuf: float = 0.0
+var _coyote: float = 0.0
 
 var visual: FighterVisual
 var hurtbox: Area2D
@@ -133,6 +139,10 @@ func reset_round(start_pos: Vector2) -> void:
 	_buf.reset()
 	_dash_t = 0.0
 	_land_t = 0.0
+	_atk_buf = ""
+	_atk_buf_t = 0.0
+	_jbuf = 0.0
+	_coyote = 0.12
 	rotation = 0
 	visual.rotation = 0
 	visual.set_pose_name("idle")
@@ -152,8 +162,17 @@ func celebrate(win: bool) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_atk_buf_t = max(0.0, _atk_buf_t - delta)
+	if _atk_buf_t <= 0.0:
+		_atk_buf = ""
+	_jbuf = max(0.0, _jbuf - delta)
+	if visual:
+		visual.frozen = freeze_frames > 0.0
 	if freeze_frames > 0.0:
 		freeze_frames -= delta
+		if not round_over and can_act:
+			_queue_inputs(_gather_command())
+		_sync_visual()
 		return
 	invuln = max(0.0, invuln - delta)
 	combo_decay = max(0.0, combo_decay - delta)
@@ -164,9 +183,12 @@ func _physics_process(delta: float) -> void:
 		combo_changed.emit(0)
 
 	on_ground = is_on_floor()
-	if not on_ground:
+	if on_ground:
+		_coyote = 0.10
+	else:
+		_coyote = max(0.0, _coyote - delta)
 		velocity.y += GRAVITY * delta
-	elif _was_air:
+	if on_ground and _was_air:
 		_on_landed()
 	var cmd := _gather_command()
 	_face_opponent()
@@ -222,18 +244,25 @@ func _think(cmd: Dictionary, delta: float) -> void:
 	if state == State.BLOCK and hitstun > 0.0:
 		hitstun -= delta
 		velocity.x = move_toward(velocity.x, 0.0, 1800.0 * delta)
+		_queue_inputs(cmd)
+		if hitstun <= 0.0 and _flush_buffer():
+			return
 		return
 	if state == State.HIT:
 		hitstun -= delta
 		if on_ground:
 			velocity.x = move_toward(velocity.x, 0.0, 900.0 * delta)
+		_queue_inputs(cmd)
 		if hitstun <= 0.0:
+			if _flush_buffer():
+				return
 			state = State.IDLE if on_ground else State.JUMP
 			air_done = not on_ground
 		return
 	if state == State.KNOCKDOWN:
 		hitstun -= delta
 		velocity.x = move_toward(velocity.x, 0.0, 1200.0 * delta)
+		_queue_inputs(cmd)
 		if hitstun <= 0.0 and on_ground:
 			state = State.GETUP
 			_land_t = 0.18
@@ -241,8 +270,17 @@ func _think(cmd: Dictionary, delta: float) -> void:
 		return
 	if state == State.GETUP or state == State.LAND:
 		_land_t -= delta
-		velocity.x = move_toward(velocity.x, 0.0, 2000.0 * delta)
+		_accel_x(0.0, 2200.0, delta)
+		_queue_inputs(cmd)
+		if state == State.LAND and _jbuf > 0.0 and _land_t <= 0.04:
+			_begin_jump(cmd)
+			return
 		if _land_t <= 0.0:
+			if _flush_buffer():
+				return
+			if _jbuf > 0.0 and state == State.GETUP:
+				_begin_jump(cmd)
+				return
 			state = State.CROUCH if cmd.down else State.IDLE
 		return
 	if state == State.PREJUMP:
@@ -253,7 +291,10 @@ func _think(cmd: Dictionary, delta: float) -> void:
 		return
 	if state == State.BACKDASH:
 		_dash_t -= delta
+		_queue_inputs(cmd)
 		if _dash_t <= 0.0:
+			if _flush_buffer():
+				return
 			state = State.IDLE
 		return
 	if _busy_attack():
@@ -264,9 +305,15 @@ func _think(cmd: Dictionary, delta: float) -> void:
 				hitbox.arm(current_attack)
 		elif hitbox.active and attack_timer > attack_active_until:
 			hitbox.disarm()
+		_queue_inputs(cmd)
 		if attack_timer >= attack_duration:
 			hitbox.disarm()
-			chain_window = 0.16
+			chain_window = 0.22
+			if _flush_buffer():
+				return
+			if _jbuf > 0.0 and on_ground:
+				_begin_jump(cmd)
+				return
 			if not on_ground:
 				state = State.JUMP
 				air_done = true
@@ -306,7 +353,7 @@ func _think(cmd: Dictionary, delta: float) -> void:
 			_start_attack(lk)
 			return
 
-	if cmd.up and on_ground:
+	if (cmd.up or _jbuf > 0.0) and _coyote > 0.0:
 		_begin_jump(cmd)
 		return
 
@@ -320,35 +367,45 @@ func _think(cmd: Dictionary, delta: float) -> void:
 	if not on_ground:
 		if state != State.JUMP:
 			state = State.JUMP
-		velocity.x = move_toward(velocity.x, _jump_x, def.speed * AIR_CTRL)
+		var air_t: float = _jump_x
+		if cmd.fwd:
+			air_t = float(facing) * def.speed * 0.92
+		elif cmd.back:
+			air_t = float(facing) * -def.speed * 0.72
+		_accel_x(air_t, AIR_ACCEL, delta)
+		if not cmd.up and velocity.y < -220.0:
+			velocity.y = move_toward(velocity.y, -90.0, 5600.0 * delta)
+		_queue_inputs(cmd)
 		return
 
 	if cmd.down:
 		state = State.CROUCH
-		velocity.x = move_toward(velocity.x, 0.0, def.speed * 14.0 * delta)
+		_accel_x(0.0, FRICTION * 1.4, delta)
 		return
 
 	if cmd.block and not cmd.fwd:
 		state = State.BLOCK
-		velocity.x = move_toward(velocity.x, 0.0, def.speed * 14.0 * delta)
+		_accel_x(0.0, FRICTION * 1.4, delta)
 		return
 
 	if cmd.run or (state == State.RUN and cmd.fwd):
 		state = State.RUN
-		velocity.x = float(facing) * def.speed * RUN_MUL
+		_accel_x(float(facing) * def.speed * RUN_MUL, ACCEL * 1.55, delta)
 		return
 
 	if cmd.fwd:
 		state = State.WALK
-		velocity.x = float(facing) * def.speed
+		_accel_x(float(facing) * def.speed, ACCEL, delta)
 		return
 	if cmd.back:
 		state = State.WALK
-		velocity.x = float(facing) * -def.speed * WALK_BACK
+		_accel_x(float(facing) * -def.speed * WALK_BACK, ACCEL, delta)
 		return
 
 	state = State.IDLE
-	velocity.x = move_toward(velocity.x, 0.0, def.speed * 16.0 * delta)
+	_accel_x(0.0, FRICTION, delta)
+	if _flush_buffer():
+		return
 
 
 func _normal_kind(base: String, cmd: Dictionary) -> String:
@@ -367,7 +424,9 @@ func _begin_jump(cmd: Dictionary) -> void:
 		jx = float(facing) * -def.speed * 0.82
 	_jump_x = jx
 	state = State.PREJUMP
-	_land_t = 0.05
+	_land_t = 0.04
+	_jbuf = 0.0
+	_coyote = 0.0
 	velocity.x = 0.0
 	AudioDirector.play("whoosh", 1.25, 0.4)
 
@@ -388,9 +447,9 @@ func _on_landed() -> void:
 		state = State.LAND
 		_land_t = 0.12
 		attack_timer = attack_duration
-	elif state == State.JUMP or state == State.PREJUMP:
+	elif state == State.JUMP or state == State.PREJUMP or state == State.HIT:
 		state = State.LAND
-		_land_t = 0.09
+		_land_t = 0.07
 
 
 func _try_jump_cancel(cmd: Dictionary) -> bool:
@@ -447,8 +506,8 @@ func _start_attack(kind: String) -> void:
 			special_meter = max(0.0, special_meter - 50.0)
 			AudioDirector.play("special")
 			if def.special_id == "dash":
-				velocity.x = facing * 680.0
-				velocity.y = -80.0
+				velocity.x = facing * 620.0
+				velocity.y = -60.0
 			elif def.special_id == "slam":
 				velocity.y = -240.0
 			_spawn_projectile_if_any()
@@ -563,26 +622,33 @@ func _face_opponent() -> void:
 		return
 	if _busy_attack() or state in [State.HIT, State.KNOCKDOWN, State.VICTORY, State.DEFEAT, State.JUMP, State.PREJUMP, State.RUN, State.BACKDASH, State.GETUP]:
 		return
-	var dir := signf(opponent.position.x - position.x)
+	var dx: float = opponent.position.x - position.x
+	if absf(dx) < 32.0:
+		return
+	var dir := signf(dx)
 	if dir != 0:
 		facing = int(dir)
 		visual.facing = facing
 
 
 func _sync_visual() -> void:
+	visual.move_speed = absf(velocity.x)
 	if _busy_attack():
 		visual.set_pose_name(str(current_attack.get("kind", "light")))
 	else:
 		match state:
 			State.WALK:
-				visual.set_pose_name("walk")
+				if absf(velocity.x) > def.speed * 1.4:
+					visual.set_pose_name("run")
+				else:
+					visual.set_pose_name("walk")
 			State.RUN:
 				visual.set_pose_name("run")
 			State.BACKDASH:
 				visual.set_pose_name("backdash")
 			State.PREJUMP:
 				visual.set_pose_name("prejump")
-				visual.one_shot_u = 1.0 - clampf(_land_t / 0.05, 0.0, 1.0)
+				visual.one_shot_u = 1.0 - clampf(_land_t / 0.04, 0.0, 1.0)
 			State.JUMP:
 				visual.set_pose_name("jump")
 				var ju: float = clampf((velocity.y + 900.0) / 1800.0, 0.0, 1.0)
@@ -591,7 +657,7 @@ func _sync_visual() -> void:
 					visual.attack_u = lerpf(ju, 0.55, 0.35)
 			State.LAND:
 				visual.set_pose_name("land")
-				visual.one_shot_u = 1.0 - clampf(_land_t / 0.12, 0.0, 1.0)
+				visual.one_shot_u = 1.0 - clampf(_land_t / 0.07, 0.0, 1.0)
 			State.GETUP:
 				visual.set_pose_name("getup")
 				visual.one_shot_u = 1.0 - clampf(_land_t / 0.18, 0.0, 1.0)
@@ -611,6 +677,11 @@ func _sync_visual() -> void:
 				visual.set_pose_name("victory")
 			State.DEFEAT:
 				visual.set_pose_name("defeat")
+			State.IDLE:
+				if absf(velocity.x) > 48.0:
+					visual.set_pose_name("walk")
+				else:
+					visual.set_pose_name("idle")
 			_:
 				visual.set_pose_name("idle")
 	var vis_h: float = float(PixelFighterBake.H * PixelFighterBake.SCALE)
@@ -625,6 +696,48 @@ func _sync_visual() -> void:
 
 func _integrate(_delta: float) -> void:
 	pass
+
+
+func _accel_x(target: float, rate: float, delta: float) -> void:
+	velocity.x = move_toward(velocity.x, target, rate * delta)
+
+
+func _queue_inputs(cmd: Dictionary) -> void:
+	if cmd.light:
+		_atk_buf = _normal_kind("light", cmd)
+		_atk_buf_t = 0.18
+	elif cmd.heavy:
+		_atk_buf = _normal_kind("heavy", cmd)
+		_atk_buf_t = 0.18
+	elif (cmd.special or cmd.qcf) and special_meter >= 50.0:
+		_atk_buf = "special"
+		_atk_buf_t = 0.18
+	elif cmd.grab:
+		_atk_buf = "grab"
+		_atk_buf_t = 0.18
+	elif cmd.ultimate and ultimate_meter >= MAX_ULTIMATE:
+		_atk_buf = "ultimate"
+		_atk_buf_t = 0.18
+	if cmd.up:
+		_jbuf = 0.12
+
+
+func _flush_buffer() -> bool:
+	if _atk_buf.is_empty() or _atk_buf_t <= 0.0:
+		return false
+	if _atk_buf.begins_with("j") and on_ground:
+		_atk_buf = _atk_buf.substr(1)
+	if _atk_buf == "special" and special_meter < 50.0:
+		_atk_buf = ""
+		return false
+	if _atk_buf == "ultimate" and ultimate_meter < MAX_ULTIMATE:
+		_atk_buf = ""
+		return false
+	var k: String = _atk_buf
+	_atk_buf = ""
+	_atk_buf_t = 0.0
+	_start_attack(k)
+	return true
 
 
 func _separate_from_opponent() -> void:

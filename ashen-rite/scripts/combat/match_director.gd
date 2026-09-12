@@ -245,6 +245,9 @@ func _set_banner(text: String) -> void:
 	_banner.set_pix(text, 6, col)
 	_banner.set_centered(1280)
 	_banner.position = Vector2(0, 292)
+	_banner.modulate = Color(1.35, 1.35, 1.25)
+	var tw := create_tween()
+	tw.tween_property(_banner, "modulate", Color.WHITE, 0.22)
 	if _banner_bg:
 		var bw: int = clampi(text.length() * 14 + 40, 100, 180)
 		_banner_bg.texture = PixelUI.round_banner(bw)

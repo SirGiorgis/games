@@ -49,25 +49,29 @@ func _stamp_fighter(dst: Image, def: CharacterDef, pose: String, frame: int, fee
 
 
 func _hud(dst: Image) -> void:
-	var n1: Image = PixelFont.make("CHRIS", Color(0.98, 0.98, 0.95), 1).get_image()
-	var n2: Image = PixelFont.make("GIORGIS", Color(0.98, 0.98, 0.95), 1).get_image()
-	var pill: Image = PixelUI.name_pill(72, 11, Color(0.05, 0.05, 0.06)).get_image()
-	pill.resize(pill.get_width() * 4, pill.get_height() * 4, Image.INTERPOLATE_NEAREST)
-	dst.blend_rect(pill, Rect2i(0, 0, pill.get_width(), pill.get_height()), Vector2i(16, 6))
-	dst.blend_rect(pill, Rect2i(0, 0, pill.get_width(), pill.get_height()), Vector2i(976, 6))
-	dst.blend_rect(n1, Rect2i(0, 0, n1.get_width(), n1.get_height()), Vector2i(24, 10))
-	dst.blend_rect(n2, Rect2i(0, 0, n2.get_width(), n2.get_height()), Vector2i(1280 - 24 - n2.get_width(), 10))
+	var n1: Image = PixelFont.make("CHRIS", Color(0.98, 0.98, 0.95), 2).get_image()
+	var n2: Image = PixelFont.make("GIORGIS", Color(0.98, 0.98, 0.95), 2).get_image()
+	var p1w: int = 40
+	var p2w: int = 52
+	var pill1: Image = PixelUI.name_pill(p1w, 10, Color(0.05, 0.05, 0.06)).get_image()
+	var pill2: Image = PixelUI.name_pill(p2w, 10, Color(0.05, 0.05, 0.06)).get_image()
+	pill1.resize(pill1.get_width() * 4, pill1.get_height() * 4, Image.INTERPOLATE_NEAREST)
+	pill2.resize(pill2.get_width() * 4, pill2.get_height() * 4, Image.INTERPOLATE_NEAREST)
+	dst.blend_rect(pill1, Rect2i(0, 0, pill1.get_width(), pill1.get_height()), Vector2i(16, 8))
+	dst.blend_rect(pill2, Rect2i(0, 0, pill2.get_width(), pill2.get_height()), Vector2i(1280 - 16 - p2w * 4, 8))
+	dst.blend_rect(n1, Rect2i(0, 0, n1.get_width(), n1.get_height()), Vector2i(24, 12))
+	dst.blend_rect(n2, Rect2i(0, 0, n2.get_width(), n2.get_height()), Vector2i(1280 - 24 - n2.get_width(), 12))
 	var hp1: Image = PixelUI.tiny_hp(140, 10, Color(0.28, 0.82, 0.22), 1.0).get_image()
-	var hp2: Image = PixelUI.tiny_hp(140, 10, Color(0.86, 0.18, 0.22), 0.72, true).get_image()
+	var hp2: Image = PixelUI.tiny_hp(140, 10, Color(0.86, 0.18, 0.22), 0.62, true, 0.86).get_image()
 	hp1.resize(hp1.get_width() * 4, hp1.get_height() * 4, Image.INTERPOLATE_NEAREST)
 	hp2.resize(hp2.get_width() * 4, hp2.get_height() * 4, Image.INTERPOLATE_NEAREST)
-	dst.blend_rect(hp1, Rect2i(0, 0, hp1.get_width(), hp1.get_height()), Vector2i(16, 46))
-	dst.blend_rect(hp2, Rect2i(0, 0, hp2.get_width(), hp2.get_height()), Vector2i(704, 46))
+	dst.blend_rect(hp1, Rect2i(0, 0, hp1.get_width(), hp1.get_height()), Vector2i(16, 52))
+	dst.blend_rect(hp2, Rect2i(0, 0, hp2.get_width(), hp2.get_height()), Vector2i(704, 52))
 	var tbox: Image = PixelUI.timer_box().get_image()
 	tbox.resize(tbox.get_width() * 4, tbox.get_height() * 4, Image.INTERPOLATE_NEAREST)
-	dst.blend_rect(tbox, Rect2i(0, 0, tbox.get_width(), tbox.get_height()), Vector2i(592, 4))
+	dst.blend_rect(tbox, Rect2i(0, 0, tbox.get_width(), tbox.get_height()), Vector2i(592, 6))
 	var num: Image = PixelFont.make("99", Color(1, 1, 1), 3).get_image()
-	dst.blend_rect(num, Rect2i(0, 0, num.get_width(), num.get_height()), Vector2i(640 - num.get_width() / 2, 34))
+	dst.blend_rect(num, Rect2i(0, 0, num.get_width(), num.get_height()), Vector2i(640 - num.get_width() / 2, 36))
 
 
 func _export_strips(def: CharacterDef, id: String) -> void:

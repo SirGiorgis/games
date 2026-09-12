@@ -21,6 +21,10 @@ static func menu_bg() -> ImageTexture:
 	for y in 40:
 		var w: int = int(float(y) / 40.0 * 70.0)
 		Pix.hline(img, 200 - w, 28 + y, w * 2, Color(0.48, 0.56, 0.50, 0.85))
+	Pix.disc(img, 48, 18, 9, Color(0.98, 0.92, 0.55))
+	Pix.disc(img, 90, 16, 6, Color(0.96, 0.97, 0.98, 0.85))
+	Pix.disc(img, 98, 17, 5, Color(0.94, 0.96, 0.98, 0.8))
+	Pix.disc(img, 250, 14, 7, Color(0.96, 0.97, 0.99, 0.82))
 	Pix.rect(img, 0, 0, W, 3, Color(0.18, 0.16, 0.12))
 	Pix.rect(img, 0, H - 4, W, 4, Color(0.28, 0.42, 0.16))
 	return Pix.tex(img)
@@ -190,12 +194,19 @@ static func hud_top() -> ImageTexture:
 	return Pix.tex(img)
 
 
-static func tiny_hp(w: int, h: int, fill: Color, t: float, from_right: bool = false) -> ImageTexture:
+static func tiny_hp(w: int, h: int, fill: Color, t: float, from_right: bool = false, chip: float = -1.0) -> ImageTexture:
 	var img := Pix.image(w, h, Color(0, 0, 0, 0))
 	Pix.round_rect(img, 0, 0, w, h, 3, Color(0.04, 0.04, 0.05))
 	Pix.round_rect(img, 1, 1, w - 2, h - 2, 2, Color(0.12, 0.12, 0.12))
 	var inner: int = w - 4
-	var fw: int = int(clampf(t, 0.0, 1.0) * float(inner))
+	var ratio: float = clampf(t, 0.0, 1.0)
+	var chip_r: float = clampf(chip if chip >= 0.0 else ratio, 0.0, 1.0)
+	var fw: int = int(ratio * float(inner))
+	var cw: int = int(chip_r * float(inner))
+	if cw > fw:
+		var cx0: int = 2 + (inner - cw if from_right else 0)
+		Pix.rect(img, cx0, 2, cw, h - 4, Color(0.96, 0.90, 0.55))
+		Pix.hline(img, cx0, 2, cw, Color(1.0, 0.97, 0.78))
 	if fw > 0:
 		var x0: int = 2 + (inner - fw if from_right else 0)
 		Pix.rect(img, x0, 2, fw, h - 4, fill)

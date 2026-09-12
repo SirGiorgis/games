@@ -111,9 +111,12 @@ func _process(delta: float) -> void:
 		return
 	_walk_t += delta
 	if _p1_preview and not _p1_walk.is_empty():
-		_p1_preview.texture = _p1_walk[int(_walk_t * 10.0) % _p1_walk.size()]
+		_p1_preview.texture = _p1_walk[int(_walk_t * 12.0) % _p1_walk.size()]
 	if _p2_preview and not _p2_walk.is_empty():
-		_p2_preview.texture = _p2_walk[int(_walk_t * 10.0) % _p2_walk.size()]
+		_p2_preview.texture = _p2_walk[int(_walk_t * 12.0) % _p2_walk.size()]
+	for i in _cards.size():
+		var on: bool = i == _p1_index or i == _p2_index
+		_cards[i].modulate = Color(1, 1, 1, 1) if on else Color(0.78, 0.78, 0.82, 1)
 	if Input.is_action_just_pressed(ControlMap.MENU.right):
 		_move(1)
 	elif Input.is_action_just_pressed(ControlMap.MENU.left):

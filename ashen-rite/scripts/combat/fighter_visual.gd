@@ -14,7 +14,12 @@ var one_shot_u: float = -1.0
 var flash: float = 0.0
 var impact: float = 0.0
 var trail_timer: float = 0.0
+var move_speed: float = 0.0
+var frozen: bool = false
 var _land_puff := false
+var _stride := 0.0
+var _flip_squash := 0.0
+var _last_facing: int = 1
 
 var _sprite: Sprite2D
 var _frames: Dictionary = {}
@@ -84,11 +89,20 @@ func set_attack_timing(startup: float, active: float, duration: float) -> void:
 
 
 func _process(delta: float) -> void:
+	if _sprite == null:
+		return
+	if facing != _last_facing:
+		_flip_squash = 1.0
+		_last_facing = facing
+	if frozen:
+		_sprite.texture = _current_tex()
+		_sprite.flip_h = facing < 0
+		return
+
 	_time += delta
 	flash = max(0.0, flash - delta * 9.0)
 	impact = max(0.0, impact - delta * 5.5)
-	if _sprite == null:
-		return
+	_flip_squash = max(0.0, _flip_squash - delta * 10.0)
 
 	if pose in ONE_SHOT and one_shot_u >= 0.0:
 		var rate: float = 1.0 / maxf(_one_shot_duration(), 0.04)
@@ -96,6 +110,8 @@ func _process(delta: float) -> void:
 		if one_shot_u >= 0.98:
 			_hold_pose = true
 
+	if pose in ["walk", "run"]:
+		_stride += maxf(absf(move_speed), 70.0) * delta * 0.078
 	_sprite.texture = _current_tex()
 	_sprite.flip_h = facing < 0
 
@@ -115,7 +131,8 @@ func _process(delta: float) -> void:
 		squash = 1.1
 		stretch = 0.92
 
-	_sprite.scale = Vector2(_base_scale.x * (1.0 + impact * 0.06), _base_scale.y * stretch * squash)
+	var fx_w: float = 1.0 - _flip_squash * 0.22
+	_sprite.scale = Vector2(_base_scale.x * (1.0 + impact * 0.06) * fx_w, _base_scale.y * stretch * squash)
 	_sprite.position.y = _base_y() + _pose_bob() + impact * 6.0
 	_sprite.position.x = _base_x() + _pose_shift()
 	_sprite.rotation = _pose_tilt() * facing
@@ -149,11 +166,11 @@ func _base_y() -> float:
 func _pose_bob() -> float:
 	match pose:
 		"idle":
-			return sin(_time * 2.4) * 1.5
+			return sin(_time * 2.05) * 2.0
 		"walk":
-			return abs(sin(_time * 10.0)) * 2.0
+			return abs(sin(_stride * 1.2)) * 2.2
 		"run", "backdash":
-			return abs(sin(_time * 14.0)) * 3.0
+			return abs(sin(_stride * 1.4)) * 3.2
 		"victory":
 			return sin(_time * 5.0) * 2.5
 	return 0.0
@@ -215,6 +232,10 @@ func _current_tex() -> Texture2D:
 			idx = arr.size() - 1
 		return arr[idx]
 
+	if pose in ["walk", "run"]:
+		var idx_s: int = int(floor(_stride)) % arr.size()
+		return arr[idx_s]
+
 	var spd: float = _loop_fps()
 	var idx2: int = int(_time * spd) % arr.size()
 	return arr[idx2]
@@ -228,7 +249,7 @@ func _loop_fps() -> float:
 		"victory": return 9.0
 		"block": return 8.0
 		"crouch": return 6.0
-		"idle": return 7.0
+		"idle": return 8.0
 	return 8.0
 
 
