@@ -17,18 +17,18 @@ const APEX_G := 0.46
 const MAX_SPECIAL := 100.0
 const MAX_ULTIMATE := 100.0
 const WALK_BACK := 0.74
-const RUN_MUL := 1.92
+const RUN_MUL := 1.58
 const ACCEL := 4600.0
 const FRICTION := 3200.0
 const TURN_MUL := 1.85
 const AIR_ACCEL := 2600.0
-const PREJUMP := 0.018
-const LAND_T := 0.048
+const PREJUMP := 0.036
+const LAND_T := 0.11
 const GETUP_T := 0.14
 const COYOTE := 0.12
-const JBUF := 0.16
-const ATK_BUF := 0.24
-const CHAIN := 0.26
+const JBUF := 0.10
+const ATK_BUF := 0.10
+const CHAIN := 0.12
 
 var fighter_id: int = 0
 var def: CharacterDef
@@ -345,7 +345,7 @@ func _think(cmd: Dictionary, delta: float) -> void:
 		if _try_burst(cmd):
 			return
 		if not on_ground and health > 0.0 and hitstun <= 0.14:
-			if cmd.up or cmd.light or cmd.heavy or _jbuf > 0.0:
+			if cmd.up or _jbuf > 0.0:
 				_air_tech()
 				return
 		if hitstun <= 0.0:
@@ -435,9 +435,13 @@ func _think(cmd: Dictionary, delta: float) -> void:
 		_queue_inputs(cmd)
 		if attack_timer >= attack_duration:
 			hitbox.disarm()
-			chain_window = CHAIN
-			if _flush_buffer():
-				return
+			if last_attack_was_hit:
+				chain_window = CHAIN
+				if _flush_buffer(true):
+					return
+			else:
+				_atk_buf = ""
+				_atk_buf_t = 0.0
 			if _jbuf > 0.0 and on_ground:
 				_begin_jump(cmd)
 				return
@@ -457,8 +461,11 @@ func _think(cmd: Dictionary, delta: float) -> void:
 				return
 			if _try_dash_cancel(cmd):
 				return
-			if not _try_jump_cancel(cmd):
-				_try_chain(cmd)
+			if _try_jump_cancel(cmd):
+				return
+			if _try_chain(cmd):
+				return
+			_flush_buffer(true)
 		return
 
 	if _taunt_t > 0.0:
@@ -629,6 +636,8 @@ func _on_landed() -> void:
 func _try_dash_cancel(cmd: Dictionary) -> bool:
 	if not on_ground or not cmd.backdash:
 		return false
+	if str(current_attack.get("kind", "")) != "special":
+		return false
 	hitbox.disarm()
 	state = State.BACKDASH
 	_dash_t = 0.16
@@ -638,17 +647,43 @@ func _try_dash_cancel(cmd: Dictionary) -> bool:
 
 
 func _try_jump_cancel(cmd: Dictionary) -> bool:
-	if not on_ground or not cmd.up:
+	if not on_ground or not (cmd.up or _jbuf > 0.0):
 		return false
 	var k: String = str(current_attack.get("kind", ""))
-	if k not in ["light", "clight", "heavy", "cheavy", "dash_atk"]:
+	if k not in ["heavy", "cheavy"]:
 		return false
 	hitbox.disarm()
 	_begin_jump(cmd)
 	return true
 
 
-func _try_chain(cmd: Dictionary) -> void:
+func _is_light_kind(kind: String) -> bool:
+	return kind in ["light", "clight", "jlight"]
+
+
+func _chain_light_count() -> int:
+	var n := 0
+	for k in last_chain:
+		if _is_light_kind(k):
+			n += 1
+	return n
+
+
+func _can_gatling(from: String, to: String) -> bool:
+	if from in ["light", "clight"]:
+		if to in ["light", "clight"]:
+			return _chain_light_count() < 2
+		return to in ["heavy", "cheavy", "special", "ultimate"]
+	if from == "jlight":
+		return to in ["jheavy", "special", "ultimate"]
+	if from in ["heavy", "cheavy", "jheavy", "dash_atk"]:
+		return to in ["special", "ultimate"]
+	if from == "special":
+		return to == "ultimate" and ultimate_meter >= MAX_ULTIMATE
+	return false
+
+
+func _try_chain(cmd: Dictionary) -> bool:
 	var next := ""
 	if cmd.light:
 		next = _normal_kind("light", cmd)
@@ -659,24 +694,23 @@ func _try_chain(cmd: Dictionary) -> void:
 	elif (cmd.ultimate or cmd.qcf2) and ultimate_meter >= MAX_ULTIMATE:
 		next = "ultimate"
 	if next.is_empty():
-		return
+		return false
 	var k: String = str(current_attack.get("kind", ""))
-	var allowed := false
-	if k in ["light", "clight", "jlight"]:
-		allowed = next in ["light", "clight", "heavy", "cheavy", "special", "ultimate"]
-	elif k in ["heavy", "cheavy", "jheavy", "dash_atk"]:
-		allowed = next in ["special", "ultimate"]
-	elif k == "special":
-		allowed = next in ["ultimate"] if ultimate_meter >= MAX_ULTIMATE else false
-	if allowed:
-		if next == "special":
-			_buf.consume_motion()
-		if next == "ultimate":
-			announced.emit("SUPER CANCEL")
-		_start_attack(next)
+	if not _can_gatling(k, next):
+		return false
+	if next == "special":
+		_buf.consume_motion()
+	if next == "ultimate":
+		announced.emit("SUPER CANCEL")
+	_start_attack(next)
+	return true
 
 
 func _start_attack(kind: String) -> void:
+	_atk_buf = ""
+	_atk_buf_t = 0.0
+	if not _busy_attack():
+		last_chain.clear()
 	var atk := CombatRules.make_attack(kind, def)
 	var ex := false
 	if kind == "special" and special_meter >= MAX_SPECIAL:
@@ -897,7 +931,7 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 		dmg *= CombatRules.chip_mul(str(attack.get("kind", "")), just)
 		AudioDirector.play("block", 1.2 if just else 1.0, 0.85 if just else 0.8)
 		special_meter = min(MAX_SPECIAL, special_meter + (5.0 if just else 3.0))
-		attacker.special_meter = min(MAX_SPECIAL, attacker.special_meter + 2.0)
+		attacker.special_meter = min(MAX_SPECIAL, attacker.special_meter + 1.0)
 		velocity.x = attacker.facing * (180.0 if just else 220.0)
 		hitstun = float(attack.get("blockstun", 0.16)) * (0.52 if just else 1.0)
 		state = State.BLOCK
@@ -907,7 +941,7 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 		visual.pulse_hit()
 		meters_changed.emit(special_meter, ultimate_meter)
 		attacker.meters_changed.emit(attacker.special_meter, attacker.ultimate_meter)
-		attacker.last_attack_was_hit = true
+		attacker.last_attack_was_hit = false
 		attacker.last_move = str(attack.get("kind", ""))
 		attacker.last_advantage = float(attack.get("blockstun", 0.16)) * (0.52 if just else 1.0) - maxf(attacker.attack_duration - attacker.attack_timer, 0.0)
 		if just:
@@ -971,8 +1005,8 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 	attacker.ultimate_meter = min(MAX_ULTIMATE, attacker.ultimate_meter + float(attack.meter) * 0.65)
 	if was_ult < MAX_ULTIMATE and attacker.ultimate_meter >= MAX_ULTIMATE:
 		AudioDirector.play("meter", 1.0, 0.7)
-	special_meter = min(MAX_SPECIAL, special_meter + 3.0)
-	ultimate_meter = min(MAX_ULTIMATE, ultimate_meter + 2.2)
+	special_meter = min(MAX_SPECIAL, special_meter + 1.2)
+	ultimate_meter = min(MAX_ULTIMATE, ultimate_meter + 1.0)
 	var snd := "hit_h" if attack.get("kind", "") in ["heavy", "special", "ultimate", "dash_atk"] else "hit_l"
 	AudioDirector.play(snd, randf_range(0.92, 1.08))
 	freeze_frames = float(attack.hitstop) * (1.25 if counter else 1.0)
@@ -1308,7 +1342,7 @@ func _queue_inputs(cmd: Dictionary) -> void:
 		_jbuf = JBUF
 
 
-func _flush_buffer() -> bool:
+func _flush_buffer(gatling_only: bool = false) -> bool:
 	if _atk_buf.is_empty() or _atk_buf_t <= 0.0:
 		return false
 	if _atk_buf.begins_with("j") and on_ground:
@@ -1328,6 +1362,10 @@ func _flush_buffer() -> bool:
 		_atk_buf = ""
 		return false
 	var k: String = _atk_buf
+	if gatling_only and not _can_gatling(str(current_attack.get("kind", "")), k):
+		_atk_buf = ""
+		_atk_buf_t = 0.0
+		return false
 	_atk_buf = ""
 	_atk_buf_t = 0.0
 	_start_attack(k)

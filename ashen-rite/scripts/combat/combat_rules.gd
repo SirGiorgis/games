@@ -5,17 +5,17 @@ extends RefCounted
 static func make_attack(kind: String, def: CharacterDef) -> Dictionary:
 	match kind:
 		"light":
-			return _atk("light", 40.0, 96.0, -22.0, 0.28, 0.032, 0.032, 0.05, 0.21, Vector2(34, 20), 44.0, -58.0, false, def, "mid", 78.0)
+			return _atk("light", 34.0, 70.0, -10.0, 0.22, 0.042, 0.058, 0.04, 0.36, Vector2(30, 18), 38.0, -58.0, false, def, "mid", 24.0)
 		"clight":
-			return _atk("clight", 36.0, 82.0, -12.0, 0.26, 0.030, 0.034, 0.05, 0.22, Vector2(36, 16), 46.0, -28.0, false, def, "mid", 58.0)
+			return _atk("clight", 32.0, 64.0, -8.0, 0.20, 0.040, 0.062, 0.04, 0.38, Vector2(32, 16), 40.0, -28.0, false, def, "mid", 18.0)
 		"jlight":
-			return _atk("jlight", 38.0, 74.0, 36.0, 0.24, 0.030, 0.030, 0.08, 0.26, Vector2(32, 22), 38.0, -52.0, false, def, "high", 0.0)
+			return _atk("jlight", 32.0, 62.0, 28.0, 0.18, 0.038, 0.050, 0.06, 0.32, Vector2(30, 20), 34.0, -52.0, false, def, "high", 0.0)
 		"heavy":
-			return _atk("heavy", 90.0, 230.0, -170.0, 0.40, 0.072, 0.078, 0.09, 0.40, Vector2(44, 24), 52.0, -56.0, false, def, "mid", 118.0)
+			return _atk("heavy", 88.0, 220.0, -160.0, 0.36, 0.078, 0.100, 0.08, 0.56, Vector2(42, 24), 50.0, -56.0, false, def, "mid", 72.0)
 		"cheavy":
-			return _atk("cheavy", 82.0, 190.0, -16.0, 0.42, 0.068, 0.072, 0.10, 0.46, Vector2(48, 18), 52.0, -22.0, true, def, "low", 92.0)
+			return _atk("cheavy", 80.0, 180.0, -12.0, 0.34, 0.074, 0.096, 0.08, 0.58, Vector2(46, 18), 50.0, -22.0, true, def, "low", 54.0)
 		"jheavy":
-			return _atk("jheavy", 84.0, 188.0, 70.0, 0.34, 0.064, 0.064, 0.10, 0.36, Vector2(40, 26), 44.0, -48.0, false, def, "high", 0.0)
+			return _atk("jheavy", 80.0, 176.0, 58.0, 0.28, 0.070, 0.086, 0.08, 0.42, Vector2(38, 24), 42.0, -48.0, false, def, "high", 0.0)
 		"special":
 			return _special(def)
 		"ultimate":
@@ -34,9 +34,9 @@ static func _atk(kind: String, dmg: float, kb: float, launch: float, stun: float
 		"knockback": kb,
 		"launch": launch,
 		"hitstun": stun,
-		"blockstun": stun * 0.62,
+		"blockstun": stun * 0.46,
 		"hitstop": stop,
-		"meter": 7.0 if kind.begins_with("l") or kind.begins_with("c") or kind.begins_with("j") else 12.0,
+		"meter": 3.0 if kind in ["light", "clight", "jlight"] else 8.0,
 		"startup": start,
 		"active": active,
 		"duration": dur,
@@ -74,8 +74,8 @@ static func _atk(kind: String, dmg: float, kb: float, launch: float, stun: float
 
 
 static func _special(def: CharacterDef) -> Dictionary:
-	var base := _atk("special", 105.0, 240.0, -240.0, 0.44, 0.09, 0.11, 0.12, 0.50, Vector2(56, 28), 56.0, -56.0, false, def)
-	base.meter = 4.0
+	var base := _atk("special", 105.0, 240.0, -240.0, 0.44, 0.09, 0.12, 0.10, 0.62, Vector2(56, 28), 56.0, -56.0, false, def)
+	base.meter = 3.0
 	match def.special_id:
 		"bolt":
 			base.projectile = "bolt"
@@ -100,25 +100,29 @@ static func _special(def: CharacterDef) -> Dictionary:
 				base.proj_speed = 520.0
 				base.damage = 70.0 * def.attack
 		"dash":
-			base.reach = 118.0
-			base.startup = 0.07
+			base.reach = 110.0
+			base.startup = 0.10
 			base.knockback = 188.0
 			base.juggle = true
-			base.dash_spd = 640.0
-			base.invuln = 0.08
+			base.dash_spd = 560.0
+			base.invuln = 0.04
+			base.duration = 0.64
 			if def.id == "nyx_hollow" or def.id == "maeve_thorn":
 				base.teleport = true
-				base.invuln = 0.16
+				base.invuln = 0.12
 				base.dash_spd = 0.0
 				base.reach = 52.0
 				base.damage = 88.0 * def.attack
 			elif def.id == "hoodrich_stacks":
-				base.dash_spd = 540.0
-				base.invuln = 0.13
+				base.dash_spd = 500.0
+				base.invuln = 0.06
 				base.damage = 100.0 * def.attack
 			elif def.id == "chris_xrisakis" or def.id == "dax_coil":
-				base.dash_spd = 720.0
-				base.step = 160.0
+				base.dash_spd = 640.0
+				base.step = 120.0
+			elif def.id == "giannis":
+				base.dash_spd = 580.0
+				base.startup = 0.11
 		"slam":
 			base.y = -16.0
 			base.size = Vector2(86, 24)
@@ -299,12 +303,12 @@ static func _ultimate(def: CharacterDef) -> Dictionary:
 
 
 static func _dash_atk(def: CharacterDef) -> Dictionary:
-	var d := _atk("dash_atk", 78.0, 210.0, -90.0, 0.34, 0.055, 0.04, 0.08, 0.34, Vector2(42, 22), 50.0, -50.0, false, def, "mid", 210.0)
-	d.dash_spd = 560.0
-	d.invuln = 0.05
-	d.armor = 1
-	d.juggle = true
-	d.meter = 10.0
+	var d := _atk("dash_atk", 70.0, 190.0, -70.0, 0.28, 0.060, 0.08, 0.08, 0.50, Vector2(40, 22), 46.0, -50.0, false, def, "mid", 160.0)
+	d.dash_spd = 480.0
+	d.invuln = 0.0
+	d.armor = 0
+	d.juggle = false
+	d.meter = 6.0
 	return d
 
 
@@ -323,11 +327,11 @@ static func apply_ex(atk: Dictionary, def: CharacterDef) -> Dictionary:
 
 
 static func combo_scale(hits: int) -> float:
-	return clampf(1.0 - hits * 0.10, 0.32, 1.0)
+	return clampf(1.0 - hits * 0.14, 0.22, 1.0)
 
 
 static func juggle_scale(hits: int) -> float:
-	return clampf(1.0 - float(maxi(hits - 1, 0)) * 0.11, 0.42, 1.0)
+	return clampf(1.0 - float(maxi(hits - 1, 0)) * 0.16, 0.28, 1.0)
 
 
 static func combo_rank(hits: int) -> String:
@@ -347,9 +351,9 @@ static func combo_rank(hits: int) -> String:
 static func guard_gain(kind: String) -> float:
 	match kind:
 		"light", "clight", "jlight":
-			return 8.0
+			return 4.0
 		"heavy", "cheavy", "jheavy", "dash_atk":
-			return 16.0
+			return 12.0
 		"special":
 			return 28.0
 		"ultimate":
@@ -359,13 +363,13 @@ static func guard_gain(kind: String) -> float:
 
 
 static func chip_mul(kind: String, just: bool) -> float:
-	var m: float = 0.07
+	var m: float = 0.04
 	if kind == "special":
-		m = 0.16
+		m = 0.14
 	elif kind == "ultimate":
-		m = 0.22
+		m = 0.18
 	elif kind in ["heavy", "cheavy", "jheavy", "dash_atk"]:
-		m = 0.10
+		m = 0.08
 	if just:
 		m *= 0.45
 	return m

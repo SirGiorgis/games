@@ -70,15 +70,16 @@ Or write a description (see `data/descriptions/example.txt`), put a photo at `da
 ## Combat notes
 
 - Versus is best of 3. **Arcade** / **Survival** / **Time Attack** are first-to-1.
-- Special meter (pink METER) fills from hitting and getting hit. Full meter = **EX special**. Super (bottom) fills more slowly.
-- Combos: Light → Light → Heavy → Special → Super. HUD shows hits, damage, scaling, and a rank.
-- Jump-cancel lights/heavies on hit. Super-cancel specials on hit.
+- Special meter (pink METER) fills from hitting (and a little from getting hit). Full meter = **EX special**. Super (bottom) fills more slowly. Mashing lights barely fills meter.
+- Combos: Light → (optional Light) → Heavy → Special → Super. One light gatling only — then you must go heavy/special/super. HUD shows hits, damage, scaling, and a rank.
+- Lights are **minus on block** and **minus on hit** unless you cancel. Whiffed and blocked normals do not buffer into another mash — they are punishable.
+- Jump-cancel **heavies only** on hit. Super-cancel specials on hit. Dash-cancel specials on hit.
 - Each fighter's special and super actually play differently (teleport, quake, freeze, multi-fireballs).
 - **Rage** below 22% HP: extra damage and a red glow. **Guard** fills when you block; a full bar is a guard break.
 - Training: infinite timer, meter refill, R reset, F dummy cycle (CPU / block / stand / crouch / jump / mash), on-screen advantage.
-- Throw tech (press Throw as they grab). Air tech near the end of air hitstun.
+- Throw tech (press Throw as they grab). Air tech: tap jump near the end of air hitstun (attacks do not tech).
 - Just Guard (block at the last moment). Pushblock (Special during blockstun, 25 meter).
-- Getup attack is a reversal. Super and dash attacks have armor. Clash if both hitboxes meet.
+- Getup attack is a reversal. Some supers have armor; dash attacks do not. Clash if both hitboxes meet.
 - CPU difficulties: Easy / Normal / Hard / Expert in Options. Hitboxes toggle is there too.
 
 ## Arenas

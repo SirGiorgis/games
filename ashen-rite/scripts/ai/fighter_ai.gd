@@ -75,16 +75,23 @@ func _process(delta: float) -> void:
 	var opp := me.opponent
 	if me.state == Fighter.State.HIT and not me.on_ground and me.hitstun <= 0.16:
 		_intent.up = true
-		_intent.light = true
 		return
 	if opp.state == Fighter.State.GRAB and dist < 100.0:
 		_intent.grab = true
 		_retreat()
 		return
 	if me.state == Fighter.State.GETUP:
-		_intent.light = true
-		if _rng.randf() < 0.35:
+		var wake := _rng.randf()
+		if wake < 0.38:
+			_intent.block = true
+			_retreat()
+		elif wake < 0.62:
+			_intent.backdash = true
+			_retreat()
+		elif wake < 0.84:
 			_intent.heavy = true
+		else:
+			_intent.light = true
 		return
 	if me.state == Fighter.State.HIT and me.special_meter >= 50.0 and _rng.randf() < 0.14:
 		_intent.special = true
@@ -188,15 +195,24 @@ func _process(delta: float) -> void:
 	if dist < 90.0:
 		if opp.state == Fighter.State.HIT and me.combo_hits > 0:
 			_combo()
-		elif _rng.randf() < 0.22:
-			_intent.down = true
-			_intent.heavy = true
-		elif _rng.randf() < 0.55:
-			_intent.light = true
-		elif _rng.randf() < 0.5:
-			_intent.heavy = true
-		else:
+			return
+		var r := _rng.randf()
+		if r < 0.30:
+			_intent.block = true
+			_retreat()
+		elif r < 0.42:
+			_retreat()
+		elif r < 0.56:
 			_intent.grab = true
+		elif r < 0.74:
+			_intent.heavy = true
+			if r < 0.62:
+				_intent.down = true
+		elif r < 0.86:
+			_intent.light = true
+		else:
+			_intent.block = true
+			_advance()
 		return
 	if _rng.randf() < 0.2:
 		_intent.down = true
@@ -209,6 +225,8 @@ func _combo() -> void:
 		_intent.ultimate = true
 	elif me.combo_hits >= 2 and me.special_meter >= 50.0:
 		_intent.special = true
+	elif me.combo_hits == 1 and _rng.randf() < 0.32:
+		_intent.light = true
 	elif me.combo_hits >= 1:
 		_intent.heavy = true
 	else:

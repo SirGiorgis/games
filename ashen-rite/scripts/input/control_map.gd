@@ -162,7 +162,8 @@ func help_text() -> String:
 
   Guard: standing blocks mid/high, crouch blocks mid/low.
   Sweeps must be crouch-blocked. Jump attacks must be stand-blocked.
-  Lights cancel into heavies into specials. Jump-cancel on hit.
+  Lights cancel once into another light, then heavy/special/super.
+  Lights are minus on block. Whiffs do not auto-fire. Jump-cancel heavies on hit.
 
 PLAYER 2
   Arrows    Move / jump / crouch

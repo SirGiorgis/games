@@ -181,7 +181,7 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	_max2.visible = false
 
 	var hint := Color(0.96, 0.96, 0.92)
-	_hints.append(PixelUI.label_at(root, "J LIGHT   K HEAVY   L SPECIAL / EX   U BLOCK   FWD+U PARRY   RUN+J DASH   O SUPER", Vector2(0, 700), 1, hint, 0, 1280))
+	_hints.append(PixelUI.label_at(root, "J LIGHT   K HEAVY   L SPECIAL / EX   CANCEL L>(L)>H>SP   LIGHTS MINUS   O SUPER", Vector2(0, 700), 1, hint, 0, 1280))
 	_hints[0].set_centered(1280)
 
 	PixelUI.label_at(root, arena_name.to_upper(), Vector2(0, 132), 1, Color(0.18, 0.22, 0.14), 0, 1280).set_centered(1280)
