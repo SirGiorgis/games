@@ -574,19 +574,35 @@ func _sync_visual() -> void:
 		match state:
 			State.WALK:
 				visual.set_pose_name("walk")
-			State.RUN, State.BACKDASH:
+			State.RUN:
 				visual.set_pose_name("run")
+			State.BACKDASH:
+				visual.set_pose_name("backdash")
 			State.PREJUMP:
-				visual.set_pose_name("crouch")
+				visual.set_pose_name("prejump")
+				visual.one_shot_u = 1.0 - clampf(_land_t / 0.05, 0.0, 1.0)
 			State.JUMP:
 				visual.set_pose_name("jump")
-				visual.attack_u = clampf((velocity.y + 900.0) / 1800.0, 0.0, 1.0)
-			State.CROUCH, State.LAND, State.GETUP:
+				var ju: float = clampf((velocity.y + 900.0) / 1800.0, 0.0, 1.0)
+				visual.attack_u = ju
+				if velocity.y < -420.0:
+					visual.attack_u = lerpf(ju, 0.55, 0.35)
+			State.LAND:
+				visual.set_pose_name("land")
+				visual.one_shot_u = 1.0 - clampf(_land_t / 0.12, 0.0, 1.0)
+			State.GETUP:
+				visual.set_pose_name("getup")
+				visual.one_shot_u = 1.0 - clampf(_land_t / 0.18, 0.0, 1.0)
+			State.CROUCH:
 				visual.set_pose_name("crouch")
 			State.BLOCK:
-				visual.set_pose_name("block")
+				visual.set_pose_name("block_hit" if hitstun > 0.0 and guarding else "block")
 			State.HIT:
-				visual.set_pose_name("hit")
+				if not on_ground or absf(velocity.y) > 120.0:
+					visual.set_pose_name("air_hit" if velocity.y < 0.0 else "launch")
+				else:
+					visual.set_pose_name("hit")
+				visual.one_shot_u = clampf(1.0 - hitstun / 0.35, 0.0, 1.0)
 			State.KNOCKDOWN:
 				visual.set_pose_name("knockdown")
 			State.VICTORY:

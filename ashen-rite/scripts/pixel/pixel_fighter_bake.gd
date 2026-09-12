@@ -19,25 +19,32 @@ static var _model_cache: Dictionary = {}
 
 static func bake(def: CharacterDef) -> Dictionary:
 	return {
-		"idle": _seq(def, "idle", 6),
-		"walk": _seq(def, "walk", 8),
-		"run": _seq(def, "run", 8),
-		"jump": _seq(def, "jump", 6),
-		"crouch": _seq(def, "crouch", 2),
-		"light": _seq(def, "light", 6),
-		"clight": _seq(def, "clight", 5),
-		"jlight": _seq(def, "jlight", 5),
-		"heavy": _seq(def, "heavy", 8),
-		"cheavy": _seq(def, "cheavy", 6),
-		"jheavy": _seq(def, "jheavy", 6),
-		"special": _seq(def, "special", 8),
-		"ultimate": _seq(def, "ultimate", 8),
-		"block": _seq(def, "block", 2),
-		"hit": _seq(def, "hit", 4),
-		"knockdown": _seq(def, "knockdown", 4),
-		"victory": _seq(def, "victory", 6),
-		"defeat": _seq(def, "knockdown", 4),
-		"grab": _seq(def, "grab", 6),
+		"idle": _seq(def, "idle", 12),
+		"walk": _seq(def, "walk", 16),
+		"run": _seq(def, "run", 12),
+		"backdash": _seq(def, "backdash", 8),
+		"prejump": _seq(def, "prejump", 4),
+		"jump": _seq(def, "jump", 10),
+		"land": _seq(def, "land", 6),
+		"getup": _seq(def, "getup", 8),
+		"crouch": _seq(def, "crouch", 4),
+		"light": _seq(def, "light", 10),
+		"clight": _seq(def, "clight", 8),
+		"jlight": _seq(def, "jlight", 8),
+		"heavy": _seq(def, "heavy", 14),
+		"cheavy": _seq(def, "cheavy", 10),
+		"jheavy": _seq(def, "jheavy", 10),
+		"special": _seq(def, "special", 12),
+		"ultimate": _seq(def, "ultimate", 14),
+		"block": _seq(def, "block", 6),
+		"block_hit": _seq(def, "block_hit", 4),
+		"hit": _seq(def, "hit", 8),
+		"air_hit": _seq(def, "air_hit", 6),
+		"launch": _seq(def, "launch", 8),
+		"knockdown": _seq(def, "knockdown", 10),
+		"victory": _seq(def, "victory", 12),
+		"defeat": _seq(def, "defeat", 8),
+		"grab": _seq(def, "grab", 10),
 	}
 
 
@@ -75,75 +82,53 @@ static func _paint_model(img: Image, def: CharacterDef, pose: String, f: int, n:
 		return
 	var u: float = float(f) / float(maxi(n - 1, 1))
 	var ph: float = TAU * float(f) / float(n)
+	var p: Dictionary = _pose_sample(pose, u, ph, f)
 	var pad_x: int = (img.get_width() - 128) / 2
 	var pad_y: int = img.get_height() - 128 - 2
-	match pose:
-		"idle":
-			_blit_sheet(img, sheet, 0, int(round(sin(ph) * 2.0)))
-		"walk", "run":
-			var amp: float = 22.0 if pose == "run" else 14.0
-			var bob2: int = int(round(abs(sin(ph)) * (4.0 if pose == "run" else 2.0)))
-			var lean: float = 8.0 if pose == "run" else 3.0
-			var ux: int = pad_x + 18 + (6 if pose == "run" else 0)
-			var uy: int = pad_y + 2 + bob2
-			_blit_rot_part(img, sheet, _LEG_L, pad_x + 24, pad_y + 68 + bob2, sin(ph) * amp, 18, 6)
-			_blit_rot_part(img, sheet, _LEG_R, pad_x + 56, pad_y + 68 + bob2, sin(ph + PI) * amp, 20, 6)
-			_blit_rot_part(img, sheet, _UPPER, ux, uy, -lean + sin(ph) * 2.0, 48, 66)
-		"jump":
-			var tuck: float = lerpf(8.0, 36.0, 1.0 - absf(u - 0.45) * 2.0)
-			_blit_rot_part(img, sheet, _LEG_L, pad_x + 22, pad_y + 62, -tuck, 18, 6)
-			_blit_rot_part(img, sheet, _LEG_R, pad_x + 58, pad_y + 62, tuck, 20, 6)
-			_blit_rot_part(img, sheet, _UPPER, pad_x + 16, pad_y - 6, -6.0, 48, 66)
-		"crouch":
-			_blit_rot_part(img, sheet, _LEG_L, pad_x + 20, pad_y + 78, 28.0, 18, 6)
-			_blit_rot_part(img, sheet, _LEG_R, pad_x + 58, pad_y + 78, -18.0, 20, 6)
-			_blit_part(img, sheet, _UPPER, pad_x + 18, pad_y + 18)
-		"block":
-			_blit_rot_part(img, sheet, _LEG_L, pad_x + 22, pad_y + 70, 8.0, 18, 6)
-			_blit_rot_part(img, sheet, _LEG_R, pad_x + 56, pad_y + 70, -4.0, 20, 6)
-			_blit_rot_part(img, sheet, _UPPER, pad_x + 12, pad_y + 4, 6.0, 48, 66)
-		"light", "clight":
-			var swing: float = lerpf(-8.0, 18.0, smoothstep(0.0, 0.6, u))
-			_blit_rot_part(img, sheet, _LEG_L, pad_x + 24, pad_y + 68, 6.0, 18, 6)
-			_blit_rot_part(img, sheet, _LEG_R, pad_x + 56, pad_y + 68, -4.0, 20, 6)
-			_blit_rot_part(img, sheet, _UPPER, pad_x + 18 + int(round(swing * 0.35)), pad_y + 2, -swing * 0.25, 48, 66)
-		"jlight":
-			_blit_rot_part(img, sheet, _LEG_L, pad_x + 22, pad_y + 60, -18.0, 18, 6)
-			_blit_rot_part(img, sheet, _LEG_R, pad_x + 58, pad_y + 60, 16.0, 20, 6)
-			_blit_rot_part(img, sheet, _UPPER, pad_x + 16 + int(round(u * 6.0)), pad_y - 4, -8.0, 48, 66)
-		"heavy", "cheavy":
-			var hs: float = lerpf(-10.0, 22.0, smoothstep(0.1, 0.65, u))
-			_blit_rot_part(img, sheet, _LEG_L, pad_x + 18, pad_y + 68, 12.0, 18, 6)
-			_blit_rot_part(img, sheet, _LEG_R, pad_x + 60, pad_y + 68, -10.0, 20, 6)
-			_blit_rot_part(img, sheet, _UPPER, pad_x + 20 + int(round(hs * 0.4)), pad_y + 4, -hs * 0.3, 48, 66)
-		"jheavy":
-			_blit_rot_part(img, sheet, _LEG_L, pad_x + 20, pad_y + 58, -24.0, 18, 6)
-			_blit_rot_part(img, sheet, _LEG_R, pad_x + 60, pad_y + 58, 22.0, 20, 6)
-			_blit_rot_part(img, sheet, _UPPER, pad_x + 14 + int(round(u * 8.0)), pad_y - 2, -12.0, 48, 66)
-		"special", "ultimate":
-			var sp: float = u * 18.0
-			_blit_rot_part(img, sheet, _LEG_L, pad_x + 16, pad_y + 66, 10.0, 18, 6)
-			_blit_rot_part(img, sheet, _LEG_R, pad_x + 62, pad_y + 66, -8.0, 20, 6)
-			_blit_rot_part(img, sheet, _UPPER, pad_x + 24 + int(round(sp)), pad_y + int(round(sin(u * PI) * -6.0)), -10.0, 48, 66)
-			_smear(img, img.get_width() / 2, img.get_height() - 48, def.accent, f)
-		"grab":
-			_blit_rot_part(img, sheet, _LEG_L, pad_x + 26, pad_y + 68, 4.0, 18, 6)
-			_blit_rot_part(img, sheet, _LEG_R, pad_x + 54, pad_y + 68, -2.0, 20, 6)
-			_blit_rot_part(img, sheet, _UPPER, pad_x + 22, pad_y + 4, -6.0, 48, 66)
-		"hit":
-			_blit_rot_part(img, sheet, _LEG_L, pad_x + 28, pad_y + 68, -10.0, 18, 6)
-			_blit_rot_part(img, sheet, _LEG_R, pad_x + 58, pad_y + 68, 8.0, 20, 6)
-			_blit_rot_part(img, sheet, _UPPER, pad_x + 26 + f, pad_y + 4, 10.0, 48, 66)
-		"knockdown", "defeat":
+	var bob: int = int(p.bob) + int(p.squat)
+	var lean: float = float(p.lean)
+	var xoff: int = int(p.xoff)
+
+	if pose in ["knockdown", "defeat"]:
+		var fall_u: float = clampf(u, 0.0, 1.0)
+		if fall_u < 0.42:
+			var stagger: float = fall_u / 0.42
+			_blit_rot_part(img, sheet, _LEG_L, pad_x + 30 + xoff, pad_y + 68, -18.0 - stagger * 20.0, 18, 6)
+			_blit_rot_part(img, sheet, _LEG_R, pad_x + 54 + xoff, pad_y + 68, 14.0 + stagger * 16.0, 20, 6)
+			_blit_rot_part(img, sheet, _UPPER, pad_x + 24 + xoff + int(stagger * 8.0), pad_y + 6 + int(stagger * 6.0), 8.0 + stagger * 24.0, 48, 66)
+		else:
 			var laid := sheet.duplicate()
 			laid.rotate_90(ClockDirection.CLOCKWISE)
-			_blit_sheet(img, laid, -8, 10 + mini(f, 2))
-		"victory":
-			_blit_rot_part(img, sheet, _LEG_L, pad_x + 26, pad_y + 68, 6.0, 18, 6)
-			_blit_rot_part(img, sheet, _LEG_R, pad_x + 54, pad_y + 68, -4.0, 20, 6)
-			_blit_rot_part(img, sheet, _UPPER, pad_x + 18, pad_y + int(f % 2) * -3, -8.0, 48, 66)
-		_:
-			_blit_sheet(img, sheet, 0, 0)
+			_blit_sheet(img, laid, xoff - 10, pad_y + 12 + int((fall_u - 0.42) * 24.0))
+		return
+
+	var leg_amp: float = 18.0
+	if pose == "run":
+		leg_amp = 28.0
+	elif pose == "walk":
+		leg_amp = 20.0
+	elif pose == "backdash":
+		leg_amp = 14.0
+
+	var ll_rot: float = (float(p.ll_a) - 90.0) * 0.55 + sin(ph) * leg_amp * 0.35
+	var lr_rot: float = (float(p.lr_a) - 90.0) * 0.55 - sin(ph) * leg_amp * 0.35
+	if pose in ["walk", "run", "backdash"]:
+		ll_rot = sin(ph) * leg_amp
+		lr_rot = sin(ph + PI) * leg_amp
+
+	var hip_y: int = pad_y + 68 + bob
+	var ux: int = pad_x + 18 + xoff + int(lean)
+	var uy: int = pad_y + 2 + bob - int(maxf(0.0, -float(p.squat)) * 0.4)
+
+	_blit_rot_part(img, sheet, _LEG_L, pad_x + 24 + xoff, hip_y, ll_rot + float(p.ll_b) * 0.25, 18, 6)
+	_blit_rot_part(img, sheet, _LEG_R, pad_x + 56 + xoff, hip_y, lr_rot - float(p.lr_b) * 0.25, 20, 6)
+	var upper_rot: float = -lean * 1.4 - (float(p.ar_a) - 70.0) * 0.08
+	_blit_rot_part(img, sheet, _UPPER, ux, uy, upper_rot, 48, 66)
+
+	if pose in ["special", "ultimate"]:
+		_smear(img, img.get_width() / 2 + xoff, img.get_height() - 48, def.accent, f)
+	if pose in ["light", "heavy", "clight", "cheavy", "jlight", "jheavy"] and u > 0.22 and u < 0.58:
+		_smear(img, ux + 40, uy + 30, def.trim, f)
 
 
 static func _scale_img(src: Image, sx: float, sy: float) -> Image:
@@ -239,8 +224,8 @@ static func _paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) 
 	var cx: int = 36 + int(p.xoff)
 	var foot: int = 90
 	var hip_y: int = foot - (18 if skinny else 17) + int(p.squat) + int(p.bob)
-	if pose == "knockdown":
-		_downed(img, def, racing, kit, f)
+	if pose in ["knockdown", "defeat"]:
+		_downed(img, def, racing, kit, f, n, pose)
 		return
 
 	var pants: Color = Color(0.10, 0.14, 0.32) if kit else (Color(0.12, 0.11, 0.14) if racing else def.outfit.darkened(0.25))
@@ -271,6 +256,52 @@ static func _paint(img: Image, def: CharacterDef, pose: String, f: int, n: int) 
 
 static func _rig(pose: String, f: int, n: int) -> Dictionary:
 	var u: float = float(f) / float(maxi(n - 1, 1))
+	var ph: float = TAU * float(f) / float(n)
+	return _pose_sample(pose, u, ph, f)
+
+
+static func _ease_out_back(t: float) -> float:
+	var s: float = 1.70158
+	return 1.0 + (s + 1.0) * pow(t - 1.0, 3.0) + s * pow(t - 1.0, 2.0)
+
+
+static func _ease_out_cubic(t: float) -> float:
+	return 1.0 - pow(1.0 - clampf(t, 0.0, 1.0), 3.0)
+
+
+static func _ease_in_cubic(t: float) -> float:
+	var x: float = clampf(t, 0.0, 1.0)
+	return x * x * x
+
+
+static func _ease_in_out(t: float) -> float:
+	return smoothstep(0.0, 1.0, clampf(t, 0.0, 1.0))
+
+
+static func _attack_phase(u: float, wind: float, strike: float) -> float:
+	if u < wind:
+		return _ease_out_cubic(u / maxf(wind, 0.001)) * 0.38
+	var su: float = (u - wind) / maxf(strike, 0.001)
+	if u < wind + strike:
+		return lerpf(0.38, 0.72, _ease_in_out(su))
+	return lerpf(0.72, 1.0, _ease_in_cubic((u - wind - strike) / maxf(1.0 - wind - strike, 0.001)))
+
+
+static func _kf(keys: Array, u: float) -> float:
+	if keys.is_empty():
+		return 0.0
+	if u <= float(keys[0][0]):
+		return float(keys[0][1])
+	for i in keys.size() - 1:
+		var a: Array = keys[i]
+		var b: Array = keys[i + 1]
+		if u >= float(a[0]) and u <= float(b[0]):
+			var t: float = (u - float(a[0])) / maxf(float(b[0]) - float(a[0]), 0.001)
+			return lerpf(float(a[1]), float(b[1]), _ease_in_out(t))
+	return float(keys[-1][1])
+
+
+static func _pose_sample(pose: String, u: float, ph: float, f: int) -> Dictionary:
 	var d := {
 		"xoff": 0, "bob": 0, "squat": 0, "lean": 0, "head_x": 0,
 		"ll_a": 98.0, "ll_b": 8.0, "lr_a": 82.0, "lr_b": 8.0,
@@ -278,149 +309,237 @@ static func _rig(pose: String, f: int, n: int) -> Dictionary:
 	}
 	match pose:
 		"idle":
-			var ph: float = TAU * float(f) / float(n)
-			d.bob = int(round(sin(ph) * 1.2))
-			d.al_a = 108.0 + sin(ph) * 6.0
-			d.ar_a = 72.0 - sin(ph) * 6.0
-			d.al_b = 16.0 + sin(ph) * 4.0
+			d.bob = int(round(sin(ph) * 1.8 + sin(ph * 2.0) * 0.4))
+			d.head_x = int(round(sin(ph * 0.5) * 1.0))
+			d.al_a = 108.0 + sin(ph) * 8.0
+			d.ar_a = 72.0 - sin(ph) * 8.0
+			d.al_b = 16.0 + sin(ph + 0.4) * 5.0
+			d.ar_b = 16.0 - sin(ph + 0.4) * 4.0
+			d.ll_a = 96.0 + sin(ph * 0.5) * 4.0
+			d.lr_a = 84.0 - sin(ph * 0.5) * 4.0
 		"walk":
-			var phw: float = TAU * float(f) / float(n)
-			d.bob = int(round(abs(sin(phw)) * 2.0))
-			d.ll_a = 90.0 + sin(phw) * 32.0
-			d.lr_a = 90.0 + sin(phw + PI) * 32.0
-			d.ll_b = 10.0 + maxf(0.0, sin(phw)) * 18.0
-			d.lr_b = 10.0 + maxf(0.0, sin(phw + PI)) * 18.0
-			d.al_a = 90.0 + sin(phw + PI) * 28.0
-			d.ar_a = 90.0 + sin(phw) * 28.0
-			d.al_b = 14.0
-			d.ar_b = 14.0
-			d.lean = int(round(sin(phw) * 1.0))
+			var s: float = sin(ph)
+			var c: float = cos(ph)
+			d.bob = int(round(abs(s) * 3.0))
+			d.lean = int(round(s * 2.0))
+			d.head_x = int(round(-s * 1.5))
+			d.ll_a = 92.0 + s * 38.0
+			d.lr_a = 92.0 - s * 38.0
+			d.ll_b = 8.0 + maxf(0.0, s) * 22.0
+			d.lr_b = 8.0 + maxf(0.0, -s) * 22.0
+			d.al_a = 92.0 - s * 32.0
+			d.ar_a = 92.0 + s * 32.0
+			d.al_b = 12.0 + abs(c) * 4.0
+			d.ar_b = 12.0 + abs(c) * 4.0
 		"run":
-			var phr: float = TAU * float(f) / float(n)
-			d.bob = int(round(abs(sin(phr)) * 3.0))
-			d.xoff = int(round(sin(phr) * 2.0))
-			d.lean = 3
-			d.ll_a = 90.0 + sin(phr) * 48.0
-			d.lr_a = 90.0 + sin(phr + PI) * 48.0
-			d.ll_b = 8.0 + maxf(0.0, sin(phr)) * 28.0
-			d.lr_b = 8.0 + maxf(0.0, sin(phr + PI)) * 28.0
-			d.al_a = 90.0 + sin(phr + PI) * 50.0
-			d.ar_a = 90.0 + sin(phr) * 50.0
+			var rs: float = sin(ph)
+			d.bob = int(round(abs(rs) * 4.0))
+			d.xoff = int(round(rs * 3.0))
+			d.lean = 5
+			d.ll_a = 88.0 + rs * 54.0
+			d.lr_a = 88.0 - rs * 54.0
+			d.ll_b = 6.0 + maxf(0.0, rs) * 32.0
+			d.lr_b = 6.0 + maxf(0.0, -rs) * 32.0
+			d.al_a = 86.0 - rs * 58.0
+			d.ar_a = 86.0 + rs * 58.0
+			d.al_b = 6.0
+			d.ar_b = 6.0
+		"backdash":
+			var dash: float = sin(ph * 2.0)
+			d.lean = -4
+			d.xoff = int(round(-6.0 - abs(dash) * 2.0))
+			d.bob = int(round(abs(dash) * 2.0))
+			d.ll_a = 108.0 + dash * 18.0
+			d.lr_a = 72.0 - dash * 14.0
+			d.ll_b = 18.0
+			d.lr_b = 12.0
+			d.al_a = 130.0
+			d.ar_a = 40.0
+			d.al_b = 24.0
+			d.ar_b = 30.0
+		"prejump":
+			d.squat = int(round(_kf([[0.0, 0.0], [0.5, 16.0], [1.0, 8.0]], u)))
+			d.ll_a = _kf([[0.0, 98.0], [0.5, 118.0], [1.0, 90.0]], u)
+			d.lr_a = _kf([[0.0, 82.0], [0.5, 62.0], [1.0, 92.0]], u)
+			d.ll_b = _kf([[0.0, 8.0], [0.5, 34.0], [1.0, 12.0]], u)
+			d.lr_b = _kf([[0.0, 8.0], [0.5, 28.0], [1.0, 10.0]], u)
+			d.al_a = 120.0
+			d.ar_a = 60.0
+		"jump":
+			d.squat = int(round(_kf([[0.0, 6.0], [0.12, 10.0], [0.28, -4.0], [0.55, -6.0], [0.82, 2.0], [1.0, 5.0]], u)))
+			d.ll_a = _kf([[0.0, 118.0], [0.18, 62.0], [0.45, 48.0], [0.72, 88.0], [1.0, 104.0]], u)
+			d.lr_a = _kf([[0.0, 62.0], [0.18, 118.0], [0.45, 132.0], [0.72, 96.0], [1.0, 78.0]], u)
+			d.ll_b = _kf([[0.0, 34.0], [0.25, 18.0], [0.55, 8.0], [1.0, 24.0]], u)
+			d.lr_b = _kf([[0.0, 18.0], [0.25, 8.0], [0.55, 22.0], [1.0, 16.0]], u)
+			d.al_a = _kf([[0.0, 130.0], [0.2, 220.0], [0.55, 240.0], [1.0, 110.0]], u)
+			d.ar_a = _kf([[0.0, 50.0], [0.2, -30.0], [0.55, -50.0], [1.0, 70.0]], u)
 			d.al_b = 8.0
 			d.ar_b = 8.0
-		"jump":
-			d.squat = 4 if u < 0.2 else (-2 if u < 0.55 else 1)
-			d.ll_a = 70.0 if u < 0.5 else 110.0
-			d.lr_a = 110.0 if u < 0.5 else 70.0
-			d.ll_b = 28.0
-			d.lr_b = 22.0
-			d.al_a = 230.0
-			d.ar_a = -40.0
-			d.al_b = 10.0
-			d.ar_b = 10.0
+		"land":
+			d.squat = int(round(_kf([[0.0, 12.0], [0.35, 18.0], [0.65, 6.0], [1.0, 0.0]], u)))
+			d.bob = int(round(_kf([[0.0, 4.0], [0.35, 6.0], [1.0, 0.0]], u)))
+			d.ll_a = _kf([[0.0, 118.0], [0.4, 108.0], [1.0, 98.0]], u)
+			d.lr_a = _kf([[0.0, 68.0], [0.4, 78.0], [1.0, 82.0]], u)
+			d.ll_b = _kf([[0.0, 36.0], [0.5, 16.0], [1.0, 8.0]], u)
+			d.lr_b = _kf([[0.0, 24.0], [0.5, 12.0], [1.0, 8.0]], u)
+			d.al_a = 115.0
+			d.ar_a = 68.0
+		"getup":
+			d.squat = int(round(_kf([[0.0, 16.0], [0.45, 10.0], [1.0, 0.0]], u)))
+			d.lean = int(round(_kf([[0.0, -3.0], [0.6, 1.0], [1.0, 0.0]], u)))
+			d.ll_a = _kf([[0.0, 130.0], [0.5, 108.0], [1.0, 98.0]], u)
+			d.lr_a = _kf([[0.0, 48.0], [0.5, 72.0], [1.0, 82.0]], u)
+			d.ll_b = _kf([[0.0, 42.0], [0.5, 18.0], [1.0, 8.0]], u)
+			d.lr_b = _kf([[0.0, 30.0], [0.5, 12.0], [1.0, 8.0]], u)
+			d.al_a = _kf([[0.0, 90.0], [0.5, 108.0], [1.0, 108.0]], u)
+			d.ar_a = _kf([[0.0, 70.0], [0.5, 72.0], [1.0, 72.0]], u)
 		"crouch":
-			d.squat = 14
-			d.ll_a = 125.0
-			d.lr_a = 55.0
-			d.ll_b = 40.0
-			d.lr_b = 35.0
-			d.al_a = 100.0
-			d.ar_a = 80.0
+			var cu: float = _ease_in_out(u)
+			d.squat = int(round(lerpf(4.0, 16.0, cu)))
+			d.ll_a = lerpf(105.0, 128.0, cu)
+			d.lr_a = lerpf(78.0, 52.0, cu)
+			d.ll_b = lerpf(14.0, 42.0, cu)
+			d.lr_b = lerpf(12.0, 36.0, cu)
+			d.al_a = lerpf(108.0, 98.0, cu)
+			d.ar_a = lerpf(78.0, 72.0, cu)
 		"block":
-			d.squat = 5
-			d.lean = 2
-			d.al_a = 20.0
-			d.ar_a = 10.0
-			d.al_b = 70.0
-			d.ar_b = 75.0
+			d.squat = 6
+			d.lean = 3
+			d.al_a = 18.0
+			d.ar_a = 8.0
+			d.al_b = 72.0 + sin(ph * 2.0) * 2.0
+			d.ar_b = 78.0 + sin(ph * 2.0) * 2.0
+			d.ll_a = 102.0
+			d.lr_a = 74.0
+		"block_hit":
+			d.squat = 8
+			d.lean = int(round(_kf([[0.0, 2.0], [0.25, 8.0], [1.0, 3.0]], u)))
+			d.xoff = int(round(_kf([[0.0, 0.0], [0.25, 5.0], [1.0, 1.0]], u)))
+			d.al_a = 12.0
+			d.ar_a = 4.0
+			d.al_b = 68.0
+			d.ar_b = 74.0
 		"light":
-			d.ar_a = lerpf(140.0, 8.0, smoothstep(0.0, 0.55, u))
-			d.ar_b = lerpf(20.0, 4.0, smoothstep(0.2, 0.6, u))
-			d.al_a = 120.0
-			d.lean = int(round(smoothstep(0.3, 0.7, u) * 3.0))
-			d.lr_a = 78.0
+			var au: float = _attack_phase(u, 0.22, 0.28)
+			d.ar_a = lerpf(150.0, -5.0, _ease_out_cubic(au / 0.72))
+			d.ar_b = lerpf(24.0, 2.0, smoothstep(0.15, 0.65, au))
+			d.al_a = lerpf(118.0, 128.0, au)
+			d.lean = int(round(smoothstep(0.25, 0.55, au) * 4.0))
+			d.xoff = int(round(smoothstep(0.3, 0.55, au) * 3.0))
 		"clight":
-			d.squat = 12
-			d.ar_a = lerpf(100.0, 12.0, smoothstep(0.0, 0.55, u))
-			d.ar_b = lerpf(24.0, 6.0, u)
-			d.al_a = 110.0
-			d.ll_a = 125.0
-			d.lr_a = 58.0
-			d.ll_b = 38.0
-			d.lr_b = 32.0
-			d.lean = 2
+			var cu: float = _attack_phase(u, 0.18, 0.30)
+			d.squat = 14
+			d.ar_a = lerpf(108.0, 0.0, _ease_out_cubic(cu / 0.72))
+			d.ar_b = lerpf(28.0, 4.0, cu)
+			d.al_a = 112.0
+			d.ll_a = 128.0
+			d.lr_a = 54.0
+			d.ll_b = 40.0
+			d.lr_b = 30.0
+			d.lean = 3
 		"jlight":
-			d.squat = -2
-			d.ar_a = lerpf(160.0, 10.0, u)
-			d.ar_b = 8.0
-			d.al_a = 220.0
-			d.ll_a = 60.0
-			d.lr_a = 120.0
-			d.ll_b = 24.0
-			d.lr_b = 18.0
+			var ju: float = _attack_phase(u, 0.16, 0.32)
+			d.squat = -3
+			d.ar_a = lerpf(168.0, 0.0, ju)
+			d.ar_b = 6.0
+			d.al_a = 225.0
+			d.ll_a = 52.0
+			d.lr_a = 128.0
+			d.ll_b = 22.0
+			d.lr_b = 16.0
 		"heavy":
-			d.squat = int(round((1.0 - abs(u - 0.45)) * 4.0))
-			d.ar_a = lerpf(160.0, -8.0, smoothstep(0.15, 0.62, u))
-			d.ar_b = lerpf(30.0, 2.0, smoothstep(0.2, 0.65, u))
-			d.al_a = 130.0
-			d.lean = int(round(smoothstep(0.25, 0.7, u) * 5.0))
-			d.ll_a = 105.0
-			d.lr_a = 70.0
+			var hu: float = _attack_phase(u, 0.32, 0.26)
+			d.squat = int(round((1.0 - absf(hu - 0.45)) * 6.0))
+			d.ar_a = lerpf(168.0, -12.0, _ease_out_back(hu / 0.72))
+			d.ar_b = lerpf(34.0, 0.0, smoothstep(0.2, 0.68, hu))
+			d.al_a = lerpf(128.0, 142.0, hu)
+			d.lean = int(round(smoothstep(0.22, 0.62, hu) * 6.0))
+			d.ll_a = 108.0
+			d.lr_a = 66.0
 		"cheavy":
-			d.squat = 13
-			d.lean = int(round(smoothstep(0.2, 0.7, u) * 4.0))
-			d.ar_a = lerpf(150.0, 8.0, smoothstep(0.1, 0.6, u))
-			d.ar_b = lerpf(28.0, 4.0, u)
-			d.al_a = 120.0
-			d.ll_a = 130.0
-			d.lr_a = 40.0
-			d.lr_b = 8.0
-			d.ll_b = 42.0
+			var chu: float = _attack_phase(u, 0.28, 0.28)
+			d.squat = 15
+			d.lean = int(round(smoothstep(0.18, 0.62, chu) * 5.0))
+			d.ar_a = lerpf(158.0, 0.0, _ease_out_cubic(chu / 0.72))
+			d.ar_b = lerpf(30.0, 2.0, chu)
+			d.al_a = 122.0
+			d.ll_a = 132.0
+			d.lr_a = 36.0
+			d.ll_b = 44.0
+			d.lr_b = 6.0
 		"jheavy":
-			d.squat = -1
-			d.ar_a = lerpf(180.0, -5.0, u)
-			d.ar_b = lerpf(20.0, 2.0, u)
-			d.al_a = 200.0
-			d.ll_a = 50.0
-			d.lr_a = 130.0
-			d.lean = 3
-		"special":
-			d.lean = int(round(u * 8.0))
-			d.xoff = int(round(u * 6.0))
-			d.ar_a = lerpf(40.0, -10.0, u)
-			d.al_a = lerpf(140.0, 200.0, u)
-			d.ll_a = 60.0
-			d.lr_a = 50.0
-			d.ll_b = 8.0
-			d.lr_b = 8.0
-			d.ar_b = 4.0
-		"ultimate":
-			d.squat = int(round(sin(u * PI) * -3.0))
-			d.ar_a = lerpf(90.0, -20.0, u)
-			d.al_a = lerpf(90.0, 210.0, u)
-			d.lean = int(round(u * 4.0))
-			d.ll_a = 100.0
-			d.lr_a = 80.0
-		"hit":
-			d.xoff = 3 + f
-			d.head_x = 2
+			var jhu: float = _attack_phase(u, 0.24, 0.30)
+			d.squat = -2
+			d.ar_a = lerpf(188.0, -8.0, _ease_out_back(jhu / 0.72))
+			d.ar_b = lerpf(22.0, 0.0, jhu)
+			d.al_a = 205.0
+			d.ll_a = 44.0
+			d.lr_a = 136.0
 			d.lean = 4
-			d.al_a = 200.0
-			d.ar_a = 160.0
-			d.ll_a = 70.0
-			d.lr_a = 110.0
+		"special":
+			var spu: float = _attack_phase(u, 0.14, 0.34)
+			d.lean = int(round(spu * 10.0))
+			d.xoff = int(round(spu * 8.0))
+			d.ar_a = lerpf(48.0, -18.0, spu)
+			d.al_a = lerpf(138.0, 215.0, spu)
+			d.ll_a = lerpf(88.0, 52.0, spu)
+			d.lr_a = lerpf(78.0, 44.0, spu)
+			d.ll_b = 6.0
+			d.lr_b = 6.0
+			d.ar_b = 2.0
+		"ultimate":
+			var upu: float = _attack_phase(u, 0.20, 0.32)
+			d.squat = int(round(sin(upu * PI) * -4.0))
+			d.ar_a = lerpf(96.0, -28.0, upu)
+			d.al_a = lerpf(92.0, 225.0, upu)
+			d.lean = int(round(upu * 6.0))
+			d.xoff = int(round(sin(upu * PI) * 4.0))
+			d.ll_a = 102.0
+			d.lr_a = 76.0
+		"hit":
+			var hu2: float = _kf([[0.0, 0.0], [0.18, 1.0], [0.55, 0.7], [1.0, 0.2]], u)
+			d.xoff = int(round(2.0 + hu2 * 6.0))
+			d.head_x = int(round(hu2 * 3.0))
+			d.lean = int(round(hu2 * 6.0))
+			d.al_a = lerpf(108.0, 210.0, hu2)
+			d.ar_a = lerpf(72.0, 168.0, hu2)
+			d.ll_a = lerpf(98.0, 68.0, hu2)
+			d.lr_a = lerpf(82.0, 112.0, hu2)
+		"air_hit":
+			d.squat = -4
+			d.lean = int(round(sin(u * PI) * 5.0))
+			d.al_a = 200.0 + u * 20.0
+			d.ar_a = 150.0
+			d.ll_a = 58.0
+			d.lr_a = 120.0
+			d.ll_b = 20.0
+			d.lr_b = 14.0
+		"launch":
+			d.squat = int(round(_kf([[0.0, 2.0], [0.3, -6.0], [0.7, -4.0], [1.0, 0.0]], u)))
+			d.al_a = _kf([[0.0, 120.0], [0.35, 230.0], [1.0, 140.0]], u)
+			d.ar_a = _kf([[0.0, 60.0], [0.35, -40.0], [1.0, 80.0]], u)
+			d.ll_a = _kf([[0.0, 90.0], [0.4, 48.0], [1.0, 78.0]], u)
+			d.lr_a = _kf([[0.0, 78.0], [0.4, 130.0], [1.0, 96.0]], u)
 		"grab":
-			d.ar_a = lerpf(40.0, 5.0, u)
-			d.ar_b = lerpf(40.0, 10.0, u)
-			d.al_a = lerpf(80.0, 25.0, u)
-			d.lean = 3
-			d.squat = 2
+			var gu: float = _attack_phase(u, 0.20, 0.35)
+			d.ar_a = lerpf(36.0, -2.0, gu)
+			d.ar_b = lerpf(42.0, 8.0, gu)
+			d.al_a = lerpf(78.0, 18.0, gu)
+			d.al_b = lerpf(20.0, 36.0, gu)
+			d.lean = int(round(gu * 5.0))
+			d.squat = int(round(gu * 4.0))
+			d.xoff = int(round(gu * 5.0))
 		"victory":
-			d.ar_a = lerpf(-70.0, -95.0, 0.5 + 0.5 * sin(float(f)))
-			d.al_a = 100.0
-			d.bob = int(f % 2)
-			d.ll_a = 95.0
-			d.lr_a = 85.0
+			var vu: float = _ease_out_back(minf(u * 1.2, 1.0))
+			d.ar_a = lerpf(-40.0, -105.0, vu)
+			d.al_a = lerpf(90.0, 115.0, vu)
+			d.al_b = lerpf(16.0, 8.0, vu)
+			d.bob = int(round(sin(ph * 2.0) * 2.0))
+			d.ll_a = 94.0
+			d.lr_a = 86.0
+			d.lean = int(round(sin(ph) * 2.0))
+		_:
+			pass
 	return d
 
 
@@ -642,23 +761,30 @@ static func _head(img: Image, def: CharacterDef, cx: int, cy: int, racing: bool,
 
 
 static func _smear(img: Image, cx: int, hip_y: int, accent: Color, f: int) -> void:
-	for i in 4:
-		var y: int = hip_y - 8 - i * 5
-		Pix.hline(img, 4, y, 8 + f + i, Color(accent, 0.45))
-		Pix.put(img, cx - 12 - i, hip_y - 16 + i, Color(accent, 0.7))
+	for i in 6:
+		var y: int = hip_y - 10 - i * 4
+		var w: int = 10 + f + i * 2
+		Pix.hline(img, maxi(2, cx - w), y, mini(w * 2, img.get_width() - 4), Color(accent, 0.18 + float(i) * 0.06))
+		Pix.put(img, cx - 14 - i * 2, hip_y - 18 + i, Color(accent, 0.55 + float(i) * 0.05))
+		Pix.put(img, cx - 8 - i, hip_y - 12 + i, Color(accent.lightened(0.2), 0.35))
 
 
-static func _downed(img: Image, def: CharacterDef, racing: bool, kit: bool, f: int) -> void:
-	var y: int = 64 + mini(f, 2)
+static func _downed(img: Image, def: CharacterDef, racing: bool, kit: bool, f: int, n: int, pose: String) -> void:
+	var u: float = float(f) / float(maxi(n - 1, 1))
+	var fall: float = _ease_in_out(clampf(u * 1.35, 0.0, 1.0))
+	var y: int = int(lerpf(40.0, 64.0, fall))
+	var tilt: int = int(lerpf(0.0, 14.0, fall))
 	if kit:
-		Pix.capsule(img, 14, y + 6, 36, y + 8, 4, def.outfit)
-		Pix.hline(img, 18, y + 6, 14, def.trim)
-		Pix.hline(img, 18, y + 8, 14, def.accent)
+		Pix.capsule(img, 14 + tilt, y + 6, 36 + tilt, y + 8, 4, def.outfit)
+		Pix.hline(img, 18 + tilt, y + 6, 14, def.trim)
+		Pix.hline(img, 18 + tilt, y + 8, 14, def.accent)
 	else:
-		Pix.capsule(img, 12, y + 6, 34, y + 8, 3, def.outfit)
-	Pix.oval(img, 42, y + 4, 6, 5, def.skin)
-	Pix.oval(img, 44, y + 1, 8, 5, def.hair)
-	Pix.capsule(img, 10, y + 8, 18, y + 12, 2, def.outfit.darkened(0.15))
-	Pix.capsule(img, 22, y + 9, 30, y + 13, 2, def.outfit.darkened(0.1))
+		Pix.capsule(img, 12 + tilt, y + 6, 34 + tilt, y + 8, 3, def.outfit)
+	Pix.oval(img, 42 + tilt, y + 4, 6, 5, def.skin)
+	Pix.oval(img, 44 + tilt, y + 1, 8, 5, def.hair)
+	Pix.capsule(img, 10 + tilt, y + 8, 18 + tilt, y + 12, 2, def.outfit.darkened(0.15))
+	Pix.capsule(img, 22 + tilt, y + 9, 30 + tilt, y + 13, 2, def.outfit.darkened(0.1))
 	if racing:
-		Pix.hline(img, 20, y + 6, 10, def.accent)
+		Pix.hline(img, 20 + tilt, y + 6, 10, def.accent)
+	if pose == "defeat" and u > 0.55:
+		Pix.hline(img, 46 + tilt, y + 6, 4, def.skin.darkened(0.2))
