@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-profit: #16a34a;
+  --color-loss: #dc2626;
+}
+
+:root,
+html.light {
+  --bg: #eef1f6;
+  --bg-elev: #ffffff;
+  --bg-elev-2: #f7f8fb;
+  --line: #d5dce6;
+  --text: #121722;
+  --muted: #5b6575;
+  --accent: #b8860b;
+  --accent-soft: #f4e4b3;
+  --blue: #2457d6;
+  --banner-fg: #7f1d1d;
+  --banner-bg: #fee2e2;
+  --profit: #15803d;
+  --loss: #b91c1c;
+  color-scheme: light;
+}
+
+html.dark {
+  --bg: #0b0f14;
+  --bg-elev: #121821;
+  --bg-elev-2: #18202b;
+  --line: #273445;
+  --text: #e8eef6;
+  --muted: #93a0b3;
+  --accent: #e0b93a;
+  --accent-soft: #3a3014;
+  --blue: #7aa2ff;
+  --banner-fg: #ffc9c0;
+  --banner-bg: #3a1512;
+  --profit: #3ddc97;
+  --loss: #ff6b81;
+  color-scheme: dark;
+}
+
+html,
+body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.card {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.soft-btn {
+  min-height: 44px;
+  border-radius: 0.75rem;
+  border: 1px solid var(--line);
+  background: var(--bg-elev-2);
+  padding: 0.55rem 0.9rem;
+  font-weight: 600;
+}
+
+.soft-btn:active {
+  transform: translateY(1px);
+}
+
+input[type="number"],
+select,
+input[type="search"],
+input[type="text"] {
+  min-height: 44px;
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--line);
+  background: var(--bg-elev-2);
+  color: var(--text);
+  padding: 0.5rem 0.75rem;
+}
+
+label .hint {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+* {
+  scrollbar-color: var(--line) transparent;
+}
