@@ -114,10 +114,10 @@ func _process(delta: float) -> void:
 		if pose in ["walk", "run"]:
 			_stride += maxf(absf(move_speed), 80.0) * delta * 0.082
 		if pose in TRAIL_POSES and trail_timer <= 0.0:
-			trail_timer = 0.08 if pose == "backdash" else 0.11
+			trail_timer = 0.05 if pose == "backdash" else 0.07
 			_ghost()
 		elif pose in ["light", "clight", "jlight", "heavy", "cheavy", "jheavy"] and attack_u > 0.22 and attack_u < 0.58 and trail_timer <= 0.0:
-			trail_timer = 0.06
+			trail_timer = 0.045
 			_ghost()
 		trail_timer = max(0.0, trail_timer - delta)
 		if pose == "land" and not _land_puff:
@@ -374,7 +374,7 @@ func _ghost() -> void:
 	g.scale = _sprite.scale
 	g.flip_h = _sprite.flip_h
 	g.rotation = _sprite.rotation
-	var alpha: float = 0.46 if pose == "backdash" else 0.30
+	var alpha: float = 0.52 if pose == "backdash" else 0.40
 	g.modulate = Color(def.accent, alpha)
 	g.z_index = -1
 	var p := get_parent()
@@ -382,8 +382,8 @@ func _ghost() -> void:
 		p.add_child(g)
 		var tw := g.create_tween()
 		tw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
-		tw.tween_property(g, "modulate:a", 0.0, 0.12 if pose == "backdash" else 0.16)
-		tw.parallel().tween_property(g, "global_position:x", g.global_position.x - facing * 14.0, 0.14)
+		tw.tween_property(g, "modulate:a", 0.0, 0.18 if pose == "backdash" else 0.22)
+		tw.parallel().tween_property(g, "global_position:x", g.global_position.x - facing * 16.0, 0.2)
 		tw.tween_callback(g.queue_free)
 
 

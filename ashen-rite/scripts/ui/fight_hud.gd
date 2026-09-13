@@ -31,6 +31,7 @@ var _ult_show1 := 0.0
 var _ult_show2 := 0.0
 var _last_timer := -1
 var _combo_punch := 0.0
+var _combo_hold := 0.0
 var _tbox: TextureRect
 var _hp_kick1 := 0.0
 var _hp_kick2 := 0.0
@@ -202,6 +203,7 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	_combo.pivot_offset = Vector2(640, 14)
 	_rank = PixelUI.label_at(root, "", Vector2(0, 214), 2, Color(1.0, 0.72, 0.28), 0, 1280)
 	_rank.set_centered(1280)
+	_rank.pivot_offset = Vector2(640, 10)
 	_rank.visible = false
 	_train = PixelUI.label_at(root, "", Vector2(16, 520), 1, Color(0.88, 0.9, 0.78), 42)
 	_train.visible = GameState.training or GameState.survival or GameState.time_attack
@@ -237,9 +239,27 @@ func _process(delta: float) -> void:
 		n.modulate.a = ha
 	if _combo_punch > 0.0:
 		_combo_punch = max(0.0, _combo_punch - delta * 4.4)
-		var s: float = 1.0 + _combo_punch * 0.22
+		var s: float = 1.0 + _combo_punch * 0.28
 		_combo.scale = Vector2(s, s)
 		_combo.modulate = Color.WHITE.lerp(Color(1.45, 1.18, 0.5), _combo_punch)
+	if _rank and _rank.visible:
+		_rank.scale = _rank.scale.lerp(Vector2.ONE, 1.0 - exp(-delta * 9.0))
+		_rank.modulate = _rank.modulate.lerp(Color.WHITE, 1.0 - exp(-delta * 8.0))
+	var live_hits: int = maxi(_p1.combo_hits, _p2.combo_hits)
+	if live_hits < 2 and _combo.visible:
+		_combo_hold = max(0.0, _combo_hold - delta)
+		if _combo_hold <= 0.0:
+			_combo.modulate.a = move_toward(_combo.modulate.a, 0.0, delta * 5.5)
+			if _rank:
+				_rank.modulate.a = _combo.modulate.a
+			if _combo.modulate.a <= 0.04:
+				_combo.visible = false
+				_combo.modulate = Color.WHITE
+				_combo.scale = Vector2.ONE
+				if _rank:
+					_rank.visible = false
+					_rank.scale = Vector2.ONE
+					_rank.modulate = Color.WHITE
 	_hp_kick1 = max(0.0, _hp_kick1 - delta * 7.0)
 	_hp_kick2 = max(0.0, _hp_kick2 - delta * 7.0)
 	_p1_hp.position = _hp1_pos + Vector2(sin(_t * 62.0) * _hp_kick1 * 5.0, 0)
@@ -487,14 +507,13 @@ func set_rounds(a: int, b: int) -> void:
 func set_combo(_side: int, n: int) -> void:
 	if n >= 2:
 		_combo.visible = true
-		_combo_punch = 1.0
-		_refresh_combo()
-	else:
-		_combo.visible = false
 		_combo.modulate = Color.WHITE
-		_combo.scale = Vector2.ONE
+		_combo_punch = 1.0
+		_combo_hold = 0.58
 		if _rank:
-			_rank.visible = false
+			_rank.scale = Vector2(1.42, 1.42)
+			_rank.modulate = Color(1.45, 1.2, 0.55)
+		_refresh_combo()
 
 
 func _refresh_combo() -> void:
@@ -502,10 +521,6 @@ func _refresh_combo() -> void:
 		return
 	var n: int = maxi(_p1.combo_hits, _p2.combo_hits)
 	if n < 2:
-		if _combo.visible and _combo_punch <= 0.0:
-			_combo.visible = false
-		if _rank:
-			_rank.visible = false
 		return
 	var dmg: float = _p1.combo_damage if _p1.combo_hits >= _p2.combo_hits else _p2.combo_damage
 	var sc: int = int(round(CombatRules.combo_scale(n) * 100.0))

@@ -15,6 +15,8 @@ var _controls: ControlsScreen
 var _result: ResultScreen
 var _gallery: Control
 var _match: MatchDirector
+var _attract_restore_p1: String = ""
+var _attract_restore_p2: String = ""
 
 
 func _ready() -> void:
@@ -188,8 +190,22 @@ func _start_attract() -> void:
 	GameState.attract = true
 	GameState.training = false
 	GameState.p2_is_cpu = true
-	GameState.p1_character_id = "chris_xrisakis"
-	GameState.p2_character_id = "hoodrich_stacks"
+	_attract_restore_p1 = GameState.p1_character_id
+	_attract_restore_p2 = GameState.p2_character_id
+	var pool: Array[String] = []
+	for id in CharacterCatalog.ids():
+		if str(id) != "custom":
+			pool.append(str(id))
+	if pool.size() >= 2:
+		var a := randi() % pool.size()
+		var b := randi() % (pool.size() - 1)
+		if b >= a:
+			b += 1
+		GameState.p1_character_id = pool[a]
+		GameState.p2_character_id = pool[b]
+	else:
+		GameState.p1_character_id = "chris_xrisakis"
+		GameState.p2_character_id = "hoodrich_stacks"
 	_start_match()
 
 
@@ -207,6 +223,9 @@ func _on_match_over(code: int) -> void:
 	GameState.attract = false
 	_clear_match()
 	if was_attract:
+		if not _attract_restore_p1.is_empty():
+			GameState.p1_character_id = _attract_restore_p1
+			GameState.p2_character_id = _attract_restore_p2
 		_show_splash()
 		return
 	if code == -2:

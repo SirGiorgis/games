@@ -29,6 +29,9 @@ var _pause_lock: float = 0.0
 var _first_hit: bool = true
 var _super_dip: float = 0.0
 var _key_was: Dictionary = {}
+var _stop_until_ms: int = 0
+var _super_until_ms: int = 0
+var _ko_line: String = ""
 
 
 func _ready() -> void:
@@ -36,10 +39,12 @@ func _ready() -> void:
 	arena = ArenaWorld.new()
 	add_child(arena)
 	_aid = GameState.arena_id
-	if GameState.random_arena:
+	if GameState.random_arena or GameState.attract:
 		var ids := ArenaWorld.all_ids()
-		_aid = ids[randi() % ids.size()]
-		GameState.arena_id = _aid
+		if not ids.is_empty():
+			_aid = ids[randi() % ids.size()]
+			if not GameState.attract:
+				GameState.arena_id = _aid
 	arena.build(_aid)
 
 	fx = FX.new()
@@ -175,10 +180,9 @@ func _begin_round() -> void:
 
 func _process(delta: float) -> void:
 	_pause_lock = max(0.0, _pause_lock - delta)
+	_sync_time_scale()
 	if _super_dip > 0.0 and phase == "fight":
 		_super_dip -= delta
-		if _super_dip <= 0.0:
-			_restore_time()
 	if _paused:
 		return
 	if GameState.attract and (Input.is_action_just_pressed(ControlMap.MENU.confirm) or Input.is_action_just_pressed(ControlMap.MENU.back) or Input.is_action_just_pressed(ControlMap.P1.pause)):
@@ -193,7 +197,7 @@ func _process(delta: float) -> void:
 	match phase:
 		"vs":
 			phase_t += delta
-			var vs_need: float = 0.45 if (GameState.training or GameState.attract) else 1.85
+			var vs_need: float = 0.85 if GameState.training else (1.25 if GameState.attract else 2.15)
 			if GameState.arcade:
 				vs_need = 1.05
 			if phase_t > vs_need or Input.is_action_just_pressed(ControlMap.MENU.confirm):
@@ -201,14 +205,16 @@ func _process(delta: float) -> void:
 				_begin_round()
 		"intro":
 			phase_t += delta
-			if phase_t > 0.85:
+			if phase_t > 1.05:
 				_set_banner("FIGHT")
 				AudioDirector.play("fight")
+				cam.punch(0.055)
+				cam.shake(0.32)
 				phase = "fight_call"
 				phase_t = 0.0
 		"fight_call":
 			phase_t += delta
-			if phase_t > 0.42:
+			if phase_t > 0.55:
 				_set_banner("")
 				p1.can_act = true
 				p2.can_act = true
@@ -238,13 +244,15 @@ func _process(delta: float) -> void:
 					_timeout()
 		"slowko":
 			phase_t += delta
-			if phase_t > 0.42:
+			if phase_t > 0.62:
+				if not _ko_line.is_empty():
+					_set_banner(_ko_line)
 				_restore_time()
 				phase = "ko"
 				phase_t = 0.0
 		"ko":
 			phase_t += delta
-			if phase_t > (0.55 if GameState.training else 1.7):
+			if phase_t > (0.55 if GameState.training else 1.85):
 				_finish_round()
 		"endwait":
 			phase_t += delta
@@ -277,15 +285,19 @@ func _resolve_ko() -> void:
 	GameState.last_was_double = d1 and d2
 	GameState.last_was_perfect = false
 	GameState.last_was_dramatic = false
+	_ko_line = ""
 	if d1 and d2:
 		GameState.last_winner = -1
 		p1.celebrate(false)
 		p2.celebrate(false)
-		_set_banner("DOUBLE KO")
+		_ko_line = "DOUBLE KO"
+		_set_banner("KO")
 		AudioDirector.play("ko")
 		AudioDirector.play("cheer", 0.85, 0.55)
 		cam.shake(1.6)
 		cam.ko_zoom()
+		ControlMap.rumble(0, 0.55, 1.0, 0.42)
+		ControlMap.rumble(1, 0.55, 1.0, 0.42)
 		_start_slowmo()
 		return
 	var winner: int = 0 if d2 else 1
@@ -301,15 +313,18 @@ func _resolve_ko() -> void:
 	l.celebrate(false)
 	GameState.last_was_dramatic = w.health / maxf(w.max_health, 1.0) <= 0.14
 	if GameState.last_was_perfect:
-		_set_banner("PERFECT")
+		_ko_line = "PERFECT"
 	elif GameState.last_was_dramatic:
-		_set_banner("DRAMATIC FINISH")
+		_ko_line = "DRAMATIC FINISH"
 	else:
-		_set_banner("%s WINS" % w.def.callsign())
+		_ko_line = "%s WINS" % w.def.callsign()
+	_set_banner("KO")
 	AudioDirector.play("ko")
 	AudioDirector.play("cheer", 1.0, 0.7)
 	cam.shake(1.4)
 	cam.ko_zoom()
+	ControlMap.rumble(0, 0.55, 1.0, 0.42)
+	ControlMap.rumble(1, 0.55, 1.0, 0.42)
 	hud.set_rounds(GameState.p1_rounds, GameState.p2_rounds)
 	_start_slowmo()
 
@@ -348,15 +363,41 @@ func _timeout() -> void:
 
 
 func _start_slowmo() -> void:
-	Engine.time_scale = 0.38
-	cam.punch(0.055)
-	fx.super_flash(Color(1, 0.92, 0.75), 0.28)
+	Engine.time_scale = 0.32
+	cam.punch(0.07)
+	fx.super_flash(Color(1, 0.92, 0.75), 0.38)
+	fx.letterbox(0.55)
 	phase = "slowko"
 	phase_t = 0.0
 
 
 func _restore_time() -> void:
+	_stop_until_ms = 0
+	_super_until_ms = 0
+	_super_dip = 0.0
 	Engine.time_scale = 1.0
+
+
+func _sync_time_scale() -> void:
+	if _paused:
+		return
+	var now: int = Time.get_ticks_msec()
+	if phase == "slowko":
+		Engine.time_scale = 0.32
+	elif now < _super_until_ms:
+		Engine.time_scale = 0.14
+	elif now < _stop_until_ms:
+		Engine.time_scale = 0.05
+	elif Engine.time_scale != 1.0:
+		Engine.time_scale = 1.0
+
+
+func world_stop(ms: int) -> void:
+	if GameState.attract or _paused:
+		return
+	if Time.get_ticks_msec() < _super_until_ms:
+		return
+	_stop_until_ms = maxi(_stop_until_ms, Time.get_ticks_msec() + clampi(ms, 24, 150))
 
 
 func _finish_round() -> void:
@@ -380,10 +421,21 @@ func _finish_round() -> void:
 
 
 func _on_hit(f: Fighter, attack: Dictionary, crit: bool) -> void:
-	var strong: bool = attack.get("kind", "") in ["heavy", "special", "ultimate"] or crit or bool(attack.get("counter", false))
-	fx.spark(f.global_position + Vector2(0, -72), p1.def.accent if f == p2 else p2.def.accent, strong)
-	cam.shake(0.48 if strong else 0.14)
-	cam.punch(0.038 if strong else 0.018)
+	var strong: bool = attack.get("kind", "") in ["heavy", "special", "ultimate", "dash_atk"] or crit or bool(attack.get("counter", false))
+	var attacker: Fighter = p1 if f == p2 else p2
+	var dir := Vector2(float(attacker.facing), -0.22)
+	fx.spark(f.global_position + Vector2(float(attacker.facing) * 18.0, -72), attacker.def.accent, strong, dir)
+	cam.shake(0.72 if strong else 0.28)
+	cam.punch(0.055 if strong else 0.026)
+	cam.hit_nudge(dir, 1.15 if strong else 0.55)
+	if strong:
+		fx.hit_flash(attacker.def.accent, 0.16, 0.07)
+	var atk_side: int = 0 if attacker == p1 else 1
+	var vic_side: int = 0 if f == p1 else 1
+	ControlMap.rumble(atk_side, 0.10 if not strong else 0.22, 0.18 if not strong else 0.48, 0.06 if not strong else 0.11)
+	ControlMap.rumble(vic_side, 0.16 if not strong else 0.38, 0.28 if not strong else 0.78, 0.08 if not strong else 0.14)
+	var stop_ms: int = int(round(float(attack.get("hitstop", 0.05)) * 1000.0 * (1.35 if strong else 1.1)))
+	world_stop(stop_ms)
 	var dealt: int = int(round(float(attack.get("dealt", attack.get("damage", 0)))))
 	if dealt > 0:
 		var col := Color(1, 0.92, 0.45)
@@ -415,7 +467,7 @@ func _flash_call(text: String) -> void:
 	if phase != "fight":
 		return
 	_set_banner(text)
-	get_tree().create_timer(0.32).timeout.connect(func():
+	get_tree().create_timer(0.42).timeout.connect(func():
 		if is_instance_valid(self) and phase == "fight":
 			_set_banner("")
 	)
@@ -445,16 +497,20 @@ func _on_super(f: Fighter) -> void:
 		"cotton":
 			flash_col = Color(0.96, 0.92, 0.78)
 			fx.cotton_scatter(f.global_position + Vector2(0, -12))
-	fx.super_flash(flash_col, 0.42)
-	fx.shade(0.55)
+	fx.super_flash(flash_col, 0.55)
+	fx.shade(0.72)
 	fx.shockwave(f.global_position + Vector2(0, -70))
-	cam.punch(0.08)
-	cam.shake(0.85)
-	AudioDirector.play("super_call", 1.0, 0.8)
-	fx.letterbox(0.55)
+	cam.punch(0.11)
+	cam.shake(1.05)
+	cam.focus_on(f, 0.48)
+	AudioDirector.play("super_call", 1.0, 0.88)
+	fx.letterbox(0.78)
+	ControlMap.rumble(0 if f == p1 else 1, 0.42, 0.92, 0.28)
+	ControlMap.rumble(1 if f == p1 else 0, 0.22, 0.48, 0.18)
 	if phase == "fight":
-		Engine.time_scale = 0.22
-		_super_dip = 0.12
+		_super_until_ms = Time.get_ticks_msec() + 420
+		Engine.time_scale = 0.14
+		_super_dip = 0.08
 		_flash_call(f.def.ultimate_name.to_upper())
 
 
@@ -478,6 +534,8 @@ func _on_clash(pos: Vector2) -> void:
 	fx.clash_burst(pos)
 	cam.shake(0.7)
 	cam.punch(0.05)
+	ControlMap.rumble(0, 0.28, 0.55, 0.12)
+	ControlMap.rumble(1, 0.28, 0.55, 0.12)
 	_flash_call("CLASH")
 
 

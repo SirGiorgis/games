@@ -105,7 +105,10 @@ func present() -> void:
 		q = "%s    MAX %d HIT  %d DMG" % [q, GameState.match_max_combo, int(GameState.match_damage)]
 	_quote.set_pix(q, 2, Color(1, 0.86, 0.42), 42)
 	_quote.set_centered(1280)
-	AudioDirector.play_music("menu")
+	var win_theme: bool = p1_win or arcade_clear or GameState.time_attack
+	if GameState.survival:
+		win_theme = p1_win
+	AudioDirector.play_music("results" if win_theme else "defeat")
 	var p1_frames: Dictionary = PixelFighterBake.bake(CharacterCatalog.get_def(GameState.p1_character_id))
 	var p2_frames: Dictionary = PixelFighterBake.bake(CharacterCatalog.get_def(GameState.p2_character_id))
 	_p1_walk = p1_frames.get("victory" if p1_win else "defeat", p1_frames.get("idle", []))

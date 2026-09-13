@@ -12,6 +12,7 @@ var _thumbs: Array[TextureRect] = []
 var _names: Array[PixelLabel] = []
 var _info: PixelLabel
 var _stats: PixelLabel
+var _moves: PixelLabel
 var _cpu_label: PixelLabel
 var _arena_lbl: PixelLabel
 var _p1_preview: Sprite2D
@@ -95,11 +96,12 @@ func _ready() -> void:
 	add_child(g2)
 	_p2_preview = _make_preview(Vector2(1060, 430))
 
-	PixelUI.add_panel(self, Vector2(420, 548), Vector2(440, 96), Color(0.45, 0.35, 0.55))
-	_info = PixelUI.label_at(self, "", Vector2(432, 560), 2, Color(0.92, 0.9, 0.86), 38)
-	_stats = PixelUI.label_at(self, "", Vector2(432, 604), 1, Color(0.78, 0.74, 0.68), 38)
+	PixelUI.add_panel(self, Vector2(420, 508), Vector2(440, 148), Color(0.45, 0.35, 0.55))
+	_info = PixelUI.label_at(self, "", Vector2(432, 518), 2, Color(0.92, 0.9, 0.86), 38)
+	_stats = PixelUI.label_at(self, "", Vector2(432, 556), 1, Color(0.78, 0.74, 0.68), 38)
+	_moves = PixelUI.label_at(self, "", Vector2(432, 584), 1, Color(0.95, 0.82, 0.42), 38)
 	_cpu_label = PixelUI.label_at(self, "", Vector2(880, 552), 2, Color(0.65, 0.82, 0.95), 36)
-	_arena_lbl = PixelUI.label_at(self, "", Vector2(420, 520), 2, Color(0.88, 0.78, 0.42), 36)
+	_arena_lbl = PixelUI.label_at(self, "", Vector2(420, 480), 2, Color(0.88, 0.78, 0.42), 36)
 
 	PixelUI.add_footer(self, "A/D / DPAD  CROSS OK  CIRCLE BACK  R RANDOM  C CPU  T ARENA")
 	if GameState.arcade:
@@ -262,11 +264,16 @@ func _refresh() -> void:
 		_pips(focus_def.attack, 0.85, 1.15),
 		_pips(focus_def.defense, 0.75, 1.15)
 	], 1, Color(0.78, 0.74, 0.68), 42)
-	_cpu_label.set_pix("%s  ·  %s  ·  L %s  O %s" % [
+	if _moves:
+		_moves.set_pix("L %s  %s\nO %s  %s" % [
+			focus_def.special_name.to_upper(),
+			focus_def.special_desc,
+			focus_def.ultimate_name.to_upper(),
+			focus_def.ultimate_desc
+		], 1, Color(0.95, 0.82, 0.42), 38)
+	_cpu_label.set_pix("%s  ·  %s" % [
 		p2_def.name,
-		"CPU " + GameState.difficulty_name() if GameState.p2_is_cpu else "HUMAN",
-		focus_def.special_name,
-		focus_def.ultimate_name
+		"CPU " + GameState.difficulty_name() if GameState.p2_is_cpu else "HUMAN"
 	], 2, Color(0.65, 0.82, 0.95), 36)
 	if _arena_lbl:
 		var an: String = "RANDOM" if GameState.random_arena else ArenaWorld.display_name(GameState.arena_id)

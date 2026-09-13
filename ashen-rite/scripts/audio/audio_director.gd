@@ -161,19 +161,20 @@ func _build_library() -> void:
 	_library["ui_confirm"] = _blip(520, 0.1, 0.3, 1.4)
 	_library["ui_back"] = _blip(220, 0.12, 0.28, 0.6)
 	_library["whoosh"] = _noise(0.08, 0.18, 1800)
-	_library["punch"] = _hit(190, 0.09, 0.55)
-	_library["heavy"] = _hit(90, 0.16, 0.85)
+	_library["punch"] = _hit(210, 0.08, 0.62)
+	_library["heavy"] = _hit(78, 0.18, 0.92)
+	_library["hit_l"] = _hit(260, 0.09, 0.58)
+	_library["hit_h"] = _hit(96, 0.16, 0.82)
+	_library["ko"] = _sweep(220, 36, 0.78, 0.88)
+	_library["round"] = _call_tone(392.0, 0.22, 0.42)
+	_library["fight"] = _call_tone(196.0, 0.34, 0.55)
+	_library["super_call"] = _sweep(70, 1760, 0.52, 0.78)
 	_library["special"] = _sweep(140, 880, 0.28, 0.5)
 	_library["ultimate"] = _sweep(60, 1400, 0.55, 0.7)
 	_library["block"] = _hit(420, 0.07, 0.4)
 	_library["grab"] = _hit(140, 0.12, 0.5)
-	_library["hit_l"] = _hit(240, 0.08, 0.5)
-	_library["hit_h"] = _hit(110, 0.14, 0.75)
-	_library["ko"] = _sweep(180, 40, 0.6, 0.8)
 	_library["victory"] = _fanfare()
 	_library["defeat"] = _sweep(300, 70, 0.7, 0.55)
-	_library["round"] = _blip(660, 0.18, 0.35, 0.5)
-	_library["fight"] = _blip(330, 0.22, 0.4, 1.8)
 	_library["clash"] = _hit(70, 0.12, 0.7)
 	_library["land"] = _noise(0.07, 0.22, 900)
 	_library["dash"] = _noise(0.09, 0.2, 1400)
@@ -182,7 +183,6 @@ func _build_library() -> void:
 	_library["tech"] = _blip(280, 0.1, 0.4, 1.8)
 	_library["cheer"] = _fanfare()
 	_library["parry"] = _blip(1240, 0.09, 0.38, 1.7)
-	_library["super_call"] = _sweep(90, 1600, 0.42, 0.72)
 	_music_menu = _music(false)
 	_music_fight = _music(true)
 
@@ -217,6 +217,28 @@ func _blip(freq: float, dur: float, amp: float, slide: float = 1.0) -> AudioStre
 		env *= env
 		var f := freq * lerpf(1.0, slide, t / dur)
 		frames[i] = sin(TAU * f * t) * amp * env
+	return _pcm(frames)
+
+
+func _call_tone(freq: float, dur: float, amp: float) -> AudioStreamWAV:
+	var rate := 22050
+	var n := maxi(int(dur * rate), 16)
+	var frames := PackedFloat32Array()
+	frames.resize(n)
+	for i in n:
+		var t := float(i) / rate
+		var u := t / maxf(dur, 0.001)
+		var env := 1.0
+		if u < 0.08:
+			env = u / 0.08
+		elif u > 0.55:
+			env = (1.0 - u) / 0.45
+		env = clampf(env, 0.0, 1.0)
+		var s := sin(TAU * freq * t) * 0.72
+		s += sin(TAU * freq * 2.0 * t) * 0.18
+		s += sin(TAU * freq * 0.5 * t) * 0.22
+		s += sin(TAU * freq * (1.0 + u * 0.14) * t) * 0.12
+		frames[i] = s * amp * env
 	return _pcm(frames)
 
 

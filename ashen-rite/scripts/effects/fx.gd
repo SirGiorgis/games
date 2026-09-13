@@ -22,23 +22,50 @@ func super_flash(color: Color = Color.WHITE, dur: float = 0.35) -> void:
 	tw.tween_property(_flash, "color:a", 0.0, dur)
 
 
-func spark(pos: Vector2, color: Color, strong: bool) -> void:
+func hit_flash(color: Color = Color.WHITE, amount: float = 0.18, dur: float = 0.07) -> void:
+	_flash.color = Color(color, amount)
+	var tw := _flash.create_tween()
+	tw.tween_property(_flash, "color:a", 0.0, dur)
+
+
+func spark(pos: Vector2, color: Color, strong: bool, dir: Vector2 = Vector2(1, -0.25)) -> void:
+	if dir.length_squared() < 0.01:
+		dir = Vector2(1, -0.25)
+	dir = dir.normalized()
 	_ring(pos, color, strong)
-	var n := 16 if strong else 9
+	var n := 22 if strong else 12
 	for i in n:
 		var img := Pix.image(2, 2, color if i % 2 == 0 else Color(1, 0.95, 0.55))
 		var s := Sprite2D.new()
 		s.texture = Pix.tex(img)
 		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		s.scale = Vector2(4, 4)
+		s.scale = Vector2(5 if strong else 3.6, 5 if strong else 3.6)
 		s.global_position = pos + Vector2(randf_range(-6, 6), randf_range(-6, 6))
 		add_child(s)
-		var dir := Vector2(randf_range(-1, 1), randf_range(-1.15, -0.15)).normalized() * randf_range(110, 280 if strong else 170)
+		var spray := dir.rotated(randf_range(-0.7, 0.7))
+		spray.y -= randf_range(0.05, 0.45)
+		var dist: float = randf_range(140, 340 if strong else 210)
 		var tw := s.create_tween()
 		tw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
-		tw.tween_property(s, "position", s.position + dir * 0.22, 0.16)
-		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.16)
+		tw.tween_property(s, "position", s.position + spray.normalized() * dist * 0.22, 0.18)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.18)
 		tw.tween_callback(s.queue_free)
+	var slash := Pix.image(14, 6, Color(0, 0, 0, 0))
+	Pix.hline(slash, 0, 2, 14, Color(1, 0.96, 0.72, 1))
+	Pix.hline(slash, 1, 3, 12, color)
+	var ss := Sprite2D.new()
+	ss.texture = Pix.tex(slash)
+	ss.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	ss.centered = true
+	ss.scale = Vector2(3.8 if strong else 2.6, 3.8 if strong else 2.6)
+	ss.global_position = pos
+	ss.rotation = dir.angle()
+	add_child(ss)
+	var st := ss.create_tween()
+	st.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	st.tween_property(ss, "modulate:a", 0.0, 0.14)
+	st.parallel().tween_property(ss, "scale", ss.scale * Vector2(1.7, 0.4), 0.14)
+	st.tween_callback(ss.queue_free)
 	if strong:
 		for i in 6:
 			var bimg := Pix.image(3, 3, Color(0, 0, 0, 0))
@@ -58,17 +85,17 @@ func spark(pos: Vector2, color: Color, strong: bool) -> void:
 	var cs := Sprite2D.new()
 	cs.texture = Pix.tex(cross)
 	cs.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	cs.scale = Vector2(3.2 if strong else 2.1, 3.2 if strong else 2.1)
+	cs.scale = Vector2(3.6 if strong else 2.3, 3.6 if strong else 2.3)
 	cs.global_position = pos
 	add_child(cs)
 	var ct := cs.create_tween()
 	ct.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	ct.tween_property(cs, "modulate:a", 0.0, 0.12)
-	ct.parallel().tween_property(cs, "scale", cs.scale * 1.85, 0.12)
+	ct.tween_property(cs, "modulate:a", 0.0, 0.14)
+	ct.parallel().tween_property(cs, "scale", cs.scale * 2.05, 0.14)
 	ct.tween_callback(cs.queue_free)
-	_flash.color = Color(color, 0.18 if strong else 0.07)
+	_flash.color = Color(color, 0.28 if strong else 0.12)
 	var ft := _flash.create_tween()
-	ft.tween_property(_flash, "color:a", 0.0, 0.10)
+	ft.tween_property(_flash, "color:a", 0.0, 0.12)
 
 
 func shade(dur: float = 0.45) -> void:

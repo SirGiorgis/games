@@ -134,6 +134,30 @@ func map_for(player_index: int) -> Dictionary:
 	return P1 if player_index == 0 else P2
 
 
+func pad_index(player_index: int) -> int:
+	var pads := Input.get_connected_joypads()
+	if pads.is_empty():
+		return -1
+	if player_index <= 0:
+		return int(pads[0])
+	if pads.size() > 1:
+		return int(pads[1])
+	return -1
+
+
+func rumble(player_index: int, weak: float, strong: float, dur: float) -> void:
+	var d := pad_index(player_index)
+	if d < 0:
+		return
+	var m: float = GameState.shake_strength
+	Input.start_joy_vibration(
+		d,
+		clampf(weak * m, 0.0, 1.0),
+		clampf(strong * m, 0.0, 1.0),
+		clampf(dur, 0.02, 0.8)
+	)
+
+
 func _ensure_action(action: String, keys: Array, deadzone: float = 0.5) -> void:
 	if not InputMap.has_action(action):
 		InputMap.add_action(action, deadzone)

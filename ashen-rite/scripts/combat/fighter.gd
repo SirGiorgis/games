@@ -1019,9 +1019,9 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 	var hard_kd: bool = bool(attack.get("knockdown", false)) or health <= 0.0 or broke
 	state = State.KNOCKDOWN if hard_kd else State.HIT
 	visual.pulse_hit()
+	var heavyish: bool = str(attack.get("kind", "")) in ["heavy", "cheavy", "jheavy", "special", "ultimate", "dash_atk"] or crit or counter
 	if attacker.visual:
-		var heavyish: bool = str(attack.get("kind", "")) in ["heavy", "cheavy", "jheavy", "special", "ultimate", "dash_atk"] or crit or counter
-		attacker.visual.punch_impact(1.2 if heavyish else 0.75)
+		attacker.visual.punch_impact(1.35 if heavyish else 0.85)
 	attacker.last_attack_was_hit = true
 	if attacker.combo_hits == 0:
 		attacker.combo_damage = 0.0
@@ -1036,10 +1036,12 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 		AudioDirector.play("meter", 1.0, 0.7)
 	special_meter = min(MAX_SPECIAL, special_meter + 1.2)
 	ultimate_meter = min(MAX_ULTIMATE, ultimate_meter + 1.0)
-	var snd := "hit_h" if attack.get("kind", "") in ["heavy", "special", "ultimate", "dash_atk"] else "hit_l"
-	AudioDirector.play(snd, randf_range(0.92, 1.08))
-	freeze_frames = float(attack.hitstop) * (1.25 if counter else 1.0)
-	attacker.freeze_frames = float(attack.hitstop) * 0.85
+	var pitch: float = clampf(0.90 + float(attacker.combo_hits) * 0.026, 0.88, 1.38)
+	AudioDirector.play("heavy" if heavyish else "punch", pitch, 0.82)
+	AudioDirector.play("hit_h" if heavyish else "hit_l", pitch, 0.62)
+	var stop: float = float(attack.hitstop) * (1.28 if counter else 1.0)
+	freeze_frames = stop
+	attacker.freeze_frames = stop
 	if bool(attack.get("freeze", false)):
 		freeze_frames = max(freeze_frames, 0.22)
 		if visual:

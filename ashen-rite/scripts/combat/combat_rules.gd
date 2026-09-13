@@ -5,17 +5,17 @@ extends RefCounted
 static func make_attack(kind: String, def: CharacterDef) -> Dictionary:
 	match kind:
 		"light":
-			return _atk("light", 34.0, 70.0, -10.0, 0.22, 0.042, 0.058, 0.04, 0.36, Vector2(30, 18), 38.0, -58.0, false, def, "mid", 24.0)
+			return _atk("light", 34.0, 70.0, -10.0, 0.22, 0.058, 0.058, 0.04, 0.36, Vector2(30, 18), 38.0, -58.0, false, def, "mid", 24.0)
 		"clight":
-			return _atk("clight", 32.0, 64.0, -8.0, 0.20, 0.040, 0.062, 0.04, 0.38, Vector2(32, 16), 40.0, -28.0, false, def, "mid", 18.0)
+			return _atk("clight", 32.0, 64.0, -8.0, 0.20, 0.054, 0.062, 0.04, 0.38, Vector2(32, 16), 40.0, -28.0, false, def, "mid", 18.0)
 		"jlight":
-			return _atk("jlight", 32.0, 62.0, 28.0, 0.18, 0.038, 0.050, 0.06, 0.32, Vector2(30, 20), 34.0, -52.0, false, def, "high", 0.0)
+			return _atk("jlight", 32.0, 62.0, 28.0, 0.18, 0.052, 0.050, 0.06, 0.32, Vector2(30, 20), 34.0, -52.0, false, def, "high", 0.0)
 		"heavy":
-			return _atk("heavy", 88.0, 220.0, -160.0, 0.36, 0.078, 0.100, 0.08, 0.56, Vector2(42, 24), 50.0, -56.0, false, def, "mid", 72.0)
+			return _atk("heavy", 88.0, 220.0, -160.0, 0.36, 0.112, 0.100, 0.08, 0.56, Vector2(42, 24), 50.0, -56.0, false, def, "mid", 72.0)
 		"cheavy":
-			return _atk("cheavy", 80.0, 180.0, -12.0, 0.34, 0.074, 0.096, 0.08, 0.58, Vector2(46, 18), 50.0, -22.0, true, def, "low", 54.0)
+			return _atk("cheavy", 80.0, 180.0, -12.0, 0.34, 0.108, 0.096, 0.08, 0.58, Vector2(46, 18), 50.0, -22.0, true, def, "low", 54.0)
 		"jheavy":
-			return _atk("jheavy", 80.0, 176.0, 58.0, 0.28, 0.070, 0.086, 0.08, 0.42, Vector2(38, 24), 42.0, -48.0, false, def, "high", 0.0)
+			return _atk("jheavy", 80.0, 176.0, 58.0, 0.28, 0.100, 0.086, 0.08, 0.42, Vector2(38, 24), 42.0, -48.0, false, def, "high", 0.0)
 		"special":
 			return _special(def)
 		"ultimate":
@@ -75,7 +75,7 @@ static func _atk(kind: String, dmg: float, kb: float, launch: float, stun: float
 
 
 static func _special(def: CharacterDef) -> Dictionary:
-	var base := _atk("special", 105.0, 240.0, -240.0, 0.44, 0.09, 0.12, 0.10, 0.62, Vector2(56, 28), 56.0, -56.0, false, def)
+	var base := _atk("special", 105.0, 240.0, -240.0, 0.44, 0.13, 0.12, 0.10, 0.62, Vector2(56, 28), 56.0, -56.0, false, def)
 	base.meter = 3.0
 	match def.special_id:
 		"bolt":
