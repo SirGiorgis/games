@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 .DS_Store
 ashen-rite/.godot/
+paper-copy-trader/node_modules/
+paper-copy-trader/.next/
+paper-copy-trader/out/
+
