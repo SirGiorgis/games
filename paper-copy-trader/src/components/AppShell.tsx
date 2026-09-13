@@ -15,7 +15,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV = [
-  { href: "/", label: "Dashboard", short: "Home", icon: LayoutDashboard },
+  { href: "/", label: "Dashboard", short: "Dash", icon: LayoutDashboard },
   { href: "/strategies", label: "Strategies", short: "Strat", icon: Waypoints },
   { href: "/backtest", label: "Backtest", short: "Test", icon: FlaskConical },
   { href: "/trades", label: "Trades", short: "Log", icon: ListOrdered },
@@ -92,7 +92,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Link
               key={item.href}
               href={item.href}
-              className="flex min-h-14 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold"
+              className="flex min-h-14 flex-col items-center justify-center gap-0.5 px-0.5 text-[10px] leading-none font-semibold"
               style={{ color: active ? "var(--accent)" : "var(--muted)" }}
             >
               <Icon size={18} />

@@ -42,7 +42,7 @@ export function BalanceChart({ points }: { points: EquityPoint[] }) {
       <LineChart data={data}>
         <CartesianGrid stroke="var(--line)" strokeDasharray="3 3" />
         <XAxis dataKey="t" hide />
-        <YAxis tick={{ fontSize: 11 }} width={64} />
+        <YAxis tick={{ fontSize: 11 }} width={64} domain={["dataMin", "dataMax"]} />
         <Tooltip formatter={(v) => eur(Number(v))} contentStyle={tooltipStyle()} />
         <Line type="monotone" dataKey="cash" stroke="var(--blue)" dot={false} strokeWidth={2} name="Cash" />
       </LineChart>
@@ -57,13 +57,13 @@ export function EquityChart({ points }: { points: EquityPoint[] }) {
   }));
   return (
     <ResponsiveContainer width="100%" height={240}>
-      <ComposedChart data={data}>
+      <LineChart data={data}>
         <CartesianGrid stroke="var(--line)" strokeDasharray="3 3" />
         <XAxis dataKey="t" hide />
-        <YAxis tick={{ fontSize: 11 }} width={64} />
+        <YAxis tick={{ fontSize: 11 }} width={64} domain={["dataMin", "dataMax"]} />
         <Tooltip formatter={(v) => eur(Number(v))} contentStyle={tooltipStyle()} />
-        <Area type="monotone" dataKey="equity" stroke="var(--accent)" fill="var(--accent-soft)" name="Equity" />
-      </ComposedChart>
+        <Line type="monotone" dataKey="equity" stroke="var(--accent)" dot={false} strokeWidth={2} name="Equity" />
+      </LineChart>
     </ResponsiveContainer>
   );
 }
