@@ -7,6 +7,8 @@ var music_player: AudioStreamPlayer
 var sfx_players: Array[AudioStreamPlayer] = []
 var _cursor := 0
 var _library: Dictionary = {}
+var _music_menu: AudioStreamWAV
+var _music_fight: AudioStreamWAV
 var _catalog: Dictionary = {}
 var _track_cache: Dictionary = {}
 var _current_key: String = ""
@@ -16,6 +18,7 @@ var tracks: Array = []
 func _ready() -> void:
 	music_player = AudioStreamPlayer.new()
 	music_player.bus = "Master"
+	music_player.finished.connect(_restart_music)
 	add_child(music_player)
 	for i in 16:
 		var p := AudioStreamPlayer.new()
@@ -25,7 +28,6 @@ func _ready() -> void:
 	_load_catalog()
 	_build_library()
 	GameState.apply_audio_buses()
-	play_music("menu")
 
 
 func _load_catalog() -> void:
@@ -64,18 +66,26 @@ func resolve_music_key(kind: String) -> String:
 
 func play_music(kind: String) -> void:
 	var key: String = resolve_music_key(kind)
-	if key == _current_key and music_player.playing:
-		return
+	var fight := _combat_key(key)
 	var stream: AudioStream = _stream_for(key)
 	if stream == null:
-		stream = _synth_for(key)
-	if music_player.stream == stream and music_player.playing:
-		_current_key = key
+		stream = _music_fight if fight else _music_menu
+	if stream == null:
+		return
+	if key == _current_key and music_player.playing and music_player.stream == stream:
 		return
 	_current_key = key
-	music_player.stream = stream
+	if music_player.stream != stream:
+		music_player.stop()
+		music_player.stream = stream
 	music_player.volume_db = linear_to_db(clamp(GameState.music_volume, 0.001, 1.0))
-	music_player.play()
+	if not music_player.playing:
+		music_player.play()
+
+
+func _restart_music() -> void:
+	if music_player.stream != null:
+		music_player.play()
 
 
 func _stream_for(key: String) -> AudioStream:
@@ -181,12 +191,16 @@ func _build_library() -> void:
 	_library["tech"] = _blip(280, 0.1, 0.4, 1.8)
 	_library["cheer"] = _fanfare()
 	_library["parry"] = _blip(1240, 0.09, 0.38, 1.7)
+	_music_menu = _music(false)
+	_music_fight = _music(true)
 
 
-func _pcm(frames: PackedFloat32Array, mix_rate: int = 22050, loop: bool = false) -> AudioStreamWAV:
+func _pcm(frames: PackedFloat32Array, mix_rate: int = 22050, _loop: bool = false) -> AudioStreamWAV:
+	# Extra zero frame so Godot 4.7's mixer does not read past the buffer.
+	var n: int = frames.size()
 	var bytes := PackedByteArray()
-	bytes.resize(frames.size() * 2)
-	for i in frames.size():
+	bytes.resize((n + 1) * 2)
+	for i in n:
 		var s := int(clamp(frames[i], -1.0, 1.0) * 32767.0)
 		bytes[i * 2] = s & 0xFF
 		bytes[i * 2 + 1] = (s >> 8) & 0xFF
@@ -195,10 +209,7 @@ func _pcm(frames: PackedFloat32Array, mix_rate: int = 22050, loop: bool = false)
 	wav.mix_rate = mix_rate
 	wav.stereo = false
 	wav.data = bytes
-	if loop:
-		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
-		wav.loop_begin = 0
-		wav.loop_end = frames.size()
+	wav.loop_mode = AudioStreamWAV.LOOP_DISABLED
 	return wav
 
 
@@ -301,34 +312,24 @@ func _fanfare() -> AudioStreamWAV:
 	return _pcm(frames)
 
 
-func _synth_for(key: String) -> AudioStreamWAV:
-	var cache_key := "synth:" + key
-	if _track_cache.has(cache_key):
-		return _track_cache[cache_key]
-	var fight := _combat_key(key)
-	var stream := _music(fight, absi(key.hash()) + (11 if fight else 5))
-	_track_cache[cache_key] = stream
-	return stream
-
-
 func _combat_key(key: String) -> bool:
 	if key.begins_with("stage:") or key.begins_with("theme:"):
 		return true
 	return key in ["fight", "arcade", "survival", "timeattack", "final", "attract"]
 
 
-func _music(fight: bool, seed: int) -> AudioStreamWAV:
+func _music(fight: bool) -> AudioStreamWAV:
 	var rate := 22050
 	var bpm := 148.0 if fight else 104.0
 	var beat := 60.0 / bpm
-	var bars := 8
+	var bars := 2
 	var dur := beat * 4.0 * bars
 	var n := int(dur * rate)
 	var frames := PackedFloat32Array()
 	frames.resize(n)
 	var rng := RandomNumberGenerator.new()
-	rng.seed = seed
-	var root := (58.27 if fight else 73.42) * pow(2.0, float((seed % 5) - 2) / 12.0)
+	rng.seed = 11 if fight else 5
+	var root := 58.27 if fight else 73.42
 	var bass_pat := [0, 0, 7, 3, 0, 10, 7, 5, 0, 0, 8, 3, 0, 7, 10, 12] if fight else [0, 3, 7, 3, 0, 5, 7, 8, 0, 3, 5, 7, 8, 7, 5, 3]
 	var lead_pat := [12, 15, 19, 15, 12, 22, 19, 15, 12, 14, 15, 19, 17, 15, 14, 12] if fight else [12, 15, 19, 17, 15, 14, 12, 15]
 	for i in n:
