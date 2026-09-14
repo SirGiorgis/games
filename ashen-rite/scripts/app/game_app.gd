@@ -58,6 +58,7 @@ func _show_splash() -> void:
 
 
 func _show_menu() -> void:
+	CrazySDK.gameplay_stop()
 	_clear_match()
 	_hide_ui()
 	GameState.attract = false
@@ -219,6 +220,7 @@ func _start_match() -> void:
 
 
 func _on_match_over(code: int) -> void:
+	CrazySDK.gameplay_stop()
 	var was_attract: bool = GameState.attract
 	GameState.attract = false
 	_clear_match()
@@ -236,14 +238,19 @@ func _on_match_over(code: int) -> void:
 	if GameState.training:
 		_show_menu()
 		return
+	var arcade_loss: bool = GameState.arcade and GameState.p1_rounds < GameState.rounds_to_win
 	if GameState.arcade and GameState.p1_rounds >= GameState.rounds_to_win:
 		if GameState.next_arcade_bout():
+			await CrazySDK.request_midgame()
 			_start_match()
 			return
 	if GameState.survival and GameState.last_winner == 0:
 		GameState.next_survival_wave()
+		await CrazySDK.request_midgame()
 		_start_match()
 		return
+	if not arcade_loss:
+		await CrazySDK.request_midgame()
 	_hide_ui()
 	if _result == null:
 		_result = ResultScreen.new()

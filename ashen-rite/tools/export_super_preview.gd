@@ -65,7 +65,7 @@ func _init() -> void:
 	_wrap(field, "Stun blast, then poison cloud.", Color(0.88, 0.86, 0.80), 964, 328, 28)
 
 	_stamp_fighter(field, giannis, "ultimate", 10, 166, 588, false)
-	_label(field, "GIANNIS", Color(0.35, 0.82, 0.92), 166, 600)
+	_label(field, "TASOS", Color(0.35, 0.82, 0.92), 166, 600)
 	_label(field, giannis.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 166, 624)
 	_wrap(field, "Rips the hoodie. Pushes all. ATK x1.42.", Color(0.88, 0.86, 0.80), 28, 648, 28)
 

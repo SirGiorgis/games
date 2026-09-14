@@ -78,8 +78,10 @@ func _nudge(dir: int) -> void:
 		"music":
 			GameState.music_volume = clampf(GameState.music_volume + dir * 0.1, 0.0, 1.0)
 			AudioDirector.music_player.volume_db = linear_to_db(clamp(GameState.music_volume, 0.001, 1.0))
+			GameState.apply_audio_buses()
 		"sfx":
 			GameState.sfx_volume = clampf(GameState.sfx_volume + dir * 0.1, 0.0, 1.0)
+			GameState.apply_audio_buses()
 		"shake":
 			GameState.shake_strength = clampf(GameState.shake_strength + dir * 0.2, 0.0, 2.0)
 		"hitboxes":

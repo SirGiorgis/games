@@ -407,6 +407,22 @@ static func add_menu_row(parent: Control, y: float, w_px: int = 520, x_px: float
 	return {"row": row, "label": lbl, "w": w_px}
 
 
+static func video_icon() -> ImageTexture:
+	var img := Pix.image(14, 10, Color(0, 0, 0, 0))
+	Pix.rect(img, 0, 0, 14, 10, Color(0.12, 0.10, 0.14))
+	Pix.rect(img, 1, 1, 12, 8, Color(0.22, 0.18, 0.24))
+	Pix.put(img, 5, 3, GOLD)
+	Pix.put(img, 5, 4, GOLD)
+	Pix.put(img, 5, 5, GOLD)
+	Pix.put(img, 5, 6, GOLD)
+	Pix.put(img, 6, 4, GOLD)
+	Pix.put(img, 6, 5, GOLD)
+	Pix.put(img, 7, 4, GOLD)
+	Pix.put(img, 7, 5, GOLD)
+	Pix.put(img, 8, 5, GOLD)
+	return Pix.tex(img)
+
+
 static func set_menu_row(entry: Dictionary, text: String, selected: bool, scale: int = 3) -> void:
 	var row: TextureRect = entry["row"]
 	var lbl: PixelLabel = entry["label"]

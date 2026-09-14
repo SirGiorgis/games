@@ -40,6 +40,7 @@ var match_hits: int = 0
 var survival: bool = false
 var survival_wave: int = 0
 var time_attack: bool = false
+var arcade_rewarded_used: bool = false
 
 var custom_description: String = "Male fighter, tall, athletic build, black hair, black jacket, aggressive personality, lightning-based powers."
 var custom_photo_path: String = "res://data/characters/refs/custom.png"
@@ -65,6 +66,7 @@ func begin_arcade(p1_id: String) -> void:
 	time_attack = false
 	arcade_index = 0
 	arcade_score = 0
+	arcade_rewarded_used = false
 	p1_character_id = p1_id
 	p2_is_cpu = true
 	training = false
@@ -139,6 +141,7 @@ func end_arcade() -> void:
 	arcade = false
 	survival = false
 	time_attack = false
+	arcade_rewarded_used = false
 	rounds_to_win = 2
 
 
@@ -178,4 +181,8 @@ func cycle_difficulty(dir: int = 1) -> void:
 
 func apply_audio_buses() -> void:
 	var master_idx := AudioServer.get_bus_index("Master")
+	if CrazySDK.audio_blocked():
+		AudioServer.set_bus_mute(master_idx, true)
+		return
+	AudioServer.set_bus_mute(master_idx, false)
 	AudioServer.set_bus_volume_db(master_idx, linear_to_db(clamp(master_volume, 0.001, 1.0)))

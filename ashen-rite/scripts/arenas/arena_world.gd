@@ -232,4 +232,4 @@ static func display_name(id: String) -> String:
 		"void_garden":
 			return "VOID GARDEN"
 		_:
-			return "GREEN HILL FIELD"
+			return "RITE FIELD"

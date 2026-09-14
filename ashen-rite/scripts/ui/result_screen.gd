@@ -7,7 +7,7 @@ signal main_menu
 
 var _index := 0
 var _entries: Array[Dictionary] = []
-const ITEMS := ["REMATCH", "CHARACTER SELECT", "MAIN MENU"]
+var _items: PackedStringArray = PackedStringArray(["REMATCH", "CHARACTER SELECT", "MAIN MENU"])
 var _title: PixelLabel
 var _sub: PixelLabel
 var _quote: PixelLabel
@@ -16,6 +16,8 @@ var _p2_spr: Sprite2D
 var _p1_walk: Array = []
 var _p2_walk: Array = []
 var _t := 0.0
+var _busy := false
+var _vid: TextureRect
 
 
 func _ready() -> void:
@@ -52,14 +54,23 @@ func _ready() -> void:
 	_p2_spr.scale = Vector2(-3.2, 3.2)
 	_p2_spr.position = Vector2(850, 372)
 	add_child(_p2_spr)
-	for i in ITEMS.size():
-		_entries.append(PixelUI.add_menu_row(self, 508.0 + i * 48.0, 480))
+	for i in 4:
+		_entries.append(PixelUI.add_menu_row(self, 508.0 + i * 48.0, 520))
+	_vid = TextureRect.new()
+	_vid.texture = PixelUI.video_icon()
+	_vid.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_vid.scale = Vector2(4, 4)
+	_vid.position = Vector2(372, 514)
+	_vid.visible = false
+	add_child(_vid)
 	PixelUI.add_footer(self, "W/S / DPAD MOVE  ENTER / CROSS OK")
 	_refresh()
 
 
 func present() -> void:
 	_index = 0
+	_busy = false
+	_items = _menu_items()
 	var p1_win := GameState.p1_rounds >= GameState.rounds_to_win
 	var arcade_clear: bool = GameState.arcade and p1_win and GameState.arcade_index >= GameState.arcade_queue.size()
 	if GameState.survival:
@@ -75,6 +86,7 @@ func present() -> void:
 	elif arcade_clear:
 		_title.set_pix("ARCADE CLEAR", 5, Color(0.95, 0.82, 0.32))
 		AudioDirector.play("victory")
+		CrazySDK.happytime()
 	elif GameState.arcade and not p1_win:
 		_title.set_pix("CONTINUE?", 5, Color(0.88, 0.22, 0.28))
 		AudioDirector.play("defeat")
@@ -132,25 +144,67 @@ func _process(delta: float) -> void:
 	if _p2_spr and not _p2_walk.is_empty():
 		_p2_spr.texture = _p2_walk[int(_t * 10.0) % _p2_walk.size()]
 		_p2_spr.position.y = 372.0 + sin(_t * 2.4 + 0.9) * 4.0
+	if _busy or _items.is_empty():
+		return
 	if Input.is_action_just_pressed(ControlMap.MENU.down):
-		_index = (_index + 1) % ITEMS.size()
+		_index = (_index + 1) % _items.size()
 		AudioDirector.play("ui")
 		_refresh()
 	elif Input.is_action_just_pressed(ControlMap.MENU.up):
-		_index = (_index + ITEMS.size() - 1) % ITEMS.size()
+		_index = (_index + _items.size() - 1) % _items.size()
 		AudioDirector.play("ui")
 		_refresh()
 	elif Input.is_action_just_pressed(ControlMap.MENU.confirm):
 		AudioDirector.play("ui_confirm")
-		match _index:
-			0:
-				rematch.emit()
-			1:
-				character_select.emit()
-			2:
-				main_menu.emit()
+		_pick(_items[_index])
+
+
+func _pick(item: String) -> void:
+	match item:
+		"WATCH AD TO CONTINUE":
+			_watch_continue()
+		"GIVE UP", "MAIN MENU":
+			main_menu.emit()
+		"REMATCH":
+			rematch.emit()
+		"CHARACTER SELECT":
+			character_select.emit()
+
+
+func _watch_continue() -> void:
+	_busy = true
+	var ok: bool = await CrazySDK.request_rewarded()
+	_busy = false
+	if not is_inside_tree() or not visible:
+		return
+	if ok:
+		GameState.arcade_rewarded_used = true
+		rematch.emit()
+		return
+	_quote.set_pix("NO AD - GIVE UP OR TRY LATER", 2, Color(1, 0.86, 0.42), 42)
+	_quote.set_centered(1280)
+
+
+func _menu_items() -> PackedStringArray:
+	var arcade_loss: bool = GameState.arcade and GameState.p1_rounds < GameState.rounds_to_win
+	if arcade_loss and CrazySDK.ads_available():
+		if not GameState.arcade_rewarded_used:
+			return PackedStringArray(["WATCH AD TO CONTINUE", "GIVE UP"])
+		return PackedStringArray(["GIVE UP"])
+	return PackedStringArray(["REMATCH", "CHARACTER SELECT", "MAIN MENU"])
 
 
 func _refresh() -> void:
+	if _items.is_empty():
+		_index = 0
+	else:
+		_index = clampi(_index, 0, _items.size() - 1)
 	for i in _entries.size():
-		PixelUI.set_menu_row(_entries[i], ITEMS[i], i == _index, 3)
+		var on: bool = i < _items.size()
+		_entries[i]["row"].visible = on
+		_entries[i]["label"].visible = on
+		if on:
+			var sc: int = 2 if _items[i].length() > 14 else 3
+			PixelUI.set_menu_row(_entries[i], _items[i], i == _index, sc)
+	if _vid:
+		_vid.visible = _items.size() > 0 and _items[0] == "WATCH AD TO CONTINUE"

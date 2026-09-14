@@ -12,7 +12,7 @@ The extra download size is a soundtrack the game actually uses: one unique song 
 2. Import `ashen-rite/project.godot`.
 3. Press Play. Main scene is already set.
 
-Lead fighter: **Chris Xrisakis**. Default opponent: **Giorgis**. Default arena: **Green Hill Field**.
+Lead fighter: **Chris Xrisakis**. Default opponent: **Giorgis**. Default arena: **Rite Field**.
 
 First Godot open may scan the music folder. Tracks load from disk at runtime, one song at a time.
 
@@ -56,9 +56,9 @@ Change bindings in `scripts/input/control_map.gd`.
 
 ## Roster
 
-**Chris Xrisakis**, **Giorgis**, **Mako**, **Fogas**, **Giannis**, **Vag**, and **Spyros**. Default match is Chris vs Giorgis.
+**Chris Xrisakis**, **Giorgis**, **Mako**, **Fogas**, **Tasos**, **Vag**, and **Spyros**. Default match is Chris vs Giorgis.
 
-Fogas is a slower, tankier heavyweight (Gut Check / Gut Blast). Giannis flexes until the hoodie rips (Show Out): everyone gets shoved back and he gets an ATK boost. Vag dumps cotton on the floor (Cotton Run): he has to pick each boll up — heal himself, chip the opponent. Spyros is a night-shift trapper (Verse Cut / Trap Drop): bass-drop quake, then the chain stacks and ATK stays up while the beat rides. Mako is a shirtless close-range brawler (Body Check / Dempsey Roll). Chris sends original open-wheel cars (Grid Strike). Giorgis drinks Straight Vodka for heal + ATK. Each has a theme in the gallery.
+Fogas is a slower, tankier heavyweight (Gut Check / Gut Blast). Tasos flexes until the hoodie rips (Show Out): everyone gets shoved back and he gets an ATK boost. Vag dumps cotton on the floor (Cotton Run): he has to pick each boll up — heal himself, chip the opponent. Spyros is a night-shift trapper (Verse Cut / Trap Drop): bass-drop quake, then the chain stacks and ATK stays up while the beat rides. Mako is a shirtless close-range brawler (Body Check / Dempsey Roll). Chris sends original open-wheel cars (Grid Strike). Giorgis drinks Straight Vodka for heal + ATK. Each has a theme in the gallery.
 
 ## Add a character
 
@@ -86,7 +86,7 @@ Or write a description (see `data/descriptions/example.txt`), put a photo at `da
 
 ## Arenas
 
-Green Hill Field (default), Moonlit Temple, Neon Rift Street, The Under-Rite, Crimson Keep, Tidal Dock, Snow Ridge, Desert Gate, Clocktower, Bamboo Yard, Storm Bridge, Sunset Pier, Void Garden.
+Rite Field (default), Moonlit Temple, Neon Rift Street, The Under-Rite, Crimson Keep, Tidal Dock, Snow Ridge, Desert Gate, Clocktower, Bamboo Yard, Storm Bridge, Sunset Pier, Void Garden.
 
 Character select → stage select (A/D, Enter), or T on the roster / Options.
 
@@ -99,6 +99,21 @@ Each stage has its own song. Character select plays that fighter's theme.
 `python3 tools/bake_soundtrack.py`
 
 Gallery Radio plays every track. Fights pick survival / time attack / arcade / final / stage themes from the same catalog.
+
+## CrazyGames (HTML5)
+
+This is an upload zip for the [CrazyGames developer portal](https://developer.crazygames.com/). Do not host it on GitHub Pages.
+
+1. In Godot 4.7, open `ashen-rite/project.godot` and **Project → Export → CrazyGames**.
+2. Export to `build/web/index.html` (the preset already excludes the 32 soundtrack WAVs so the zip stays small).
+3. Zip the `build/web` folder so `index.html` is at the root of the zip.
+4. Create a new HTML5 game on the portal and upload that zip.
+
+Desktop / Press Play still uses the 32-song soundtrack. The web build falls back to the built-in synth tracks.
+
+SDK hooks (web only): `gameplayStart` after FIGHT, `gameplayStop` on pause/results/menu, `happytime` on a match win, midgame ads after a finished match, optional **WATCH AD TO CONTINUE** on arcade lose (same-size **GIVE UP**, no reward if the ad errors). CrazyGames `muteAudio` overrides in-game volume.
+
+Display names used for store review: **Tasos** (internal id `giannis` unchanged), default stage **Rite Field**.
 
 ## Download
 

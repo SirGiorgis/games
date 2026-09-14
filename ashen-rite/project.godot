@@ -13,6 +13,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 ControlMap="*res://scripts/input/control_map.gd"
+CrazySDK="*res://scripts/platform/crazy_sdk.gd"
 GameState="*res://scripts/app/game_state.gd"
 CharacterCatalog="*res://scripts/data/character_catalog.gd"
 AudioDirector="*res://scripts/audio/audio_director.gd"
@@ -55,6 +56,7 @@ common/physics_interpolation=true
 
 [rendering]
 
+renderer/rendering_method.web="gl_compatibility"
 textures/canvas_textures/default_texture_filter=0
 environment/defaults/default_clear_color=Color(0.62, 0.80, 0.90, 1)
 2d/snap/snap_2d_transforms_to_pixel=false

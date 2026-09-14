@@ -35,7 +35,7 @@ TRACKS = [
     ("pause", "HOLD MUSIC", 84, 2, 0),
     ("final", "FINAL ROUND", 154, 3, 10),
     ("credits", "AFTER THE RITE", 88, 5, 3),
-    ("stage:grass_field", "GREEN HILL FIELD", 126, 0, 4),
+    ("stage:grass_field", "RITE FIELD", 126, 0, 4),
     ("stage:moonlit_temple", "MOONLIT TEMPLE", 112, 9, 7),
     ("stage:neon_street", "NEON RIFT STREET", 148, 3, 11),
     ("stage:the_pit", "THE UNDER-RITE", 136, 2, 8),

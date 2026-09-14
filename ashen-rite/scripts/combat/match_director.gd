@@ -228,6 +228,8 @@ func _process(delta: float) -> void:
 				p1.can_act = true
 				p2.can_act = true
 				phase = "fight"
+				if not GameState.attract:
+					CrazySDK.gameplay_start()
 		"fight":
 			if GameState.training:
 				if p1 and not p1.is_cpu:
@@ -444,6 +446,9 @@ func _finish_round() -> void:
 		_begin_round()
 		return
 	if GameState.p1_rounds >= GameState.rounds_to_win or GameState.p2_rounds >= GameState.rounds_to_win:
+		CrazySDK.gameplay_stop()
+		if GameState.last_was_perfect or GameState.last_was_dramatic or GameState.last_winner == 0:
+			CrazySDK.happytime()
 		phase = "endwait"
 		phase_t = 0.0
 		_set_banner("RITE COMPLETE")
@@ -593,6 +598,7 @@ func _pause() -> void:
 	_paused = true
 	_pause_lock = 0.22
 	_restore_time()
+	CrazySDK.gameplay_stop()
 	AudioDirector.play_music("pause")
 	pause_layer.show_menu()
 	get_tree().paused = true
@@ -606,9 +612,12 @@ func _resume(restore_music: bool = true) -> void:
 	_restore_time()
 	if restore_music:
 		AudioDirector.play_music("fight")
+		if not GameState.attract:
+			CrazySDK.gameplay_start()
 
 
 func _quit_match() -> void:
+	CrazySDK.gameplay_stop()
 	_resume(false)
 	_restore_time()
 	match_over.emit(-2)
