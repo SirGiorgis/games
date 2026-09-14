@@ -4,7 +4,7 @@ Original arcade 2D fighting game for **Godot 4.7**. Visual north star: compact c
 
 Open the `rite-brawl` folder in Godot 4.7 and press **Play**. Nothing else to configure.
 
-The extra download size is a soundtrack the game actually uses: one unique song per menu, mode, stage, and fighter. Gallery Radio plays the same catalog. There is no dummy padding.
+Music and hits are a built-in synth. There is no WAV soundtrack in the download.
 
 ## Play
 
@@ -13,8 +13,6 @@ The extra download size is a soundtrack the game actually uses: one unique song 
 3. Press Play. Main scene is already set.
 
 Lead fighter: **Chris Xrisakis**. Default opponent: **Giorgis**. Default arena: **Rite Field**.
-
-First Godot open may scan the music folder. Tracks load from disk at runtime, one song at a time.
 
 ## Modes
 
@@ -25,7 +23,7 @@ First Godot open may scan the music folder. Tracks load from disk at runtime, on
 | SURVIVAL | Endless first-to-1 waves. CPU gets meaner each wave |
 | TIME ATTACK | 60 seconds. Score is damage, hits, and max combo |
 | TRAINING | Infinite timer, dummy cycle, advantage display |
-| GALLERY | Radio of every mode, stage, and fighter theme. A/D pick a song, Enter plays it |
+| GALLERY | Radio of menu, stage, and fighter themes. A/D pick a track, Enter plays the synth |
 
 Wait on the title splash for the attract demo.
 
@@ -58,7 +56,7 @@ Change bindings in `scripts/input/control_map.gd`.
 
 **Chris Xrisakis**, **Giorgis**, **Mako**, **Fogas**, **Tasos**, **Vag**, and **Spyros**. Default match is Chris vs Giorgis.
 
-Fogas is a slower, tankier heavyweight (Gut Check / Gut Blast). Tasos flexes until the hoodie rips (Show Out): everyone gets shoved back and he gets an ATK boost. Vag dumps sacks on the floor (Cargo Dump): he has to pick each one up — heal himself, chip the opponent. Spyros is a night-shift trapper (Verse Cut / Trap Drop): bass-drop quake, then the chain stacks and ATK stays up while the beat rides. Mako is a shirtless close-range brawler (Body Check / Dempsey Roll). Chris sends original open-wheel cars (Grid Strike). Giorgis drinks Straight Vodka for heal + ATK. Each has a theme in the gallery.
+Fogas is a slower, tankier heavyweight (Gut Check / Gut Blast). Tasos flexes until the hoodie rips (Show Out): everyone gets shoved back and he gets an ATK boost. Vag dumps sacks on the floor (Cargo Dump): he has to pick each one up — heal himself, chip the opponent. Spyros is a night-shift trapper (Verse Cut / Trap Drop): bass-drop quake, then the chain stacks and ATK stays up while the beat rides. Mako is a shirtless close-range brawler (Body Check / Dempsey Roll). Chris sends original open-wheel cars (Grid Strike). Giorgis drinks Straight Vodka for heal + ATK.
 
 ## Add a character
 
@@ -90,26 +88,20 @@ Rite Field (default), Moonlit Temple, Neon Rift Street, The Under-Rite, Crimson 
 
 Character select → stage select (A/D, Enter), or T on the roster / Options.
 
-Each stage has its own song. Character select plays that fighter's theme.
+## Music
 
-## Soundtrack
-
-32 unique songs in `assets/audio/music/` (one per menu, mode, stage, and fighter). Rebuild with:
-
-`python3 tools/bake_soundtrack.py`
-
-Gallery Radio plays every track. Fights pick survival / time attack / arcade / final / stage themes from the same catalog.
+Hits, UI, and background loops are synthesized in-game. Gallery Radio still lists menu, stage, and fighter themes; each plays a built-in loop instead of a WAV file.
 
 ## CrazyGames (HTML5)
 
 This is an upload zip for the [CrazyGames developer portal](https://developer.crazygames.com/). Do not host it on GitHub Pages.
 
 1. In Godot 4.7, open `rite-brawl/project.godot` and **Project → Export → CrazyGames**.
-2. Export to `build/web/index.html` (the preset already excludes the 32 soundtrack WAVs so the zip stays small).
+2. Export to `build/web/index.html`.
 3. Zip the `build/web` folder so `index.html` is at the root of the zip.
 4. Create a new HTML5 game on the portal and upload that zip.
 
-Desktop / Press Play still uses the 32-song soundtrack. The web build falls back to the built-in synth tracks.
+Desktop / Press Play and the web build both use the built-in synth.
 
 SDK hooks (web only): `gameplayStart` after FIGHT, `gameplayStop` on pause/results/menu, `happytime` on a match win, midgame ads after a finished match, optional **WATCH AD TO CONTINUE** on arcade lose (same-size **GIVE UP**, no reward if the ad errors). CrazyGames `muteAudio` overrides in-game volume.
 

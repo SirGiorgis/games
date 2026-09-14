@@ -72,9 +72,9 @@ func _play_current() -> void:
 	var tid: String = str(tr.get("id", ""))
 	_title.set_pix(str(tr.get("title", tid)), 3, Color(1, 0.88, 0.4))
 	_title.set_centered(1280)
-	_sub.set_pix("%d / %d   %s   %ds" % [_index + 1, AudioDirector.tracks.size(), tid, int(tr.get("seconds", 0))], 2, Color(0.82, 0.78, 0.72))
+	_sub.set_pix("%d / %d   %s   SYNTH" % [_index + 1, AudioDirector.tracks.size(), tid], 2, Color(0.82, 0.78, 0.72))
 	_sub.set_centered(1280)
-	_hint.set_pix("FULL CABINET SOUNDTRACK", 2, Color(0.7, 0.68, 0.62))
+	_hint.set_pix("BUILT-IN SYNTH", 2, Color(0.7, 0.68, 0.62))
 	_hint.set_centered(1280)
 	AudioDirector.play_music(tid)
 	var cid := "chris_xrisakis"
