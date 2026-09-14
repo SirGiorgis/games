@@ -1,0 +1,26 @@
+RITE BRAWL — OPEN THIS WAY (Windows)
+
+The game is small on purpose. Fighters, stages, and hits are drawn and synthesized by the engine. There is no 400 MB soundtrack in this download. About 3 MB of project files is the complete game. Godot itself is a separate install (~80 MB).
+
+DO NOT use Godot's "Import ZIP".
+Godot unpacks zips into AppData\Local\Temp\godot_tmp_...
+Windows deletes that folder. Then the project manager shows "Missing Project".
+That is what happened with:
+  C:\Users\Lellhs\AppData\Local\Temp\godot_tmp_...\rite-brawl
+
+Do this instead:
+
+1. Install Godot 4.7 (Standard, not .NET): https://godotengine.org/download
+2. Download the zip.
+3. Right-click the zip → Extract All.
+4. Extract to a folder that stays, for example:
+     C:\Users\Lellhs\Documents\RiteBrawl
+   Not Desktop Temp, not AppData\Local\Temp.
+5. In the extracted files, open the folder that contains project.godot
+   (it is named rite-brawl).
+6. In Godot: Import → pick that folder, or double-click project.godot
+7. Press Play.
+
+If Godot still lists a Missing Project row, ignore it. Import the Documents copy.
+
+P1: A/D move, W jump, S crouch, J light, K heavy, L special, U block, I grab, O super.

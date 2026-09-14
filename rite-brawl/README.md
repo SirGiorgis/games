@@ -4,12 +4,14 @@ Original arcade 2D fighting game for **Godot 4.7**. Visual north star: compact c
 
 Open the `rite-brawl` folder in Godot 4.7 and press **Play**. Nothing else to configure.
 
-Music and hits are a built-in synth. There is no WAV soundtrack in the download.
+**Windows:** extract the zip into Documents, then Import that folder. Do not use Godot’s Import ZIP — it unpacks to Temp and later shows Missing Project. See `HOW_TO_PLAY.txt`.
+
+The project is a few megabytes. That is the complete game: sprites are drawn in code, music and hits are synthesized. The old 400 MB soundtrack is not in this download.
 
 ## Play
 
-1. Install [Godot 4.7](https://godotengine.org/download).
-2. Import `rite-brawl/project.godot`.
+1. Install [Godot 4.7](https://godotengine.org/download) (Standard, not .NET).
+2. Extract the zip to a permanent folder (Documents), then Import `rite-brawl/project.godot`.
 3. Press Play. Main scene is already set.
 
 Lead fighter: **Chris Xrisakis**. Default opponent: **Giorgis**. Default arena: **Rite Field**.
