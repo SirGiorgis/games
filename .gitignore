@@ -1,6 +1,6 @@
-output/clips/
-output/hud/
 __pycache__/
 *.pyc
 .DS_Store
-ashen-rite/.godot/
+rite-brawl/.godot/
+rite-brawl/build/
+
