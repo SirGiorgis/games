@@ -36,12 +36,12 @@ func _init() -> void:
 	field.blend_rect(gas, Rect2i(0, 0, gas.get_width(), gas.get_height()), Vector2i(700, 530))
 	field.blend_rect(gas, Rect2i(0, 0, gas.get_width(), gas.get_height()), Vector2i(760, 548))
 
-	var boll: Image = Pix.cotton()
-	boll.resize(boll.get_width() * 4, boll.get_height() * 4, Image.INTERPOLATE_NEAREST)
-	field.blend_rect(boll, Rect2i(0, 0, boll.get_width(), boll.get_height()), Vector2i(430, 588))
-	field.blend_rect(boll, Rect2i(0, 0, boll.get_width(), boll.get_height()), Vector2i(500, 596))
-	field.blend_rect(boll, Rect2i(0, 0, boll.get_width(), boll.get_height()), Vector2i(570, 584))
-	field.blend_rect(boll, Rect2i(0, 0, boll.get_width(), boll.get_height()), Vector2i(640, 592))
+	var sack: Image = Pix.cotton()
+	sack.resize(sack.get_width() * 4, sack.get_height() * 4, Image.INTERPOLATE_NEAREST)
+	field.blend_rect(sack, Rect2i(0, 0, sack.get_width(), sack.get_height()), Vector2i(418, 576))
+	field.blend_rect(sack, Rect2i(0, 0, sack.get_width(), sack.get_height()), Vector2i(492, 588))
+	field.blend_rect(sack, Rect2i(0, 0, sack.get_width(), sack.get_height()), Vector2i(564, 572))
+	field.blend_rect(sack, Rect2i(0, 0, sack.get_width(), sack.get_height()), Vector2i(636, 584))
 
 	_hud(field, chris, giorgis)
 	var out := "res://.godot/tiny_preview"

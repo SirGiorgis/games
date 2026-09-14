@@ -70,13 +70,13 @@ func _init() -> void:
 	_wrap(field, "Rips the hoodie. Pushes all. ATK x1.42.", Color(0.88, 0.86, 0.80), 28, 648, 28)
 
 	_stamp_fighter(field, vag, "ultimate", 8, 478, 588, false)
-	var boll: Image = Pix.cotton()
-	boll.resize(boll.get_width() * 4, boll.get_height() * 4, Image.INTERPOLATE_NEAREST)
-	field.blend_rect(boll, Rect2i(0, 0, boll.get_width(), boll.get_height()), Vector2i(396, 548))
-	field.blend_rect(boll, Rect2i(0, 0, boll.get_width(), boll.get_height()), Vector2i(464, 556))
+	var sack: Image = Pix.cotton()
+	sack.resize(sack.get_width() * 4, sack.get_height() * 4, Image.INTERPOLATE_NEAREST)
+	field.blend_rect(sack, Rect2i(0, 0, sack.get_width(), sack.get_height()), Vector2i(384, 540))
+	field.blend_rect(sack, Rect2i(0, 0, sack.get_width(), sack.get_height()), Vector2i(456, 552))
 	_label(field, "VAG", Color(0.92, 0.88, 0.78), 478, 600)
 	_label(field, vag.ultimate_name.to_upper(), Color(0.98, 0.86, 0.32), 478, 624)
-	_wrap(field, "Cotton on the floor. Pick up to heal and chip.", Color(0.88, 0.86, 0.80), 340, 648, 28)
+	_wrap(field, "Sacks on the floor. Pick up to heal and chip.", Color(0.88, 0.86, 0.80), 340, 648, 28)
 
 	_stamp_fighter(field, spyros, "ultimate", 10, 790, 588, false)
 	_label(field, "SPYROS", Color(0.92, 0.78, 0.32), 790, 600)

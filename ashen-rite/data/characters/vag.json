@@ -1,8 +1,8 @@
 {
   "id": "vag",
   "name": "Vag",
-  "title": "Cotton",
-  "description": "Buzz-cut brawler in a cream v-neck and navy cargos. Super dumps cotton on the floor — he has to run it down. Each boll heals him and chips the other guy.",
+  "title": "Cargo",
+  "description": "Buzz-cut brawler in a cream v-neck and navy cargos. Super dumps sacks on the floor — he has to run them down. Each sack heals him and chips the other guy.",
   "source_description": "Male fighter, athletic build, buzz cut, cream v-neck t-shirt, navy cargo shorts, white sneakers no logo, standing stance.",
   "personality": "balanced",
   "ai_profile": "rushdown",
@@ -27,10 +27,10 @@
   "eyes": "#2a1810",
   "special_id": "dash",
   "special_name": "Sack Cut",
-  "special_desc": "A forward burst across the lane, like he is late for the next boll.",
+  "special_desc": "A forward burst across the lane, like he is late for the next sack.",
   "ultimate_id": "cotton",
-  "ultimate_name": "Cotton Run",
-  "ultimate_desc": "Cotton hits the floor. Pick each boll up: you heal, they lose health.",
+  "ultimate_name": "Cargo Dump",
+  "ultimate_desc": "Sacks hit the floor. Pick each one up: you heal, they lose health.",
   "win_quote": "THAT'S MY FIELD.",
-  "intro_quote": "COTTON'S DOWN."
+  "intro_quote": "CARGO DOWN."
 }

@@ -681,15 +681,19 @@ static func _hair_buzz(img: Image, cx: int, cy: int, pal: Dictionary) -> void:
 
 
 static func _cotton_toss(img: Image, cx: int, hip_y: int, f: int) -> void:
-	var fluff := Color(0.96, 0.94, 0.88)
+	var navy := Color(0.12, 0.18, 0.26)
+	var cream := Color(0.93, 0.90, 0.82)
 	var spots: Array[Vector2i] = [
 		Vector2i(-12, 6), Vector2i(10, 8), Vector2i(-6, 12), Vector2i(14, 4), Vector2i(2, 14), Vector2i(-14, 10),
 	]
 	for i in spots.size():
 		var p: Vector2i = spots[i]
 		var oy: int = int(sin(float(f * 2 + i) * 0.55) * 2.0)
-		Pix.disc(img, cx + p.x, hip_y + p.y + oy, 2, fluff)
-		Pix.put(img, cx + p.x, hip_y + p.y + oy - 1, Color(1, 1, 1))
+		var x: int = cx + p.x
+		var y: int = hip_y + p.y + oy
+		Pix.rect(img, x - 2, y - 1, 5, 4, navy)
+		Pix.hline(img, x - 1, y - 2, 3, cream)
+		Pix.put(img, x, y, navy.lightened(0.2))
 
 
 static func _hair_short(img: Image, cx: int, cy: int, pal: Dictionary) -> void:

@@ -1,6 +1,6 @@
 class_name CottonPickup
 extends Node2D
-## Ground boll. Only the fighter who spawned it can collect it.
+## Ground cargo sack. Only the fighter who spawned it can collect it.
 
 const HEAL := 52.0
 const DRAIN := 38.0
@@ -78,7 +78,7 @@ func _collect() -> void:
 			foe.visual.pulse_hit()
 		if foe.health <= 0.0:
 			foe.defeated.emit(foe)
-	f.announced.emit("COTTON")
+	f.announced.emit("CARGO")
 	AudioDirector.play("meter", 1.15, 0.65)
 	if f.visual:
 		f.visual.dust()

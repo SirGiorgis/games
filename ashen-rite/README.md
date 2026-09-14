@@ -58,7 +58,7 @@ Change bindings in `scripts/input/control_map.gd`.
 
 **Chris Xrisakis**, **Giorgis**, **Mako**, **Fogas**, **Tasos**, **Vag**, and **Spyros**. Default match is Chris vs Giorgis.
 
-Fogas is a slower, tankier heavyweight (Gut Check / Gut Blast). Tasos flexes until the hoodie rips (Show Out): everyone gets shoved back and he gets an ATK boost. Vag dumps cotton on the floor (Cotton Run): he has to pick each boll up — heal himself, chip the opponent. Spyros is a night-shift trapper (Verse Cut / Trap Drop): bass-drop quake, then the chain stacks and ATK stays up while the beat rides. Mako is a shirtless close-range brawler (Body Check / Dempsey Roll). Chris sends original open-wheel cars (Grid Strike). Giorgis drinks Straight Vodka for heal + ATK. Each has a theme in the gallery.
+Fogas is a slower, tankier heavyweight (Gut Check / Gut Blast). Tasos flexes until the hoodie rips (Show Out): everyone gets shoved back and he gets an ATK boost. Vag dumps sacks on the floor (Cargo Dump): he has to pick each one up — heal himself, chip the opponent. Spyros is a night-shift trapper (Verse Cut / Trap Drop): bass-drop quake, then the chain stacks and ATK stays up while the beat rides. Mako is a shirtless close-range brawler (Body Check / Dempsey Roll). Chris sends original open-wheel cars (Grid Strike). Giorgis drinks Straight Vodka for heal + ATK. Each has a theme in the gallery.
 
 ## Add a character
 

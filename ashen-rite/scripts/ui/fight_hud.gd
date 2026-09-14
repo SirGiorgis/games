@@ -449,8 +449,8 @@ func _sync_buff(lbl: PixelLabel, f: Fighter) -> void:
 	var tag := "VODKA"
 	var col := Color(0.62, 0.95, 0.88)
 	if cotton:
-		tag = "COTTON"
-		col = Color(0.96, 0.92, 0.78)
+		tag = "CARGO"
+		col = Color(0.78, 0.84, 0.92)
 	elif f.def.ultimate_id == "flex":
 		tag = "FLEX"
 		col = Color(1.0, 0.72, 0.28)

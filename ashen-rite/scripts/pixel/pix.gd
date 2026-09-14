@@ -156,20 +156,29 @@ static func car(color: Color = Color(0.78, 0.08, 0.10)) -> Image:
 
 
 static func cotton() -> Image:
-	var img := image(12, 10, Color(0, 0, 0, 0))
-	var fluff := Color(0.96, 0.94, 0.88)
-	var fluff_hi := Color(1.0, 0.99, 0.96)
-	var fluff_dk := Color(0.82, 0.78, 0.70)
-	var stem := Color(0.42, 0.32, 0.18)
-	disc(img, 6, 4, 3, fluff)
-	disc(img, 4, 5, 2, fluff_dk)
-	disc(img, 8, 5, 2, fluff_hi)
-	disc(img, 6, 6, 2, fluff)
-	put(img, 5, 3, Color(1, 1, 1, 0.9))
-	put(img, 7, 4, fluff_hi)
-	rect(img, 5, 8, 2, 2, stem)
-	put(img, 6, 7, stem.lightened(0.15))
-	outline(img, Color(0.18, 0.14, 0.10, 0.55))
+	# Navy cargo sack with drawstrings. Pickup art for Vag's Cargo Dump.
+	var img := image(16, 14, Color(0, 0, 0, 0))
+	var navy := Color(0.12, 0.18, 0.28)
+	var navy_hi := Color(0.26, 0.36, 0.48)
+	var navy_dk := Color(0.07, 0.10, 0.14)
+	var cream := Color(0.93, 0.90, 0.82)
+	var brass := Color(0.82, 0.64, 0.28)
+	oval(img, 8, 8, 6, 5, navy)
+	oval(img, 8, 8, 4, 3, navy_hi)
+	rect(img, 5, 3, 6, 3, navy)
+	hline(img, 5, 3, 6, navy_dk)
+	hline(img, 5, 2, 6, cream)
+	vline(img, 5, 0, 3, cream)
+	vline(img, 10, 0, 3, cream)
+	put(img, 4, 0, cream)
+	put(img, 11, 0, cream)
+	put(img, 5, 2, brass)
+	put(img, 10, 2, brass)
+	rect(img, 6, 8, 4, 3, navy_dk)
+	put(img, 8, 8, brass)
+	hline(img, 6, 7, 4, cream.darkened(0.22))
+	hline(img, 4, 12, 8, navy_dk)
+	outline(img, Color(0.04, 0.03, 0.05, 0.78))
 	return img
 
 
