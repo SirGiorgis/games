@@ -28,6 +28,50 @@ func hit_flash(color: Color = Color.WHITE, amount: float = 0.18, dur: float = 0.
 	tw.tween_property(_flash, "color:a", 0.0, dur)
 
 
+func block_spark(pos: Vector2, color: Color, just: bool, dir: Vector2 = Vector2(-1, -0.15)) -> void:
+	if dir.length_squared() < 0.01:
+		dir = Vector2(-1, -0.15)
+	dir = dir.normalized()
+	_ring(pos, color, just)
+	var n := 14 if just else 8
+	for i in n:
+		var img := Pix.image(2, 2, color if i % 2 == 0 else Color(0.92, 0.96, 1.0))
+		var s := Sprite2D.new()
+		s.texture = Pix.tex(img)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		s.scale = Vector2(3.4 if just else 2.6, 3.4 if just else 2.6)
+		s.global_position = pos + Vector2(randf_range(-5, 5), randf_range(-5, 5))
+		add_child(s)
+		var spray := dir.rotated(randf_range(-0.55, 0.55))
+		var dist: float = randf_range(70, 160 if just else 110)
+		var tw := s.create_tween()
+		tw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		tw.tween_property(s, "position", s.position + spray.normalized() * dist * 0.18, 0.12)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.12)
+		tw.tween_callback(s.queue_free)
+
+
+func twinkle(pos: Vector2, color: Color) -> void:
+	for i in 8:
+		var img := Pix.image(3, 3, Color(0, 0, 0, 0))
+		Pix.put(img, 1, 0, color)
+		Pix.put(img, 0, 1, color)
+		Pix.put(img, 1, 1, Color(1, 1, 0.85))
+		Pix.put(img, 2, 1, color)
+		Pix.put(img, 1, 2, color)
+		var s := Sprite2D.new()
+		s.texture = Pix.tex(img)
+		s.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		s.centered = true
+		s.scale = Vector2(2.4, 2.4)
+		s.global_position = pos + Vector2(randf_range(-28, 28), randf_range(-40, 8))
+		add_child(s)
+		var tw := s.create_tween()
+		tw.tween_property(s, "position:y", s.position.y - randf_range(18, 40), 0.42)
+		tw.parallel().tween_property(s, "modulate:a", 0.0, 0.42)
+		tw.tween_callback(s.queue_free)
+
+
 func spark(pos: Vector2, color: Color, strong: bool, dir: Vector2 = Vector2(1, -0.25)) -> void:
 	if dir.length_squared() < 0.01:
 		dir = Vector2(1, -0.25)

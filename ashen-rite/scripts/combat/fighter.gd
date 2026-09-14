@@ -11,6 +11,7 @@ signal combo_changed(count: int)
 signal super_started
 signal announced(text: String)
 signal clash_happened(pos: Vector2)
+signal guarded(defender: Fighter, just: bool)
 
 enum State { IDLE, WALK, RUN, BACKDASH, PREJUMP, JUMP, LAND, CROUCH, LIGHT, HEAVY, SPECIAL, ULTIMATE, BLOCK, GRAB, HIT, KNOCKDOWN, GETUP, VICTORY, DEFEAT }
 
@@ -214,6 +215,10 @@ func celebrate(win: bool) -> void:
 	lock_out()
 	state = State.VICTORY if win else State.DEFEAT
 	visual.set_pose_name("victory" if win else "defeat")
+	if visual:
+		visual.punch_impact(1.05 if win else 0.4)
+		if win:
+			visual.dust()
 
 
 func _physics_process(delta: float) -> void:
@@ -976,6 +981,7 @@ func receive_hit(attacker: Fighter, attack: Dictionary) -> void:
 		if just:
 			announced.emit("JUST GUARD")
 			AudioDirector.play("parry", 1.0, 0.6)
+		guarded.emit(self, just)
 		_apply_poison(attack, 0.5)
 		return
 
@@ -1144,6 +1150,7 @@ func _do_parry(attacker: Fighter) -> void:
 		visual.flash = 1.0
 	if attacker.visual:
 		attacker.visual.recoil = 1.0
+	guarded.emit(self, true)
 
 
 func _log_buttons(cmd: Dictionary) -> void:

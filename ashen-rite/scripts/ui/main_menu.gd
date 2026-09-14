@@ -18,6 +18,13 @@ func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 	PixelUI.full_bg(self)
 	_title = PixelUI.add_title(self, "GIORGIS FIGHTING", 52, Color(0.95, 0.2, 0.3))
+	_title.pivot_offset = Vector2(640, 22)
+	_title.scale = Vector2(1.16, 1.16)
+	_title.modulate = Color(1.35, 1.25, 1.15)
+	var ttw := create_tween()
+	ttw.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	ttw.tween_property(_title, "scale", Vector2.ONE, 0.28)
+	ttw.parallel().tween_property(_title, "modulate", Color.WHITE, 0.28)
 	PixelUI.label_at(self, "CHRIS  ·  GIORGIS", Vector2(0, 118), 2, Color(0.88, 0.72, 0.38), 0, 1280).set_centered(1280)
 
 	PixelUI.add_panel(self, Vector2(48, 148), Vector2(560, 520), PixelUI.GOLD)
@@ -84,6 +91,7 @@ func _process(delta: float) -> void:
 	for i in _entries.size():
 		var on: bool = i == _index
 		_entries[i]["row"].modulate = Color(1.12, 1.08, 0.92) if on else Color(1, 1, 1)
+		_entries[i]["row"].scale = Vector2(1.03, 1.06) if on else Vector2.ONE
 	if Input.is_action_just_pressed(ControlMap.MENU.down):
 		_index = (_index + 1) % ITEMS.size()
 		AudioDirector.play("ui")

@@ -64,6 +64,8 @@ func _ready() -> void:
 	p2.defeated.connect(_on_ko)
 	p1.hit_landed.connect(_on_hit)
 	p2.hit_landed.connect(_on_hit)
+	p1.guarded.connect(_on_guard)
+	p2.guarded.connect(_on_guard)
 	p1.super_started.connect(_on_super.bind(p1))
 	p2.super_started.connect(_on_super.bind(p2))
 	p1.announced.connect(_on_announced)
@@ -176,6 +178,12 @@ func _begin_round() -> void:
 	AudioDirector.play("round")
 	hud.set_timer(int(ceil(time_left)))
 	hud.set_rounds(GameState.p1_rounds, GameState.p2_rounds)
+	fx.letterbox(0.32)
+	cam.punch(0.04)
+	if p1 and p1.visual:
+		p1.visual.dust()
+	if p2 and p2.visual:
+		p2.visual.dust()
 
 
 func _process(delta: float) -> void:
@@ -208,8 +216,9 @@ func _process(delta: float) -> void:
 			if phase_t > 1.05:
 				_set_banner("FIGHT")
 				AudioDirector.play("fight")
-				cam.punch(0.055)
-				cam.shake(0.32)
+				cam.punch(0.08)
+				cam.shake(0.38)
+				fx.letterbox(0.22)
 				phase = "fight_call"
 				phase_t = 0.0
 		"fight_call":
@@ -244,7 +253,8 @@ func _process(delta: float) -> void:
 					_timeout()
 		"slowko":
 			phase_t += delta
-			if phase_t > 0.62:
+			var hold: float = 0.78 if GameState.last_was_dramatic else (0.58 if GameState.last_was_timeout else 0.62)
+			if phase_t > hold:
 				if not _ko_line.is_empty():
 					_set_banner(_ko_line)
 				_restore_time()
@@ -298,7 +308,7 @@ func _resolve_ko() -> void:
 		cam.ko_zoom()
 		ControlMap.rumble(0, 0.55, 1.0, 0.42)
 		ControlMap.rumble(1, 0.55, 1.0, 0.42)
-		_start_slowmo()
+		_start_slowmo("ko")
 		return
 	var winner: int = 0 if d2 else 1
 	var w: Fighter = p1 if winner == 0 else p2
@@ -321,12 +331,14 @@ func _resolve_ko() -> void:
 	_set_banner("KO")
 	AudioDirector.play("ko")
 	AudioDirector.play("cheer", 1.0, 0.7)
-	cam.shake(1.4)
+	cam.shake(1.55 if GameState.last_was_dramatic else 1.4)
 	cam.ko_zoom()
+	cam.focus_on(w, 0.72)
+	fx.twinkle(w.global_position + Vector2(0, -78), w.def.accent)
 	ControlMap.rumble(0, 0.55, 1.0, 0.42)
 	ControlMap.rumble(1, 0.55, 1.0, 0.42)
 	hud.set_rounds(GameState.p1_rounds, GameState.p2_rounds)
-	_start_slowmo()
+	_start_slowmo("dramatic" if GameState.last_was_dramatic else "ko")
 
 
 func _timeout() -> void:
@@ -341,10 +353,14 @@ func _timeout() -> void:
 		GameState.last_winner = -1
 		p1.celebrate(false)
 		p2.celebrate(false)
+		_ko_line = "DRAW"
 		_set_banner("TIME")
 		hud.set_rounds(GameState.p1_rounds, GameState.p2_rounds)
-		phase = "ko"
-		phase_t = 0.0
+		cam.shake(1.1)
+		cam.ko_zoom()
+		ControlMap.rumble(0, 0.4, 0.7, 0.28)
+		ControlMap.rumble(1, 0.4, 0.7, 0.28)
+		_start_slowmo("time")
 		return
 	GameState.last_winner = winner
 	var w: Fighter = p1 if winner == 0 else p2
@@ -356,17 +372,33 @@ func _timeout() -> void:
 		GameState.p2_rounds += 1
 	w.celebrate(true)
 	l.celebrate(false)
+	_ko_line = "%s WINS" % w.def.callsign()
 	_set_banner("TIME")
 	hud.set_rounds(GameState.p1_rounds, GameState.p2_rounds)
-	phase = "ko"
-	phase_t = 0.0
+	cam.shake(1.15)
+	cam.ko_zoom()
+	cam.focus_on(w, 0.6)
+	fx.twinkle(w.global_position + Vector2(0, -78), w.def.accent)
+	ControlMap.rumble(0, 0.42, 0.78, 0.3)
+	ControlMap.rumble(1, 0.42, 0.78, 0.3)
+	_start_slowmo("time")
 
 
-func _start_slowmo() -> void:
-	Engine.time_scale = 0.32
-	cam.punch(0.07)
-	fx.super_flash(Color(1, 0.92, 0.75), 0.38)
-	fx.letterbox(0.55)
+func _start_slowmo(kind: String = "ko") -> void:
+	Engine.time_scale = 0.26 if kind == "dramatic" else 0.32
+	if kind == "time":
+		cam.punch(0.08)
+		fx.super_flash(Color(0.70, 0.82, 1.0), 0.42)
+		fx.letterbox(0.62)
+	elif kind == "dramatic":
+		cam.punch(0.12)
+		fx.super_flash(Color(1.0, 0.42, 0.16), 0.55)
+		fx.shade(0.9)
+		fx.letterbox(0.88)
+	else:
+		cam.punch(0.07)
+		fx.super_flash(Color(1, 0.92, 0.75), 0.38)
+		fx.letterbox(0.55)
 	phase = "slowko"
 	phase_t = 0.0
 
@@ -383,7 +415,7 @@ func _sync_time_scale() -> void:
 		return
 	var now: int = Time.get_ticks_msec()
 	if phase == "slowko":
-		Engine.time_scale = 0.32
+		Engine.time_scale = 0.26 if GameState.last_was_dramatic else 0.32
 	elif now < _super_until_ms:
 		Engine.time_scale = 0.14
 	elif now < _stop_until_ms:
@@ -463,11 +495,11 @@ func _on_hit(f: Fighter, attack: Dictionary, crit: bool) -> void:
 		_flash_call("CRITICAL")
 
 
-func _flash_call(text: String) -> void:
+func _flash_call(text: String, linger: float = 0.42) -> void:
 	if phase != "fight":
 		return
 	_set_banner(text)
-	get_tree().create_timer(0.42).timeout.connect(func():
+	get_tree().create_timer(linger).timeout.connect(func():
 		if is_instance_valid(self) and phase == "fight":
 			_set_banner("")
 	)
@@ -511,7 +543,7 @@ func _on_super(f: Fighter) -> void:
 		_super_until_ms = Time.get_ticks_msec() + 420
 		Engine.time_scale = 0.14
 		_super_dip = 0.08
-		_flash_call(f.def.ultimate_name.to_upper())
+		_flash_call(f.def.ultimate_name.to_upper(), 0.72)
 
 
 func _on_announced(text: String) -> void:
@@ -528,6 +560,22 @@ func _tap(key: Key) -> bool:
 	var was: bool = _key_was.get(key, false)
 	_key_was[key] = down
 	return down and not was
+
+
+func _on_guard(f: Fighter, just: bool) -> void:
+	if f == null:
+		return
+	var away := Vector2(-float(f.facing), -0.12)
+	if f.opponent:
+		away = Vector2(-float(f.opponent.facing), -0.12)
+	var col := Color(0.55, 0.88, 1.0) if just else Color(0.70, 0.78, 0.92)
+	fx.block_spark(f.global_position + Vector2(float(f.facing) * 16.0, -70), col, just, away)
+	if just:
+		cam.hit_nudge(away, 0.42)
+		cam.punch(0.03)
+		ControlMap.rumble(f.fighter_id, 0.22, 0.4, 0.08)
+	else:
+		ControlMap.rumble(f.fighter_id, 0.08, 0.16, 0.04)
 
 
 func _on_clash(pos: Vector2) -> void:
@@ -587,7 +635,7 @@ func _set_banner(text: String) -> void:
 		col = Color(1, 0.32, 0.26)
 	elif text == "KO" or text == "RITE COMPLETE" or text.ends_with("WINS"):
 		col = Color(0.95, 0.78, 0.28)
-	elif text == "TIME" or text == "DOUBLE KO":
+	elif text == "TIME" or text == "DOUBLE KO" or text == "DRAW":
 		col = Color(0.75, 0.82, 1.0)
 	elif text == "CRITICAL" or text == "COUNTER" or text == "PERFECT" or text == "DRAMATIC FINISH" or text == "PUNISH" or text == "GUARD BREAK":
 		col = Color(1, 0.55, 0.2)

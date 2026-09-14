@@ -22,6 +22,8 @@ func _ready() -> void:
 func _process(_d: float) -> void:
 	if not visible:
 		return
+	for i in _entries.size():
+		_entries[i]["row"].modulate = Color(1.12, 1.08, 0.92) if i == _index else Color.WHITE
 	if Input.is_action_just_pressed(ControlMap.MENU.down):
 		_index = (_index + 1) % KEYS.size()
 		AudioDirector.play("ui")
@@ -36,10 +38,12 @@ func _process(_d: float) -> void:
 		_nudge(1)
 	elif Input.is_action_just_pressed(ControlMap.MENU.confirm):
 		if KEYS[_index] == "back":
+			AudioDirector.play("ui_back")
 			closed.emit()
 		else:
 			_nudge(1)
 	elif Input.is_action_just_pressed(ControlMap.MENU.back):
+		AudioDirector.play("ui_back")
 		closed.emit()
 
 

@@ -70,6 +70,7 @@ func _process(delta: float) -> void:
 	elif Input.is_action_just_pressed(ControlMap.MENU.confirm):
 		_pick()
 	elif Input.is_action_just_pressed(ControlMap.MENU.back) or Input.is_action_just_pressed(ControlMap.P1.pause):
+		AudioDirector.play("ui_back")
 		_active = false
 		resumed.emit()
 

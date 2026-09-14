@@ -55,6 +55,15 @@ var _train: PixelLabel
 var _mode: PixelLabel
 var _p1_port: TextureRect
 var _p2_port: TextureRect
+var _vignette: ColorRect
+var _was_max1 := false
+var _was_max2 := false
+var _max_pop1 := 0.0
+var _max_pop2 := 0.0
+var _was_ex1 := false
+var _was_ex2 := false
+var _ex_pop1 := 0.0
+var _ex_pop2 := 0.0
 
 
 func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
@@ -65,6 +74,12 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
+
+	_vignette = ColorRect.new()
+	_vignette.color = Color(0.42, 0.02, 0.05, 0.0)
+	_vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(_vignette)
 
 	var veil := ColorRect.new()
 	veil.color = Color(0.02, 0.03, 0.04, 0.42)
@@ -178,8 +193,10 @@ func bind(p1: Fighter, p2: Fighter, arena_name: String) -> void:
 	PixelUI.label_at(root, "SUPER", Vector2(912, 652), 1, Color(0.92, 0.90, 0.84))
 	_max1 = PixelUI.label_at(root, "MAX", Vector2(380, 668), 2, Color(0.45, 0.9, 1.0))
 	_max1.visible = false
+	_max1.pivot_offset = Vector2(28, 8)
 	_max2 = PixelUI.label_at(root, "MAX", Vector2(860, 668), 2, Color(1.0, 0.88, 0.35))
 	_max2.visible = false
+	_max2.pivot_offset = Vector2(28, 8)
 
 	var hint := Color(0.96, 0.96, 0.92)
 	_hints.append(PixelUI.label_at(root, "J LIGHT   K HEAVY   L SPECIAL / EX   CANCEL L>(L)>H>SP   LIGHTS MINUS   O SUPER", Vector2(0, 700), 1, hint, 0, 1280))
@@ -276,31 +293,84 @@ func _process(delta: float) -> void:
 		var pulse: float = 1.0 + (0.07 * sin(_t * 10.0) if _last_timer <= 10 and _last_timer >= 0 else 0.0)
 		_tbox.scale = Vector2(4 * pulse, 4 * pulse)
 		_tbox.position = Vector2(640.0 - 52.0 * pulse, 4.0 + (1.0 - pulse) * 26.0)
+	if _ult_show1 >= 0.99:
+		if not _was_max1:
+			_max_pop1 = 1.0
+		_was_max1 = true
+	else:
+		_was_max1 = false
+	if _ult_show2 >= 0.99:
+		if not _was_max2:
+			_max_pop2 = 1.0
+		_was_max2 = true
+	else:
+		_was_max2 = false
+	if _sp_show1 >= 0.99:
+		if not _was_ex1:
+			_ex_pop1 = 1.0
+		_was_ex1 = true
+	else:
+		_was_ex1 = false
+	if _sp_show2 >= 0.99:
+		if not _was_ex2:
+			_ex_pop2 = 1.0
+		_was_ex2 = true
+	else:
+		_was_ex2 = false
+	_max_pop1 = max(0.0, _max_pop1 - delta * 3.4)
+	_max_pop2 = max(0.0, _max_pop2 - delta * 3.4)
+	_ex_pop1 = max(0.0, _ex_pop1 - delta * 3.6)
+	_ex_pop2 = max(0.0, _ex_pop2 - delta * 3.6)
+	var danger := 0.0
+	if _low1 or _low2:
+		danger = 0.15 + 0.07 * (0.5 + 0.5 * sin(_t * 7.0))
+		if _low1 and _low2:
+			danger += 0.06
+	if _vignette:
+		_vignette.color.a = lerpf(_vignette.color.a, danger, 1.0 - exp(-delta * 5.0))
+	for g in _p1_rounds:
+		g.scale = g.scale.lerp(Vector2(3, 3), 1.0 - exp(-delta * 8.0))
+		g.modulate = g.modulate.lerp(Color.WHITE, 1.0 - exp(-delta * 7.0))
+	for g2 in _p2_rounds:
+		g2.scale = g2.scale.lerp(Vector2(3, 3), 1.0 - exp(-delta * 8.0))
+		g2.modulate = g2.modulate.lerp(Color.WHITE, 1.0 - exp(-delta * 7.0))
 	if _p1_ult:
-		_p1_ult.modulate = Color(1.15, 1.12, 0.9) if _ult_show1 >= 0.99 else Color.WHITE
-		_p1_ult.modulate.a = 1.0
 		if _ult_show1 >= 0.99:
 			_p1_ult.modulate = Color.WHITE.lerp(Color(1.3, 1.25, 0.85), 0.5 + 0.5 * sin(_t * 7.0))
+			_p1_ult.scale = Vector2(4, 4) * (1.0 + _max_pop1 * 0.08)
+		else:
+			_p1_ult.modulate = Color.WHITE
+			_p1_ult.scale = Vector2(4, 4)
 	if _p2_ult:
 		if _ult_show2 >= 0.99:
 			_p2_ult.modulate = Color.WHITE.lerp(Color(1.3, 1.22, 0.75), 0.5 + 0.5 * sin(_t * 7.0))
+			_p2_ult.scale = Vector2(4, 4) * (1.0 + _max_pop2 * 0.08)
 		else:
 			_p2_ult.modulate = Color.WHITE
+			_p2_ult.scale = Vector2(4, 4)
 	if _max1:
 		_max1.visible = _ult_show1 >= 0.99
 		if _max1.visible:
+			var ms: float = 1.0 + _max_pop1 * 0.55
+			_max1.scale = Vector2(ms, ms)
 			_max1.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 8.0))
 	if _max2:
 		_max2.visible = _ult_show2 >= 0.99
 		if _max2.visible:
+			var ms2: float = 1.0 + _max_pop2 * 0.55
+			_max2.scale = Vector2(ms2, ms2)
 			_max2.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 8.0))
 	if _ex1:
 		_ex1.visible = _sp_show1 >= 0.99
 		if _ex1.visible:
+			var es: float = 1.0 + _ex_pop1 * 0.5
+			_ex1.scale = Vector2(es, es)
 			_ex1.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 9.0))
 	if _ex2:
 		_ex2.visible = _sp_show2 >= 0.99
 		if _ex2.visible:
+			var es2: float = 1.0 + _ex_pop2 * 0.5
+			_ex2.scale = Vector2(es2, es2)
 			_ex2.modulate.a = 0.55 + 0.45 * (0.5 + 0.5 * sin(_t * 9.0))
 	if _rage1:
 		_rage1.visible = _p1.raging()
@@ -422,6 +492,7 @@ func _gem(root: Control, pos: Vector2) -> TextureRect:
 	t.position = pos
 	t.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	t.scale = Vector2(3, 3)
+	t.pivot_offset = Vector2(6, 6)
 	root.add_child(t)
 	return t
 
@@ -499,9 +570,23 @@ func set_timer(v: int) -> void:
 
 func set_rounds(a: int, b: int) -> void:
 	for i in _p1_rounds.size():
-		_p1_rounds[i].texture = PixelUI.round_gem(i < a)
+		var on: bool = i < a
+		var was: bool = bool(_p1_rounds[i].get_meta("lit", false))
+		_p1_rounds[i].texture = PixelUI.round_gem(on)
+		_p1_rounds[i].set_meta("lit", on)
+		if on and not was:
+			_p1_rounds[i].scale = Vector2(4.7, 4.7)
+			_p1_rounds[i].modulate = Color(1.5, 1.32, 0.72)
+			AudioDirector.play("ui_confirm", 1.18, 0.42)
 	for i in _p2_rounds.size():
-		_p2_rounds[i].texture = PixelUI.round_gem(i < b)
+		var on2: bool = i < b
+		var was2: bool = bool(_p2_rounds[i].get_meta("lit", false))
+		_p2_rounds[i].texture = PixelUI.round_gem(on2)
+		_p2_rounds[i].set_meta("lit", on2)
+		if on2 and not was2:
+			_p2_rounds[i].scale = Vector2(4.7, 4.7)
+			_p2_rounds[i].modulate = Color(1.5, 1.32, 0.72)
+			AudioDirector.play("ui_confirm", 1.18, 0.42)
 
 
 func set_combo(_side: int, n: int) -> void:

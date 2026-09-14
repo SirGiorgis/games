@@ -163,6 +163,7 @@ func _process(delta: float) -> void:
 		AudioDirector.play("ui_confirm")
 		confirmed.emit()
 	elif Input.is_action_just_pressed(ControlMap.MENU.back):
+		AudioDirector.play("ui_back")
 		cancelled.emit()
 	if _edge(KEY_R):
 		_p2_index = randi() % maxi(_ids.size(), 1)

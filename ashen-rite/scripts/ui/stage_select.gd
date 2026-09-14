@@ -42,6 +42,7 @@ func _ready() -> void:
 	_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_preview.pivot_offset = Vector2(464, 160)
 	add_child(_preview)
 	_title = PixelUI.label_at(self, "", Vector2(0, 552), 3, Color(1, 0.88, 0.42), 0, 1280)
 	_title.set_centered(1280)
@@ -63,6 +64,10 @@ func _process(delta: float) -> void:
 	if not visible:
 		return
 	_t += delta
+	if _preview:
+		var pulse: float = 1.0 + 0.012 * sin(_t * 2.4)
+		_preview.scale = Vector2(pulse, pulse)
+		_preview.modulate = Color(1.0, 1.0, 1.0).lerp(Color(1.08, 1.04, 0.95), 0.5 + 0.5 * sin(_t * 2.2))
 	for i in _cards.size():
 		var on: bool = i == _index
 		_cards[i].modulate = Color(1.12, 1.08, 0.95) if on else Color(0.72, 0.72, 0.76)
@@ -81,6 +86,7 @@ func _process(delta: float) -> void:
 		AudioDirector.play("ui_confirm")
 		confirmed.emit()
 	elif Input.is_action_just_pressed(ControlMap.MENU.back):
+		AudioDirector.play("ui_back")
 		cancelled.emit()
 
 

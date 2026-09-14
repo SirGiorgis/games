@@ -18,6 +18,7 @@ var trail_timer: float = 0.0
 var move_speed: float = 0.0
 var frozen: bool = false
 var _land_puff := false
+var _kd_puff := false
 var _stride := 0.0
 var _flip_squash := 0.0
 var _last_facing: int = 1
@@ -72,6 +73,8 @@ func set_pose_name(p: String) -> void:
 			one_shot_u = 0.0
 		if p == "land":
 			_land_puff = false
+		if p == "knockdown":
+			_kd_puff = false
 
 
 func pulse_hit() -> void:
@@ -123,6 +126,9 @@ func _process(delta: float) -> void:
 		if pose == "land" and not _land_puff:
 			_land_puff = true
 			_puff()
+		if pose == "knockdown" and not _kd_puff:
+			_kd_puff = true
+			_puff()
 
 	_sprite.texture = _current_tex()
 	_sprite.flip_h = facing < 0
@@ -155,13 +161,25 @@ func _apply_juice() -> void:
 	elif pose in ["heavy", "cheavy", "jheavy", "ultimate"] and attack_u > 0.26 and attack_u < 0.52:
 		squash = 1.12
 		stretch = 0.90
+	elif pose == "knockdown":
+		var ku: float = clampf(one_shot_u, 0.0, 1.0)
+		if ku < 0.38:
+			var k: float = 1.0 - ku / 0.38
+			squash = 1.0 + k * 0.24
+			stretch = 1.0 - k * 0.14
+	elif pose == "victory":
+		squash = 1.0 + sin(_time * 5.0) * 0.04
+		stretch = 1.0 - sin(_time * 5.0) * 0.03
 
 	var fx_w: float = 1.0 - _flip_squash * 0.18
 	_sprite.scale = Vector2(_base_scale.x * (1.0 + impact * 0.05) * fx_w, _base_scale.y * stretch * squash)
 	_sprite.position.y = _base_y() + _pose_bob() + impact * 5.0
 	_sprite.position.x = _base_x() + _pose_shift() - float(facing) * recoil * 11.0
 	_sprite.rotation = _pose_tilt() * facing
-	_sprite.modulate = Color.WHITE.lerp(Color(1.75, 1.68, 1.52), flash)
+	var hitc := Color(1.75, 1.68, 1.52)
+	if def:
+		hitc = hitc.lerp(def.accent.lightened(0.35), 0.55)
+	_sprite.modulate = Color.WHITE.lerp(hitc, flash)
 	var host = get_parent()
 	if host and host.has_method("poisoned") and host.poisoned() and flash < 0.2:
 		_sprite.modulate = Color.WHITE.lerp(Color(0.58, 1.18, 0.42), 0.52 + 0.22 * sin(_time * 10.0))

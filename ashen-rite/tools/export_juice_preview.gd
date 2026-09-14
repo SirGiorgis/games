@@ -6,6 +6,8 @@ func _init() -> void:
 	PixelFighterBake.clear_cache()
 	_fight_ko()
 	_versus()
+	_clutch()
+	_splash()
 	print("juice preview -> res://.godot/juice_preview")
 	quit()
 
@@ -68,6 +70,54 @@ func _versus() -> void:
 	var out := "res://.godot/juice_preview"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(out))
 	field.save_png(ProjectSettings.globalize_path("%s/versus.png" % out))
+
+
+func _clutch() -> void:
+	var arena: Image = PixelArenaBake.texture("grass_field").get_image()
+	arena.convert(Image.FORMAT_RGBA8)
+	var field := Image.create(1280, 720, false, Image.FORMAT_RGBA8)
+	field.fill(Color(0.66, 0.80, 0.88))
+	arena.resize(1280, 720, Image.INTERPOLATE_NEAREST)
+	field.blit_rect(arena, Rect2i(0, 0, 1280, 720), Vector2i.ZERO)
+	var red := Image.create(1280, 720, false, Image.FORMAT_RGBA8)
+	red.fill(Color(0.42, 0.02, 0.05, 0.20))
+	field.blend_rect(red, Rect2i(0, 0, 1280, 720), Vector2i.ZERO)
+	var chris := _def("chris_xrisakis")
+	var mako := _def("mako")
+	_stamp_fighter(field, chris, "block_hit", 2, 420, 620, false)
+	_stamp_fighter(field, mako, "heavy", 4, 860, 620, true)
+	var top := Image.create(1280, 64, false, Image.FORMAT_RGBA8)
+	top.fill(Color(0, 0, 0, 0.78))
+	field.blend_rect(top, Rect2i(0, 0, 1280, 64), Vector2i(0, 0))
+	field.blend_rect(top, Rect2i(0, 0, 1280, 64), Vector2i(0, 656))
+	var mx: Image = PixelFont.make("MAX", Color(0.45, 0.9, 1.0), 2).get_image()
+	_blit(field, mx, 380, 668)
+	var banner: Image = PixelUI.round_banner(140).get_image()
+	banner.resize(banner.get_width() * 4, banner.get_height() * 4, Image.INTERPOLATE_NEAREST)
+	_blit(field, banner, 640 - banner.get_width() / 2, 264)
+	var tm: Image = PixelFont.make("TIME", Color(0.75, 0.82, 1.0), 6).get_image()
+	_blit(field, tm, 640 - tm.get_width() / 2, 292)
+	var out := "res://.godot/juice_preview"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(out))
+	field.save_png(ProjectSettings.globalize_path("%s/clutch.png" % out))
+
+
+func _splash() -> void:
+	var field := Image.create(1280, 720, false, Image.FORMAT_RGBA8)
+	field.fill(Color(0.07, 0.05, 0.08))
+	var chris := _def("chris_xrisakis")
+	var giorgis := _def("hoodrich_stacks")
+	_stamp_fighter(field, chris, "walk", 2, 430, 520, false)
+	_stamp_fighter(field, giorgis, "walk", 3, 850, 520, true)
+	var title: Image = PixelFont.make("GIORGIS FIGHTING", Color(0.95, 0.18, 0.28), 5).get_image()
+	_blit(field, title, 640 - title.get_width() / 2, 88)
+	var sub: Image = PixelFont.make("ARCADE BRAWL", Color(0.92, 0.74, 0.32), 2).get_image()
+	_blit(field, sub, 640 - sub.get_width() / 2, 164)
+	var press: Image = PixelFont.make("PRESS ENTER / CROSS", Color(1, 0.92, 0.45), 3).get_image()
+	_blit(field, press, 640 - press.get_width() / 2, 600)
+	var out := "res://.godot/juice_preview"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(out))
+	field.save_png(ProjectSettings.globalize_path("%s/splash.png" % out))
 
 
 func _def(id: String) -> CharacterDef:
