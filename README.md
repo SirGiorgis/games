@@ -29,6 +29,16 @@ https://github.com/SirGiorgis/games/raw/cursor/ashen-rite-fighter-acf2/rite_braw
 
 On the portal: **Delete all files**, then upload that zip. Do not upload `.gd` scripts or the GitHub source zip.
 
+Store covers and hover videos (upload on the portal, separate from the game zip):
+
+- Landscape cover: https://github.com/SirGiorgis/games/raw/cursor/ashen-rite-fighter-acf2/rite-brawl/store/cover_landscape_1920x1080.png
+- Portrait cover: https://github.com/SirGiorgis/games/raw/cursor/ashen-rite-fighter-acf2/rite-brawl/store/cover_portrait_800x1200.png
+- Square cover: https://github.com/SirGiorgis/games/raw/cursor/ashen-rite-fighter-acf2/rite-brawl/store/cover_square_800x800.png
+- Landscape hover video: https://github.com/SirGiorgis/games/raw/cursor/ashen-rite-fighter-acf2/rite-brawl/store/hover_landscape_1920x1080.mp4
+- Portrait hover video: https://github.com/SirGiorgis/games/raw/cursor/ashen-rite-fighter-acf2/rite-brawl/store/hover_portrait_1080x1620.mp4
+
+Folder with all of them: [rite-brawl/store](rite-brawl/store).
+
 ## Zip
 
 https://github.com/SirGiorgis/games/archive/refs/heads/cursor/ashen-rite-fighter-acf2.zip

@@ -104,6 +104,8 @@ https://github.com/SirGiorgis/games/raw/cursor/ashen-rite-fighter-acf2/rite_braw
 
 On the CrazyGames portal, choose HTML5, click **Delete all files**, then upload that zip. Do not upload `.gd` files.
 
+Store covers and silent hover videos live in `store/`. Upload all three covers plus both hover mp4s on the portal (not inside the game zip). See `store/README.txt`.
+
 Desktop / Press Play and the web build both use the built-in synth.
 
 SDK hooks (web only): `gameplayStart` after FIGHT, `gameplayStop` on pause/results/menu, `happytime` on a match win, midgame ads after a finished match, optional **WATCH AD TO CONTINUE** on arcade lose (same-size **GIVE UP**, no reward if the ad errors). CrazyGames `muteAudio` overrides in-game volume.
