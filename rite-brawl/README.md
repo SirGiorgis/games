@@ -96,12 +96,12 @@ Hits, UI, and background loops are synthesized in-game. Gallery Radio still list
 
 ## CrazyGames (HTML5)
 
-This is an upload zip for the [CrazyGames developer portal](https://developer.crazygames.com/). Do not host it on GitHub Pages.
+Upload a **web export zip** whose root file is `index.html`. Do **not** upload `.gd` scripts, the GitHub source zip, or Godot `project.godot`.
 
 1. In Godot 4.7, open `rite-brawl/project.godot` and **Project → Export → CrazyGames**.
 2. Export to `build/web/index.html`.
-3. Zip the `build/web` folder so `index.html` is at the root of the zip.
-4. Create a new HTML5 game on the portal and upload that zip.
+3. Zip the contents of `build/web` so `index.html` is at the **root** of the zip (not inside a subfolder).
+4. On the CrazyGames portal, choose HTML5, click **Delete all files**, then upload that zip.
 
 Desktop / Press Play and the web build both use the built-in synth.
 

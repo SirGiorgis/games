@@ -21,6 +21,10 @@ The project is a few megabytes. That is the full game. Fighters and stages are d
 
 Godot itself is a separate download.
 
+## CrazyGames
+
+Do not upload the GitHub source or `.gd` files. The portal needs a web export zip with `index.html` at the root. See [rite-brawl/README.md](rite-brawl/README.md#crazygames-html5).
+
 ## Zip
 
 https://github.com/SirGiorgis/games/archive/refs/heads/cursor/ashen-rite-fighter-acf2.zip
