@@ -17,11 +17,11 @@ var _done := false
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 	PixelUI.full_bg(self)
-	_title = PixelUI.add_title(self, "GIORGIS FIGHTING", 88, Color(0.95, 0.18, 0.28))
+	_title = PixelUI.add_title(self, "RITE BRAWL", 88, Color(0.95, 0.18, 0.28))
 	_title.pivot_offset = Vector2(640, 22)
 	_title.scale = Vector2(1.22, 1.22)
 	_title.modulate = Color(1.4, 1.3, 1.2)
-	PixelUI.label_at(self, "ARCADE BRAWL", Vector2(0, 164), 2, Color(0.92, 0.74, 0.32), 0, 1280).set_centered(1280)
+	PixelUI.label_at(self, "CHOOSE YOUR RITE", Vector2(0, 164), 2, Color(0.92, 0.74, 0.32), 0, 1280).set_centered(1280)
 	PixelUI.label_at(self, "CHRIS VS GIORGIS", Vector2(0, 196), 2, Color(0.85, 0.7, 0.4), 0, 1280).set_centered(1280)
 
 	var grass := TextureRect.new()

@@ -7,9 +7,9 @@ func _init() -> void:
 	var field := Image.create(1280, 720, false, Image.FORMAT_RGBA8)
 	field.fill(Color(0.10, 0.08, 0.12))
 
-	var title := PixelFont.make("GIORGIS FIGHTING", Color(0.95, 0.22, 0.28), 4).get_image()
+	var title := PixelFont.make("RITE BRAWL", Color(0.95, 0.22, 0.28), 4).get_image()
 	_blit(field, title, 640 - title.get_width() / 2, 16)
-	var sub := PixelFont.make("CHRIS  GIORGIS  MAKO  FOGAS  GIANNIS  VAG  SPYROS", Color(0.95, 0.82, 0.35), 2).get_image()
+	var sub := PixelFont.make("CHRIS  GIORGIS  MAKO  FOGAS  TASOS  VAG  SPYROS", Color(0.95, 0.82, 0.35), 2).get_image()
 	_blit(field, sub, 640 - sub.get_width() / 2, 64)
 
 	var stages := [
@@ -38,7 +38,7 @@ func _init() -> void:
 		var ult: Image = PixelFont.make(def.ultimate_name.to_upper(), Color(0.95, 0.82, 0.35), 1).get_image()
 		_blit(field, ult, feet_x - ult.get_width() / 2, feet_y + 24)
 
-	var foot := PixelFont.make("CHRIS  GIORGIS  MAKO  FOGAS  GIANNIS  VAG  SPYROS", Color(0.85, 0.78, 0.62), 2).get_image()
+	var foot := PixelFont.make("CHRIS  GIORGIS  MAKO  FOGAS  TASOS  VAG  SPYROS", Color(0.85, 0.78, 0.62), 2).get_image()
 	_blit(field, foot, 640 - foot.get_width() / 2, 688)
 
 	var out := "res://.godot/gig_preview"

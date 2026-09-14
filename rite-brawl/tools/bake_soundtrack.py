@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bake a unique uncompressed 48kHz stereo soundtrack for Giorgis Fighting.
+"""Bake a unique uncompressed 48kHz stereo soundtrack for Rite Brawl.
 
 Each track is a real song (drums, bass, chords, lead) with its own seed, key,
 and tempo — not silence, noise, or copied loops. One track per menu, mode,

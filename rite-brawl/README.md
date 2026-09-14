@@ -1,15 +1,15 @@
-# Giorgis Fighting
+# Rite Brawl
 
 Original arcade 2D fighting game for **Godot 4.7**. Visual north star: compact chibi fighters on a bright outdoor field (Tiny Fight-style), not oversized model sprites or neon arenas.
 
-Open the `giorgis-fighting` folder in Godot 4.7 and press **Play**. Nothing else to configure.
+Open the `rite-brawl` folder in Godot 4.7 and press **Play**. Nothing else to configure.
 
 The extra download size is a soundtrack the game actually uses: one unique song per menu, mode, stage, and fighter. Gallery Radio plays the same catalog. There is no dummy padding.
 
 ## Play
 
 1. Install [Godot 4.7](https://godotengine.org/download).
-2. Import `giorgis-fighting/project.godot`.
+2. Import `rite-brawl/project.godot`.
 3. Press Play. Main scene is already set.
 
 Lead fighter: **Chris Xrisakis**. Default opponent: **Giorgis**. Default arena: **Rite Field**.
@@ -104,7 +104,7 @@ Gallery Radio plays every track. Fights pick survival / time attack / arcade / f
 
 This is an upload zip for the [CrazyGames developer portal](https://developer.crazygames.com/). Do not host it on GitHub Pages.
 
-1. In Godot 4.7, open `giorgis-fighting/project.godot` and **Project → Export → CrazyGames**.
+1. In Godot 4.7, open `rite-brawl/project.godot` and **Project → Export → CrazyGames**.
 2. Export to `build/web/index.html` (the preset already excludes the 32 soundtrack WAVs so the zip stays small).
 3. Zip the `build/web` folder so `index.html` is at the root of the zip.
 4. Create a new HTML5 game on the portal and upload that zip.

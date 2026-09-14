@@ -17,7 +17,7 @@ var _title: PixelLabel
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 	PixelUI.full_bg(self)
-	_title = PixelUI.add_title(self, "GIORGIS FIGHTING", 52, Color(0.95, 0.2, 0.3))
+	_title = PixelUI.add_title(self, "RITE BRAWL", 52, Color(0.95, 0.2, 0.3))
 	_title.pivot_offset = Vector2(640, 22)
 	_title.scale = Vector2(1.16, 1.16)
 	_title.modulate = Color(1.35, 1.25, 1.15)

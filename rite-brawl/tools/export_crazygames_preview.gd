@@ -13,7 +13,7 @@ func _init() -> void:
 func _roster() -> void:
 	var field := Image.create(1280, 720, false, Image.FORMAT_RGBA8)
 	field.fill(Color(0.08, 0.06, 0.09))
-	var title: Image = PixelFont.make("GIORGIS FIGHTING", Color(0.95, 0.18, 0.28), 4).get_image()
+	var title: Image = PixelFont.make("RITE BRAWL", Color(0.95, 0.18, 0.28), 4).get_image()
 	_blit(field, title, 640 - title.get_width() / 2, 24)
 	var sub: Image = PixelFont.make("CRAZYGAMES NAMES", Color(0.95, 0.82, 0.35), 2).get_image()
 	_blit(field, sub, 640 - sub.get_width() / 2, 72)
