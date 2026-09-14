@@ -23,7 +23,11 @@ Godot itself is a separate download.
 
 ## CrazyGames
 
-Do not upload the GitHub source or `.gd` files. The portal needs a web export zip with `index.html` at the root. See [rite-brawl/README.md](rite-brawl/README.md#crazygames-html5).
+Download the HTML5 zip (this is the file CrazyGames wants):
+
+https://github.com/SirGiorgis/games/raw/cursor/ashen-rite-fighter-acf2/rite_brawl_crazygames_html5.zip
+
+On the portal: **Delete all files**, then upload that zip. Do not upload `.gd` scripts or the GitHub source zip.
 
 ## Zip
 

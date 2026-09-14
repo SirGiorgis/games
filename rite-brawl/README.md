@@ -98,10 +98,11 @@ Hits, UI, and background loops are synthesized in-game. Gallery Radio still list
 
 Upload a **web export zip** whose root file is `index.html`. Do **not** upload `.gd` scripts, the GitHub source zip, or Godot `project.godot`.
 
-1. In Godot 4.7, open `rite-brawl/project.godot` and **Project → Export → CrazyGames**.
-2. Export to `build/web/index.html`.
-3. Zip the contents of `build/web` so `index.html` is at the **root** of the zip (not inside a subfolder).
-4. On the CrazyGames portal, choose HTML5, click **Delete all files**, then upload that zip.
+Ready-made zip (click to download):
+
+https://github.com/SirGiorgis/games/raw/cursor/ashen-rite-fighter-acf2/rite_brawl_crazygames_html5.zip
+
+On the CrazyGames portal, choose HTML5, click **Delete all files**, then upload that zip. Do not upload `.gd` files.
 
 Desktop / Press Play and the web build both use the built-in synth.
 
