@@ -1,0 +1,11 @@
+[remap]
+
+importer="keep"
+type="Resource"
+uid="uid://bspyrostrapdrop01"
+
+[deps]
+
+source_file="res://assets/audio/music/theme_spyros.wav"
+
+[params]

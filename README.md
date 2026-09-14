@@ -1,13 +1,9 @@
-# Games
+# Giorgis Fighting
 
-## Giorgis Fighting (Godot 4.7)
+Original arcade 2D fighting game for **Godot 4.7**.
 
-Original 2D arcade fighter. Roster: Chris, Giorgis, Mako, Fogas, Tasos, Vag, and Spyros. Open `ashen-rite/project.godot` in Godot 4.7 and press Play.
+The Godot project is in `giorgis-fighting/`. Open `giorgis-fighting/project.godot` and press **Play**. Nothing else to configure.
 
-Full notes: [ashen-rite/README.md](ashen-rite/README.md)
+Full notes: [giorgis-fighting/README.md](giorgis-fighting/README.md)
 
 Zip: https://github.com/SirGiorgis/games/archive/refs/heads/cursor/ashen-rite-fighter-acf2.zip
-
-## Duel video
-
-Fan-made cinematic from a still. Rebuild with `python3 scripts/assemble_duel.py`.
